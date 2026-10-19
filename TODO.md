@@ -11,3 +11,9 @@
 - [x] Let the user choose whether their phone number is shown to other people; keep it hidden by default.
 - [x] Provide a Gallery for photos and videos.
 - [x] Let the user choose whether their gallery is public or hidden; keep it private by default.
+
+## Direct media upload and privacy preview
+- [x] Let the user select multiple image and video files directly from the Gallery interface.
+- [x] Show an immediate preview tile for each selected image or video with its media type and file size.
+- [x] Update the Gallery item count after files are added and provide a clear upload confirmation.
+- [x] Explain the current phone and gallery audience state inline: hidden/private by default, or visible/public when enabled.

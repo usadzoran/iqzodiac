@@ -62,7 +62,7 @@
           </div>
 
           <div class="privacy-row">
-            <div class="privacy-copy"><span class="privacy-icon" aria-hidden="true">◉</span><div><strong>Show my phone number</strong><small>Let other people see your number on your profile.</small></div></div>
+            <div class="privacy-copy"><span class="privacy-icon" aria-hidden="true">◉</span><div><strong>Show my phone number</strong><small id="phone-privacy-status">Hidden from other people.</small></div></div>
             <label class="toggle"><input type="checkbox" id="phone-visibility" /><span class="toggle-track" aria-hidden="true"><span></span></span><span class="sr-only">Show my phone number to others</span></label>
           </div>
         </section>
@@ -73,7 +73,7 @@
               <p class="card-kicker">02 / Gallery</p>
               <h2 id="gallery-title">Photos &amp; videos</h2>
             </div>
-            <span class="media-count">6 items</span>
+            <span class="media-count" id="media-count">5 items</span>
           </div>
           <p class="section-intro">A personal collection for the moments that say more than words.</p>
 
@@ -83,11 +83,12 @@
             <button class="media-tile media-three" type="button" aria-label="Open ocean video"><span class="play-icon" aria-hidden="true">▶</span><span class="media-type">Video</span><span class="media-caption">Open water</span></button>
             <button class="media-tile media-four" type="button" aria-label="Open sky photo"><span class="media-type">Photo</span><span class="media-caption">New light</span></button>
             <button class="media-tile media-five" type="button" aria-label="Open forest video"><span class="play-icon" aria-hidden="true">▶</span><span class="media-type">Video</span><span class="media-caption">Slow morning</span></button>
-            <button class="media-tile add-media" type="button" data-flow="Adding media"><span class="add-icon" aria-hidden="true">+</span><span>Add media</span></button>
+            <button class="media-tile add-media" id="add-media" type="button"><span class="add-icon" aria-hidden="true">+</span><span>Add media</span><small>Photos or videos</small></button>
+            <input id="media-input" type="file" accept="image/*,video/*" multiple hidden />
           </div>
 
           <div class="privacy-row gallery-privacy-row">
-            <div class="privacy-copy"><span class="privacy-icon" aria-hidden="true">✦</span><div><strong>Make my gallery public</strong><small>Allow people to see your photos and videos.</small></div></div>
+            <div class="privacy-copy"><span class="privacy-icon" aria-hidden="true">✦</span><div><strong>Make my gallery public</strong><small id="gallery-privacy-status">Hidden — only you can view your gallery.</small></div></div>
             <label class="toggle"><input type="checkbox" id="gallery-visibility" /><span class="toggle-track" aria-hidden="true"><span></span></span><span class="sr-only">Make my gallery visible to others</span></label>
           </div>
         </section>

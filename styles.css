@@ -315,3 +315,18 @@ h1 {
   .save-button { width: 100%; }
   .profile-footer { margin-top: 48px; }
 }
+
+/* Uploaded media previews */
+.add-media small { position: relative; z-index: 1; display: block; margin-top: 6px; color: var(--dim); font: 8px "DM Mono", monospace; letter-spacing: 0.04em; text-transform: none; }
+.uploaded-media { background: #11182c; }
+.uploaded-preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.uploaded-shade { position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, transparent 18%, rgba(6,9,19,0.86)); }
+.uploaded-media .media-type, .uploaded-media .media-caption, .uploaded-media .media-meta { position: relative; z-index: 2; }
+.uploaded-media .media-caption { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.media-meta { position: relative; z-index: 2; margin-top: 4px; color: var(--muted); font: 8px "DM Mono", monospace; letter-spacing: 0.05em; }
+.gallery-is-public { border-color: rgba(131,229,232,0.35); }
+.gallery-is-public .privacy-icon { color: var(--cyan); }
+
+@media (max-width: 620px) {
+  .add-media small { font-size: 7px; }
+}
