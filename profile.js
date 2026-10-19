@@ -16,6 +16,7 @@ const showToast = (message) => {
 
 const saveChoice = (key, value) => window.localStorage.setItem(`iqzodiac:${key}`, String(value));
 const readChoice = (key) => window.localStorage.getItem(`iqzodiac:${key}`) === 'true';
+const readNumber = (key, fallback) => Number(window.localStorage.getItem(`iqzodiac:${key}`) || fallback);
 const formatFileSize = (bytes) => {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -47,6 +48,74 @@ galleryVisibility.addEventListener('change', () => {
   updatePrivacyPreview();
 });
 updatePrivacyPreview();
+
+const followersCount = document.querySelector('#followers-count');
+const likesCount = document.querySelector('#likes-count');
+const followButton = document.querySelector('#follow-button');
+const followLabel = document.querySelector('#follow-label');
+const likeProfile = document.querySelector('#like-profile');
+const likeLabel = document.querySelector('#like-label');
+const heartIcon = document.querySelector('.heart-icon');
+const notificationItems = [...document.querySelectorAll('.notification-item')];
+const notificationCount = document.querySelector('#notification-count');
+
+let isFollowing = readChoice('following');
+let hasLiked = readChoice('profile-liked');
+let followers = readNumber('followers-count', 1284);
+let likes = readNumber('likes-count', 8642);
+
+const formatCount = (value) => new Intl.NumberFormat('en-US').format(value);
+const updateSocialPreview = () => {
+  followersCount.textContent = formatCount(followers);
+  likesCount.textContent = formatCount(likes);
+  followLabel.textContent = isFollowing ? 'Following' : 'Follow back';
+  followButton.classList.toggle('is-following', isFollowing);
+  likeProfile.setAttribute('aria-pressed', String(hasLiked));
+  likeProfile.classList.toggle('is-liked', hasLiked);
+  heartIcon.textContent = hasLiked ? '♥' : '♡';
+  likeLabel.textContent = hasLiked ? 'Liked' : 'Like profile';
+};
+
+const updateNotificationCount = () => {
+  const unread = notificationItems.filter((item) => item.classList.contains('is-unread')).length;
+  notificationCount.textContent = unread ? `${unread} new` : 'All caught up';
+  notificationCount.classList.toggle('is-clear', unread === 0);
+};
+
+followButton.addEventListener('click', () => {
+  isFollowing = !isFollowing;
+  followers += isFollowing ? 1 : -1;
+  saveChoice('following', isFollowing);
+  window.localStorage.setItem('iqzodiac:followers-count', String(followers));
+  updateSocialPreview();
+  showToast(isFollowing ? 'You are now following Alex.' : 'You unfollowed Alex.');
+});
+
+likeProfile.addEventListener('click', () => {
+  hasLiked = !hasLiked;
+  likes += hasLiked ? 1 : -1;
+  saveChoice('profile-liked', hasLiked);
+  window.localStorage.setItem('iqzodiac:likes-count', String(likes));
+  updateSocialPreview();
+  showToast(hasLiked ? 'Profile liked.' : 'Like removed.');
+});
+
+notificationItems.forEach((item) => {
+  item.addEventListener('click', () => {
+    item.classList.remove('is-unread');
+    updateNotificationCount();
+    showToast(item.dataset.notification);
+  });
+});
+
+document.querySelector('#mark-all-read').addEventListener('click', () => {
+  notificationItems.forEach((item) => item.classList.remove('is-unread'));
+  updateNotificationCount();
+  showToast('All notifications marked as read.');
+});
+
+updateSocialPreview();
+updateNotificationCount();
 
 document.querySelector('#save-profile').addEventListener('click', () => {
   saveChoice('phone-visible', phoneVisibility.checked);

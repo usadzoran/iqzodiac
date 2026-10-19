@@ -17,3 +17,9 @@
 - [x] Show an immediate preview tile for each selected image or video with its media type and file size.
 - [x] Update the Gallery item count after files are added and provide a clear upload confirmation.
 - [x] Explain the current phone and gallery audience state inline: hidden/private by default, or visible/public when enabled.
+
+## Social profile activity
+- [x] Show Followers, Following, and Likes counters in the user profile.
+- [x] Add interactive Follow back and Like profile actions with updated counters and labels.
+- [x] Add a Notifications section with unread count, recent activity, and Mark all as read.
+- [x] Persist social interaction states locally and keep the interface responsive on mobile and desktop.

@@ -293,10 +293,41 @@ h1 {
 .save-button { min-width: 154px; }
 .profile-footer { margin-top: 70px; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.social-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 17px; margin-top: 17px; }
+.community-card, .notifications-card { padding: clamp(22px, 3vw, 34px); }
+.community-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 31px 0 25px; }
+.community-stat { padding: 15px 13px; border: 1px solid rgba(218,225,255,0.11); border-radius: 3px; background: rgba(5,8,17,0.2); }
+.community-stat strong { display: block; color: var(--ink); font-size: 21px; font-weight: 600; letter-spacing: -0.06em; }
+.community-stat span { display: block; margin-top: 7px; color: var(--dim); font: 9px "DM Mono", monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+.community-actions { display: flex; align-items: center; gap: 12px; }
+.follow-button { min-width: 150px; }
+.follow-button.is-following { border-color: rgba(131,229,232,0.5); background: rgba(131,229,232,0.11); color: var(--cyan); }
+.like-action { display: inline-flex; align-items: center; gap: 7px; padding: 11px 4px; border: 0; background: transparent; color: var(--muted); cursor: pointer; font: 10px "DM Mono", monospace; letter-spacing: 0.05em; text-transform: uppercase; }
+.like-action:hover, .like-action.is-liked { color: var(--orange); }
+.heart-icon { font: 21px/0.7 Georgia, serif; }
+.notification-count { color: var(--orange); font: 9px "DM Mono", monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+.notification-count.is-clear { color: var(--dim); }
+.notification-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 23px 0 10px; color: var(--dim); font: 9px "DM Mono", monospace; letter-spacing: 0.06em; text-transform: uppercase; }
+.notification-toolbar button { padding: 0; border: 0; background: transparent; color: var(--cyan); cursor: pointer; font: inherit; text-transform: inherit; }
+.notification-toolbar button:hover { color: var(--ink); }
+.notification-list { display: grid; gap: 2px; }
+.notification-item { display: flex; align-items: center; gap: 11px; width: 100%; padding: 10px 0; border: 0; border-bottom: 1px solid rgba(218,225,255,0.08); background: transparent; color: var(--ink); cursor: pointer; text-align: left; }
+.notification-item:last-child { border-bottom: 0; }
+.notification-item:hover .notification-copy strong { color: var(--cyan); }
+.notification-avatar { display: grid; flex: none; place-items: center; width: 30px; height: 30px; border-radius: 50%; color: var(--night); font-size: 11px; font-weight: 800; }
+.avatar-maya { background: var(--orange); }.avatar-noah { background: var(--cyan); }.avatar-lina { background: var(--lilac); }
+.notification-copy { min-width: 0; flex: 1; }
+.notification-copy strong { display: block; overflow: hidden; font-size: 11px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; transition: color 180ms ease; }
+.notification-copy small { display: block; margin-top: 4px; color: var(--dim); font-size: 9px; }
+.notification-dot { width: 6px; height: 6px; flex: none; border-radius: 50%; background: transparent; }
+.notification-item.is-unread .notification-dot { background: var(--cyan); box-shadow: 0 0 10px rgba(131,229,232,0.7); }
+.notification-item:not(.is-unread) { opacity: 0.58; }
 
 @media (max-width: 860px) {
   .profile-grid { grid-template-columns: 1fr; }
   .identity-card, .gallery-card { max-width: 680px; width: 100%; margin: 0 auto; }
+  .social-grid { grid-template-columns: 1fr; }
+  .community-card, .notifications-card { max-width: 680px; width: 100%; margin: 0 auto; }
 }
 
 @media (max-width: 620px) {
@@ -314,6 +345,13 @@ h1 {
   .profile-actions { align-items: stretch; flex-direction: column-reverse; }
   .save-button { width: 100%; }
   .profile-footer { margin-top: 48px; }
+  .community-stats { gap: 7px; }
+  .community-stat { padding: 12px 8px; }
+  .community-stat strong { font-size: 18px; }
+  .community-stat span { font-size: 8px; letter-spacing: 0.03em; }
+  .community-actions { align-items: stretch; flex-direction: column; }
+  .follow-button { width: 100%; }
+  .like-action { justify-content: center; }
 }
 
 /* Uploaded media previews */
