@@ -16,7 +16,9 @@ const server = http.createServer((request, response) => {
   const requestPath = request.url === '/' ? '/index.html' : request.url.split('?')[0];
   const relativePath = requestPath === '/manus-routes.json'
     ? path.join('public', 'manus-routes.json')
-    : requestPath.replace(/^\//, '');
+    : requestPath === '/profile'
+      ? 'profile.html'
+      : requestPath.replace(/^\//, '');
   const filePath = path.resolve(root, relativePath);
 
   if (filePath !== root && !filePath.startsWith(`${root}${path.sep}`)) {
