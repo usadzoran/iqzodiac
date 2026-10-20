@@ -29,3 +29,7 @@
 - [x] Let users publish a text paragraph, photo, or video from the feed composer.
 - [x] Let other users like, comment on, and share feed posts through interactive controls.
 - [x] Show a responsive feed with suggested people and trending topics.
+
+## AI assistant placeholder
+- [x] Show a small robot icon and an “AI assistant — coming soon” placeholder above the login and account creation actions.
+- [x] Keep the placeholder visual-only with no assistant connection or interaction yet.

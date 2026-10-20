@@ -602,3 +602,17 @@ h1 {
   .home-page .post-meta { gap: 9px; font-size: 8px; }
   .home-page .feed-filter-button { min-width: 70px; }
 }
+
+/* AI assistant placeholder */
+.assistant-placeholder { display: inline-flex; align-items: center; gap: 10px; margin-top: 26px; padding: 8px 12px 8px 8px; border: 1px solid rgba(185,166,255,0.28); border-radius: 999px; background: rgba(185,166,255,0.055); color: var(--lilac); font: 9px "DM Mono", monospace; letter-spacing: 0.07em; text-transform: uppercase; }
+.assistant-placeholder > span:last-child { display: flex; align-items: baseline; gap: 7px; }
+.assistant-placeholder small { color: var(--dim); font: inherit; letter-spacing: 0.03em; text-transform: lowercase; }
+.assistant-robot { position: relative; display: inline-block; width: 27px; height: 23px; border: 1.5px solid var(--lilac); border-radius: 7px; background: linear-gradient(145deg, rgba(185,166,255,0.26), rgba(131,229,232,0.11)); box-shadow: 0 0 15px rgba(185,166,255,0.15); }
+.assistant-robot::before { position: absolute; top: -6px; left: 12px; width: 1px; height: 6px; background: var(--lilac); content: ""; }
+.assistant-robot::after { position: absolute; top: -9px; left: 10px; width: 5px; height: 5px; border: 1px solid var(--orange); border-radius: 50%; background: var(--orange); box-shadow: 0 0 7px rgba(242,167,124,0.7); content: ""; }
+.assistant-robot i, .assistant-robot b { position: absolute; top: 8px; width: 3px; height: 3px; border-radius: 50%; background: var(--cyan); content: ""; }
+.assistant-robot i { left: 7px; }.assistant-robot b { right: 7px; }
+.assistant-robot em { position: absolute; bottom: 4px; left: 8px; width: 9px; height: 3px; border-bottom: 1px solid var(--lilac); border-radius: 0 0 8px 8px; }
+@media (max-width: 620px) {
+  .assistant-placeholder { margin-top: 22px; }
+}
