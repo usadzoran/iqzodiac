@@ -1,6 +1,7 @@
 {
   "routes": [
     { "path": "/", "title": "IQZodiac" },
-    { "path": "/profile", "title": "Your Profile — IQZodiac" }
+    { "path": "/profile", "title": "Your Profile — IQZodiac" },
+    { "path": "/home", "title": "Home — IQZodiac" }
   ]
 }

@@ -23,3 +23,9 @@
 - [x] Add interactive Follow back and Like profile actions with updated counters and labels.
 - [x] Add a Notifications section with unread count, recent activity, and Mark all as read.
 - [x] Persist social interaction states locally and keep the interface responsive on mobile and desktop.
+
+## Home feed after login
+- [x] Provide a Home page intended to appear after the user logs in.
+- [x] Let users publish a text paragraph, photo, or video from the feed composer.
+- [x] Let other users like, comment on, and share feed posts through interactive controls.
+- [x] Show a responsive feed with suggested people and trending topics.

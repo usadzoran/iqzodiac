@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="IQZodiac Home — share thoughts, photos and videos." />
+    <title>Home — IQZodiac</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="home-page">
+    <div class="aurora aurora-one" aria-hidden="true"></div>
+    <div class="aurora aurora-two" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <main class="home-shell">
+      <header class="topbar home-topbar">
+        <a class="mini-mark" href="./" aria-label="IQZodiac home"><span class="mini-mark-orbit" aria-hidden="true"></span><span>IQZ</span></a>
+        <nav class="home-nav" aria-label="Main navigation">
+          <a class="home-nav-link is-active" href="./home.html">Home</a>
+          <a class="home-nav-link" href="./profile.html">Profile</a>
+        </nav>
+      </header>
+
+      <div class="home-layout">
+        <aside class="home-sidebar">
+          <div class="home-sidebar-intro">
+            <div class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> Your shared space</div>
+            <h1>Find the <span>signal.</span></h1>
+            <p>Small thoughts. Real moments. A circle that gets it.</p>
+          </div>
+          <div class="current-user-card">
+            <div class="home-avatar">AS</div>
+            <div><strong>alex.stone</strong><small>Sharing from your orbit</small></div>
+            <span class="status-dot" aria-hidden="true"></span>
+          </div>
+          <div class="sidebar-note"><span class="sidebar-note-mark" aria-hidden="true">✦</span><p>Your feed is a living constellation of the people and ideas you choose to keep close.</p></div>
+        </aside>
+
+        <section class="feed-column" aria-labelledby="home-title">
+          <div class="feed-heading">
+            <div><p class="card-kicker">01 / Home</p><h2 id="home-title">Your feed</h2></div>
+            <span class="feed-live"><span class="privacy-dot" aria-hidden="true"></span> Live now</span>
+          </div>
+
+          <section class="composer-card" aria-labelledby="composer-title">
+            <div class="composer-top"><div class="home-avatar home-avatar-small">AS</div><div><h3 id="composer-title">Share a thought</h3><p>What is moving through your mind?</p></div></div>
+            <textarea id="post-text" rows="3" maxlength="500" placeholder="Write something worth remembering..."></textarea>
+            <div id="composer-media-preview" class="composer-media-preview" hidden></div>
+            <div class="composer-footer">
+              <div class="composer-tools"><label class="composer-tool" for="post-media-input"><span aria-hidden="true">⊕</span> Add photo or video</label><input id="post-media-input" type="file" accept="image/*,video/*" hidden /><span class="composer-limit">500</span></div>
+              <button class="button button-primary publish-button" id="publish-post" type="button"><span>Publish</span><span class="button-arrow" aria-hidden="true">↗</span></button>
+            </div>
+          </section>
+
+          <div class="feed-filter" role="tablist" aria-label="Feed filter"><button class="feed-filter-button is-active" type="button">For you</button><button class="feed-filter-button" type="button" data-flow="Following feed">Following</button></div>
+          <div id="feed-list" class="feed-list">
+            <article class="post-card" data-post-id="1">
+              <header class="post-header"><div class="post-avatar avatar-maya">M</div><div class="post-author"><strong>Maya Chen</strong><span>@mayachen · 12 min ago</span></div><button class="post-more" type="button" aria-label="More options">···</button></header>
+              <p class="post-body">A quiet morning can change the shape of an entire day. Leaving this here for anyone who needs the reminder.</p>
+              <div class="post-meta"><span class="like-count">248 likes</span><span class="comment-count">18 comments</span></div>
+              <div class="post-actions"><button class="post-action like-button" type="button" data-like="false"><span class="action-icon">♡</span><span>Like</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div>
+              <div class="comment-list"><div class="comment"><span class="comment-avatar avatar-lina">L</span><p><strong>Lina</strong> This arrived at exactly the right time.</p></div></div>
+              <form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment on Maya's post" /><button type="submit" aria-label="Post comment">↗</button></form>
+            </article>
+
+            <article class="post-card" data-post-id="2">
+              <header class="post-header"><div class="post-avatar avatar-noah">N</div><div class="post-author"><strong>Noah Williams</strong><span>@noahw · 1 hr ago</span></div><button class="post-more" type="button" aria-label="More options">···</button></header>
+              <p class="post-body">Found a little more light on the way home.</p>
+              <div class="post-media post-photo photo-dawn" role="img" aria-label="Abstract sunset photo"><span>PHOTO</span><strong>More light on the way home</strong></div>
+              <div class="post-meta"><span class="like-count">1,024 likes</span><span class="comment-count">64 comments</span></div>
+              <div class="post-actions"><button class="post-action like-button" type="button" data-like="false"><span class="action-icon">♡</span><span>Like</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div>
+              <div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment on Noah's post" /><button type="submit" aria-label="Post comment">↗</button></form>
+            </article>
+
+            <article class="post-card" data-post-id="3">
+              <header class="post-header"><div class="post-avatar avatar-lina">L</div><div class="post-author"><strong>Lina Ortiz</strong><span>@linaortiz · 3 hrs ago</span></div><button class="post-more" type="button" aria-label="More options">···</button></header>
+              <p class="post-body">A small reset before the next big thing.</p>
+              <div class="post-media post-video video-night" role="img" aria-label="Short night sky video"><span class="video-play">▶</span><span class="video-label">VIDEO · 0:18</span><strong>Night walk / city lights</strong></div>
+              <div class="post-meta"><span class="like-count">512 likes</span><span class="comment-count">29 comments</span></div>
+              <div class="post-actions"><button class="post-action like-button" type="button" data-like="false"><span class="action-icon">♡</span><span>Like</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div>
+              <div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment on Lina's post" /><button type="submit" aria-label="Post comment">↗</button></form>
+            </article>
+          </div>
+        </section>
+
+        <aside class="home-trends">
+          <div class="trend-card"><p class="card-kicker">02 / Around you</p><h3>People to notice</h3><div class="suggested-person"><span class="post-avatar avatar-lina">L</span><div><strong>Lina Ortiz</strong><small>@linaortiz</small></div><button class="tiny-follow" type="button" data-flow="Following Lina">+</button></div><div class="suggested-person"><span class="post-avatar avatar-noah">N</span><div><strong>Noah Williams</strong><small>@noahw</small></div><button class="tiny-follow" type="button" data-flow="Following Noah">+</button></div></div>
+          <div class="trend-card trend-tags"><p class="card-kicker">03 / In orbit</p><h3>Trending now</h3><span>#quietmornings</span><span>#newperspective</span><span>#smalljoys</span></div>
+        </aside>
+      </div>
+
+      <footer class="footer home-footer"><span>© 2026 IQZodiac</span><span class="footer-orbit" aria-hidden="true"><i></i><i></i><i></i></span><span>Look inward. Move forward.</span></footer>
+    </main>
+
+    <div class="toast" role="status" aria-live="polite" aria-atomic="true"><span class="toast-icon" aria-hidden="true">✦</span><span class="toast-message"></span></div>
+    <script src="./home.js"></script>
+  </body>
+</html>
