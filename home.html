@@ -22,32 +22,28 @@
         <nav class="home-nav" aria-label="Main navigation">
           <a class="home-nav-link is-active" href="./home.html">Home</a>
           <a class="home-nav-link" href="./profile.html">Profile</a>
+          <span class="nav-avatar home-avatar-small" aria-label="Signed in as alex.stone">AS</span>
         </nav>
       </header>
 
       <div class="home-layout">
-        <aside class="home-sidebar">
-          <div class="home-sidebar-intro">
-            <div class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> Your shared space</div>
-            <h1>Find the <span>signal.</span></h1>
-            <p>Small thoughts. Real moments. A circle that gets it.</p>
-          </div>
-          <div class="current-user-card">
-            <div class="home-avatar">AS</div>
-            <div><strong>alex.stone</strong><small>Sharing from your orbit</small></div>
-            <span class="status-dot" aria-hidden="true"></span>
-          </div>
-          <div class="sidebar-note"><span class="sidebar-note-mark" aria-hidden="true">✦</span><p>Your feed is a living constellation of the people and ideas you choose to keep close.</p></div>
-        </aside>
-
         <section class="feed-column" aria-labelledby="home-title">
+          <div class="home-welcome-bar">
+            <div>
+              <p class="welcome-eyebrow"><span class="status-dot" aria-hidden="true"></span> Tuesday, October 20</p>
+              <h1>Good to see you, <span>Alex.</span></h1>
+              <p class="welcome-copy">Stay close to what matters and share what moves you.</p>
+            </div>
+            <div class="welcome-orbit" aria-hidden="true"><span></span><i></i></div>
+          </div>
+
           <div class="feed-heading">
             <div><p class="card-kicker">01 / Home</p><h2 id="home-title">Your feed</h2></div>
             <span class="feed-live"><span class="privacy-dot" aria-hidden="true"></span> Live now</span>
           </div>
 
           <section class="composer-card" aria-labelledby="composer-title">
-            <div class="composer-top"><div class="home-avatar home-avatar-small">AS</div><div><h3 id="composer-title">Share a thought</h3><p>What is moving through your mind?</p></div></div>
+            <div class="composer-top"><div class="home-avatar home-avatar-small">AS</div><div><h3 id="composer-title">Share something with your circle</h3><p>Your thoughts can make someone's day.</p></div></div>
             <textarea id="post-text" rows="3" maxlength="500" placeholder="Write something worth remembering..."></textarea>
             <div id="composer-media-preview" class="composer-media-preview" hidden></div>
             <div class="composer-footer">
@@ -88,6 +84,7 @@
         </section>
 
         <aside class="home-trends">
+          <div class="trend-card profile-summary-card"><div class="summary-cover" aria-hidden="true"></div><div class="summary-body"><div class="summary-avatar home-avatar">AS</div><strong>alex.stone</strong><span>@alex.stone</span><div class="summary-stats"><span><b>1.2k</b> followers</span><span><b>8.6k</b> likes</span></div><a class="summary-link" href="./profile.html">View profile <span aria-hidden="true">↗</span></a></div></div>
           <div class="trend-card"><p class="card-kicker">02 / Around you</p><h3>People to notice</h3><div class="suggested-person"><span class="post-avatar avatar-lina">L</span><div><strong>Lina Ortiz</strong><small>@linaortiz</small></div><button class="tiny-follow" type="button" data-flow="Following Lina">+</button></div><div class="suggested-person"><span class="post-avatar avatar-noah">N</span><div><strong>Noah Williams</strong><small>@noahw</small></div><button class="tiny-follow" type="button" data-flow="Following Noah">+</button></div></div>
           <div class="trend-card trend-tags"><p class="card-kicker">03 / In orbit</p><h3>Trending now</h3><span>#quietmornings</span><span>#newperspective</span><span>#smalljoys</span></div>
         </aside>
