@@ -576,3 +576,29 @@ h1 {
   .home-trends { grid-template-columns: 1fr; }
   .trend-tags { grid-column: auto; }
 }
+
+/* Home spacing and control clarity */
+.home-page .feed-filter { align-items: center; gap: 8px; }
+.home-page .feed-filter-button { display: inline-flex; align-items: center; justify-content: center; min-width: 76px; min-height: 30px; padding: 7px 12px; border: 1px solid transparent; border-radius: 999px; line-height: 1; white-space: nowrap; }
+.home-page .feed-filter-button:hover, .home-page .feed-filter-button.is-active { border-color: rgba(131,229,232,0.35); background: rgba(131,229,232,0.08); }
+.home-page .feed-filter-button.is-active::after { display: none; }
+.home-page .post-actions { align-items: center; gap: 9px; flex-wrap: wrap; }
+.home-page .post-action { min-height: 31px; padding: 6px 11px; border: 1px solid rgba(218,225,255,0.12); border-radius: 999px; background: rgba(5,8,17,0.2); line-height: 1; white-space: nowrap; }
+.home-page .post-action:hover, .home-page .post-action.is-liked { border-color: rgba(242,167,124,0.45); background: rgba(242,167,124,0.08); }
+.home-page .post-meta { align-items: center; gap: 16px; }
+.home-page .post-meta span { display: inline-block; white-space: nowrap; }
+.home-page .composer-tools { flex-wrap: wrap; row-gap: 8px; }
+.home-page .composer-tool { display: inline-flex; align-items: center; gap: 4px; min-height: 28px; padding: 5px 9px; border: 1px solid rgba(131,229,232,0.25); border-radius: 999px; background: rgba(131,229,232,0.05); white-space: nowrap; }
+.home-page .composer-tool span { margin-right: 0; }
+.home-page .post-author span, .home-page .comment p, .home-page .suggested-person small { white-space: normal; }
+.home-page .comment-form { min-width: 0; gap: 10px; }
+.home-page .comment-form input { min-width: 0; }
+.home-page .comment-form button { flex: none; }
+.home-page .summary-stats { flex-wrap: wrap; }
+
+@media (max-width: 430px) {
+  .home-page .post-actions { gap: 7px; }
+  .home-page .post-action { padding: 6px 9px; font-size: 8px; }
+  .home-page .post-meta { gap: 9px; font-size: 8px; }
+  .home-page .feed-filter-button { min-width: 70px; }
+}
