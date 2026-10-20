@@ -33,3 +33,10 @@
 ## AI assistant placeholder
 - [x] Show a small robot icon and an “AI assistant — coming soon” placeholder above the login and account creation actions.
 - [x] Keep the placeholder visual-only with no assistant connection or interaction yet.
+
+## Account creation and identity check
+- [x] Provide a Create Account page with first name, last name, age, email address, and phone number fields.
+- [x] Require the user to be at least 18 years old.
+- [x] Provide separate image capture/upload controls for a government ID photo and a face photo.
+- [x] Show local previews and require confirmation that the photos belong to the user.
+- [x] Keep the prototype local-only: no personal data or identity photos are uploaded yet.

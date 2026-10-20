@@ -2,6 +2,7 @@
   "routes": [
     { "path": "/", "title": "IQZodiac" },
     { "path": "/profile", "title": "Your Profile — IQZodiac" },
-    { "path": "/home", "title": "Home — IQZodiac" }
+    { "path": "/home", "title": "Home — IQZodiac" },
+    { "path": "/signup", "title": "Create Account — IQZodiac" }
   ]
 }

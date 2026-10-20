@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Create your IQZodiac account." />
+    <title>Create Account — IQZodiac</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css?v=signup-20261020" />
+  </head>
+  <body class="signup-page">
+    <div class="aurora aurora-one" aria-hidden="true"></div>
+    <div class="aurora aurora-two" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+    <main class="signup-shell">
+      <header class="topbar signup-topbar">
+        <a class="mini-mark" href="./" aria-label="IQZodiac home"><span class="mini-mark-orbit" aria-hidden="true"></span><span>IQZ</span></a>
+        <a class="back-link" href="./"><span aria-hidden="true">←</span> Back to home</a>
+      </header>
+
+      <div class="signup-layout">
+        <section class="signup-intro">
+          <div class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> Begin your orbit</div>
+          <h1>Create your <span>account.</span></h1>
+          <p>Tell us a little about yourself. Your identity documents are used only for verification and stay on this device until a secure account flow is connected.</p>
+          <div class="signup-step-list"><div><b>01</b><span>Your details</span></div><div><b>02</b><span>Identity check</span></div><div><b>03</b><span>Ready to explore</span></div></div>
+        </section>
+
+        <form class="signup-form" id="signup-form">
+          <section class="signup-card" aria-labelledby="details-title">
+            <div class="signup-card-heading"><div><p class="card-kicker">01 / Your details</p><h2 id="details-title">About you</h2></div><span class="required-note">Required</span></div>
+            <div class="signup-fields">
+              <label class="signup-field"><span>First name</span><input id="first-name" name="firstName" type="text" autocomplete="given-name" placeholder="Alex" required /></label>
+              <label class="signup-field"><span>Last name</span><input id="last-name" name="lastName" type="text" autocomplete="family-name" placeholder="Stone" required /></label>
+              <label class="signup-field"><span>Age</span><input id="age" name="age" type="number" min="18" max="120" inputmode="numeric" placeholder="28" required /><small>You must be 18 or older.</small></label>
+              <label class="signup-field signup-field-wide"><span>Email address</span><input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required /></label>
+              <label class="signup-field signup-field-wide"><span>Phone number</span><input id="phone-number" name="phone" type="tel" autocomplete="tel" placeholder="+1 555 019 2488" required /></label>
+            </div>
+          </section>
+
+          <section class="signup-card" aria-labelledby="verification-title">
+            <div class="signup-card-heading"><div><p class="card-kicker">02 / Identity check</p><h2 id="verification-title">Verify who you are</h2></div><span class="privacy-badge"><span class="privacy-dot" aria-hidden="true"></span> Private</span></div>
+            <p class="verification-intro">Add clear photos for the verification step. On this prototype, previews remain local and are not uploaded or stored.</p>
+            <div class="verification-grid">
+              <label class="upload-card" for="id-photo"><input id="id-photo" type="file" accept="image/*" capture="environment" required /><span class="upload-icon" aria-hidden="true">▣</span><strong>Government ID</strong><small>Take or upload a clear photo of your ID card.</small><span class="upload-preview" id="id-preview"></span><span class="upload-action">Add ID photo ↗</span></label>
+              <label class="upload-card" for="face-photo"><input id="face-photo" type="file" accept="image/*" capture="user" required /><span class="upload-icon" aria-hidden="true">◉</span><strong>Face photo</strong><small>Take a clear, well-lit photo of your face.</small><span class="upload-preview" id="face-preview"></span><span class="upload-action">Add face photo ↗</span></label>
+            </div>
+            <label class="consent-row"><input id="verification-consent" type="checkbox" required /><span class="custom-check" aria-hidden="true"></span><span>I confirm these photos belong to me and I agree to identity verification.</span></label>
+          </section>
+
+          <div class="signup-actions"><p><span class="status-dot" aria-hidden="true"></span> Prototype only — no data is sent yet.</p><button class="button button-primary" type="submit"><span>Create account</span><span class="button-arrow" aria-hidden="true">↗</span></button></div>
+        </form>
+      </div>
+      <footer class="footer signup-footer"><span>© 2026 IQZodiac</span><span class="footer-orbit" aria-hidden="true"><i></i><i></i><i></i></span><span>Look inward. Move forward.</span></footer>
+    </main>
+    <div class="toast" role="status" aria-live="polite" aria-atomic="true"><span class="toast-icon" aria-hidden="true">✦</span><span class="toast-message"></span></div>
+    <script src="./signup.js"></script>
+  </body>
+</html>

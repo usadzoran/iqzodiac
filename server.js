@@ -18,8 +18,10 @@ const server = http.createServer((request, response) => {
     ? path.join('public', 'manus-routes.json')
     : requestPath === '/profile'
       ? 'profile.html'
-      : requestPath === '/home'
+    : requestPath === '/home'
         ? 'home.html'
+      : requestPath === '/signup'
+        ? 'signup.html'
       : requestPath.replace(/^\//, '');
   const filePath = path.resolve(root, relativePath);
 
