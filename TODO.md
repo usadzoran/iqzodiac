@@ -56,3 +56,6 @@
 - [x] Add a “Audio rooms / غرف صوتية” section to the fixed user menu.
 - [x] Provide the supplied NEBULA room interface with host, speakers, listeners, talk requests, room chat, and room controls.
 - [x] Keep room controls as a front-end prototype only: hand raising, microphone/sound state, chat messages, and leave-room state are local and not connected to real audio or a server.
+- [x] Show rooms as closed directory cards by default with each room name and visitor count visible.
+- [x] Add a second experimental room card, “نبض المدينة”, with its own visitor count.
+- [x] Open the selected room only after the user presses its join button, and return to the card directory when leaving.
