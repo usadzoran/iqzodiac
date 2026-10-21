@@ -51,3 +51,8 @@
 - [x] Keep the menu language consistent across Home, Profile, and Discover instead of changing with the page.
 - [x] Automatically choose Arabic or English from the browser locale on first visit.
 - [x] Provide a manual EN / العربية toggle and persist the selected language between pages.
+
+## Audio rooms
+- [x] Add a “Audio rooms / غرف صوتية” section to the fixed user menu.
+- [x] Provide the supplied NEBULA room interface with host, speakers, listeners, talk requests, room chat, and room controls.
+- [x] Keep room controls as a front-end prototype only: hand raising, microphone/sound state, chat messages, and leave-room state are local and not connected to real audio or a server.

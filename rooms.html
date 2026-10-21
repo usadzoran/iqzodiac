@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>غرف صوتية — IQZodiac</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+
+:root {
+  --bg: #090b18;
+  --panel: #12162a;
+  --purple: #a78bfa;
+  --cyan: #67e8f9;
+  --pink: #f0abfc;
+  --text: #f6f4ff;
+  --muted: #969bb9;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Cairo', sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse at 50% 0%, #292052 0%, transparent 45%),
+    radial-gradient(ellipse at 0% 80%, #102e43 0%, transparent 35%),
+    var(--bg);
+}
+
+button { font-family: inherit; cursor: pointer; }
+
+.app {
+  max-width: 1000px;
+  margin: auto;
+  padding: 18px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.logo {
+  font-size: 23px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  background: linear-gradient(90deg, var(--cyan), var(--pink), var(--purple));
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.live {
+  font-size: 12px;
+  color: #fda4af;
+  border: 1px solid #743447;
+  background: #351a2b;
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+.room {
+  text-align: center;
+  padding: 23px 14px;
+  border: 1px solid #ffffff13;
+  border-radius: 28px;
+  background: linear-gradient(145deg, #ffffff0a, #ffffff03);
+  box-shadow: 0 20px 70px #0004;
+}
+
+.tag {
+  color: var(--cyan);
+  font-size: 12px;
+}
+
+h1 {
+  font-size: clamp(25px, 5vw, 39px);
+  margin: 8px 0;
+  font-weight: 900;
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.stats {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 17px 0 25px;
+}
+
+.stat {
+  background: #ffffff08;
+  border: 1px solid #ffffff10;
+  padding: 7px 13px;
+  border-radius: 30px;
+  font-size: 12px;
+  color: #d7d5f0;
+}
+
+.speakers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 620px;
+  margin: 0 auto 25px;
+}
+
+.person {
+  min-width: 0;
+  position: relative;
+  padding: 15px 5px 12px;
+  border: 1px solid #ffffff12;
+  border-radius: 22px;
+  background: #ffffff06;
+  transition: .25s;
+}
+
+.person.talking {
+  border-color: var(--cyan);
+  background: linear-gradient(160deg, #67e8f913, #a78bfa13);
+  box-shadow: 0 0 25px #67e8f926;
+}
+
+.avatar {
+  width: clamp(65px, 17vw, 92px);
+  height: clamp(65px, 17vw, 92px);
+  border-radius: 50%;
+  margin: 0 auto 11px;
+  display: grid;
+  place-items: center;
+  font-size: 33px;
+  position: relative;
+  background: linear-gradient(145deg, #30275c, #142f48);
+  border: 2px solid #a78bfa88;
+}
+
+.talking .avatar::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border: 2px solid var(--cyan);
+  border-radius: 50%;
+  animation: pulse 1.7s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(.96); opacity: 1; }
+  100% { transform: scale(1.2); opacity: 0; }
+}
+
+.name {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.role {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.mic {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 12px;
+}
+
+.section {
+  margin-top: 18px;
+  border: 1px solid #ffffff12;
+  background: #111427cc;
+  border-radius: 22px;
+  padding: 16px;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 13px;
+}
+
+.small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.listeners {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.listener {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #ffffff08;
+  border: 1px solid #ffffff0c;
+  padding: 7px 10px;
+  border-radius: 30px;
+  font-size: 12px;
+}
+
+.mini-avatar {
+  width: 27px;
+  height: 27px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #41316e, #174b61);
+}
+
+.queue {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.queue-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
+  background: #ffffff06;
+  border-radius: 13px;
+  font-size: 12px;
+}
+
+.queue-person {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.approve {
+  border: 0;
+  color: #07141b;
+  background: var(--cyan);
+  border-radius: 10px;
+  padding: 7px 10px;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+  padding: 13px;
+}
+
+.chat {
+  height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.message {
+  font-size: 12px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.message strong { color: var(--pink); }
+.message .host { color: var(--cyan); }
+
+.chat-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.chat-form input {
+  flex: 1;
+  min-width: 0;
+  color: white;
+  background: #080b18;
+  border: 1px solid #ffffff19;
+  border-radius: 13px;
+  padding: 12px;
+  font-family: inherit;
+  outline: none;
+}
+
+.chat-form input:focus { border-color: var(--purple); }
+
+.send {
+  border: 0;
+  border-radius: 13px;
+  background: var(--purple);
+  color: #111022;
+  font-weight: 900;
+  padding: 0 17px;
+}
+
+.controls {
+  position: sticky;
+  bottom: 10px;
+  margin: 18px auto 0;
+  padding: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  border: 1px solid #ffffff18;
+  border-radius: 22px;
+  background: #101326ed;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 12px 40px #0008;
+}
+
+.control {
+  min-height: 49px;
+  border-radius: 15px;
+  border: 1px solid #ffffff15;
+  padding: 10px 15px;
+  color: white;
+  background: #ffffff0a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.control.primary {
+  color: #101020;
+  border: none;
+  background: linear-gradient(110deg, var(--cyan), #c4b5fd);
+}
+
+.control.active {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  background: #67e8f914;
+}
+
+.control.leave {
+  color: #fda4af;
+  border-color: #fda4af44;
+}
+
+.notice {
+  color: var(--muted);
+  text-align: center;
+  font-size: 11px;
+  margin: 14px 0 5px;
+}
+
+.toast {
+  position: fixed;
+  bottom: 95px;
+  left: 50%;
+  transform: translate(-50%, 15px);
+  opacity: 0;
+  pointer-events: none;
+  background: #242744;
+  border: 1px solid #ffffff20;
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-size: 12px;
+  transition: .25s;
+  z-index: 10;
+  width: max-content;
+  max-width: 90%;
+  text-align: center;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 480px) {
+  .app { padding: 12px; }
+  .room { padding: 20px 9px; }
+  .speakers { gap: 7px; }
+  .person { border-radius: 17px; }
+  .section { padding: 13px; }
+  .control { flex: 1 1 40%; }
+  .control.primary { flex-basis: 55%; }
+}
+</style>
+
+<style>
+body{padding-bottom:96px}
+.user-bottom-menu{position:fixed;z-index:50;right:12px;bottom:12px;left:12px;display:flex;justify-content:center;gap:8px;padding:8px;border:1px solid #ffffff20;border-radius:18px;background:rgba(7,16,29,.9);box-shadow:0 14px 35px #0008;backdrop-filter:blur(18px)}
+.user-bottom-menu a,.user-bottom-menu button{display:flex;min-width:92px;align-items:center;justify-content:center;gap:6px;padding:10px 12px;border:1px solid transparent;border-radius:11px;background:transparent;color:#9aacc3;cursor:pointer;font:700 12px Tahoma,Arial,sans-serif;text-decoration:none;transition:.2s}
+.user-bottom-menu a:hover,.user-bottom-menu a[aria-current=page],.user-bottom-menu button:hover{border-color:#b6a5ff66;background:#a78bfa20;color:#fff}
+.user-bottom-menu .language-toggle{color:#d9cfff}
+@media(max-width:620px){.user-bottom-menu{gap:3px;right:8px;bottom:8px;left:8px}.user-bottom-menu a,.user-bottom-menu button{min-width:0;flex:1;padding:10px 5px;font-size:10px}}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<header>
+  <div class="logo">NEBULA ✦</div>
+  <div class="live">● غرفة مباشرة</div>
+</header>
+
+<main class="room">
+  <div class="tag">✧ مساحة تجمع الأرواح ✧</div>
+  <h1>ما وراء النجوم</h1>
+  <div class="subtitle">تحدث بقلبك... واستمع بروحك</div>
+
+  <div class="stats">
+    <div class="stat">🎙️ جلسة صوتية</div>
+    <div class="stat">👥 <span id="listenerCount">128</span> مستمعًا</div>
+    <div class="stat">✦ نقاش مفتوح</div>
+  </div>
+
+  <div class="speakers" id="speakers">
+    <div class="person talking" data-id="host">
+      <span class="mic">🎙️</span>
+      <div class="avatar">🌙</div>
+      <div class="name">نور الليل</div>
+      <div class="role">مضيف الغرفة</div>
+    </div>
+
+    <div class="person" data-id="speaker2">
+      <span class="mic">🔇</span>
+      <div class="avatar">🦋</div>
+      <div class="name">روح هادئة</div>
+      <div class="role">متحدث</div>
+    </div>
+
+    <div class="person" data-id="speaker3">
+      <span class="mic">🔇</span>
+      <div class="avatar">🌌</div>
+      <div class="name">رحّال</div>
+      <div class="role">متحدث</div>
+    </div>
+  </div>
+</main>
+
+<section class="section">
+  <div class="section-title">
+    <span>✨ المستمعون</span>
+    <span class="small">أصدقاء داخل الغرفة</span>
+  </div>
+
+  <div class="listeners">
+    <div class="listener"><span class="mini-avatar">🌸</span> ياسمين</div>
+    <div class="listener"><span class="mini-avatar">🪐</span> آدم</div>
+    <div class="listener"><span class="mini-avatar">🌷</span> سارة</div>
+    <div class="listener"><span class="mini-avatar">🦊</span> أمين</div>
+    <div class="listener"><span class="mini-avatar">🌿</span> ليلى</div>
+    <div class="listener"><span class="mini-avatar">⭐</span> أنت</div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-title">
+    <span>🙋 طلبات الكلام</span>
+    <span class="small" id="queueCount">0 طلبات</span>
+  </div>
+  <div class="queue" id="queue">
+    <div class="empty">لا توجد طلبات حاليًا — كن أول من يرفع يده!</div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-title">
+    <span>💬 دردشة الغرفة</span>
+    <span class="small">رسائل تجريبية</span>
+  </div>
+
+  <div class="chat" id="chat">
+    <div class="message"><strong class="host">نور الليل:</strong> أهلًا بكم في مساحتنا الجميلة ✨</div>
+    <div class="message"><strong>ياسمين:</strong> الأجواء هنا رائعة 🌸</div>
+    <div class="message"><strong>رحّال:</strong> ما الموضوع الذي سنتحدث عنه اليوم؟</div>
+  </div>
+
+  <form class="chat-form" id="chatForm">
+    <input id="chatInput" placeholder="اكتب رسالة لطيفة..." maxlength="250" autocomplete="off">
+    <button class="send" type="submit">إرسال</button>
+  </form>
+</section>
+
+<div class="controls">
+  <button class="control primary" id="handBtn">✋ رفع اليد للكلام</button>
+  <button class="control" id="micBtn">🎙️ تشغيل الميكروفون</button>
+  <button class="control" id="soundBtn">🔊 الصوت مفعّل</button>
+  <button class="control leave" id="leaveBtn">↗ مغادرة الغرفة</button>
+</div>
+
+<div class="notice">
+  NEBULA · تحدث باحترام، واستمع باهتمام ✦
+</div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+let handRaised = false;
+let micOn = false;
+let soundOn = true;
+let hasLeft = false;
+
+const requests = [];
+
+function toast(message) {
+  const el = $("toast");
+  el.textContent = message;
+  el.classList.add("show");
+  clearTimeout(window.toastTimer);
+  window.toastTimer = setTimeout(() => {
+    el.classList.remove("show");
+  }, 2400);
+}
+
+function updateHandButton() {
+  $("handBtn").textContent = handRaised
+    ? "✋ إلغاء رفع اليد"
+    : "✋ رفع اليد للكلام";
+
+  $("handBtn").classList.toggle("active", handRaised);
+}
+
+function renderQueue() {
+  const box = $("queue");
+  $("queueCount").textContent = requests.length + " طلبات";
+  box.innerHTML = "";
+
+  if (!requests.length) {
+    box.innerHTML =
+      '<div class="empty">لا توجد طلبات حاليًا — كن أول من يرفع يده!</div>';
+    return;
+  }
+
+  requests.forEach((request, index) => {
+    const item = document.createElement("div");
+    item.className = "queue-item";
+
+    const person = document.createElement("div");
+    person.className = "queue-person";
+
+    const avatar = document.createElement("span");
+    avatar.className = "mini-avatar";
+    avatar.textContent = "🙋";
+
+    const name = document.createElement("span");
+    name.textContent = request.name;
+
+    const button = document.createElement("button");
+    button.className = "approve";
+    button.textContent = "قبول تجريبي";
+    button.onclick = () => {
+      toast("هذا نموذج واجهة فقط. قبول المتحدث الحقيقي يحتاج صلاحيات المضيف وربطًا بالخادم.");
+    };
+
+    person.append(avatar, name);
+    item.append(person, button);
+    box.appendChild(item);
+  });
+}
+
+$("handBtn").onclick = () => {
+  if (hasLeft) {
+    toast("لقد غادرت الغرفة التجريبية.");
+    return;
+  }
+
+  handRaised = !handRaised;
+
+  if (handRaised) {
+    if (!requests.some(r => r.name === "أنت")) {
+      requests.push({ name: "أنت" });
+    }
+    toast("تم تسجيل طلبك في هذه التجربة ✋");
+  } else {
+    const index = requests.findIndex(r => r.name === "أنت");
+    if (index !== -1) requests.splice(index, 1);
+    toast("تم إلغاء طلب رفع اليد.");
+  }
+
+  updateHandButton();
+  renderQueue();
+};
+
+$("micBtn").onclick = () => {
+  if (hasLeft) {
+    toast("لقد غادرت الغرفة التجريبية.");
+    return;
+  }
+
+  micOn = !micOn;
+  $("micBtn").textContent = micOn
+    ? "🔇 إيقاف الميكروفون"
+    : "🎙️ تشغيل الميكروفون";
+
+  $("micBtn").classList.toggle("active", micOn);
+
+  toast(micOn
+    ? "تغيير تجريبي فقط: لم يتم تشغيل ميكروفون حقيقي."
+    : "تم تغيير حالة الميكروفون التجريبية.");
+};
+
+$("soundBtn").onclick = () => {
+  soundOn = !soundOn;
+  $("soundBtn").textContent = soundOn
+    ? "🔊 الصوت مفعّل"
+    : "🔇 الصوت مكتوم";
+
+  $("soundBtn").classList.toggle("active", !soundOn);
+
+  toast("هذا الزر يغيّر مظهر الحالة فقط؛ لا يوجد بث صوتي متصل.");
+};
+
+$("chatForm").onsubmit = event => {
+  event.preventDefault();
+
+  if (hasLeft) {
+    toast("لقد غادرت الغرفة التجريبية.");
+    return;
+  }
+
+  const input = $("chatInput");
+  const value = input.value.trim();
+
+  if (!value) return;
+
+  const message = document.createElement("div");
+  message.className = "message";
+
+  const name = document.createElement("strong");
+  name.textContent = "أنت: ";
+
+  const text = document.createElement("span");
+  text.textContent = value;
+
+  message.append(name, text);
+  $("chat").appendChild(message);
+  $("chat").scrollTop = $("chat").scrollHeight;
+  input.value = "";
+};
+
+$("leaveBtn").onclick = () => {
+  hasLeft = true;
+  handRaised = false;
+  micOn = false;
+
+  updateHandButton();
+
+  $("micBtn").textContent = "🎙️ تشغيل الميكروفون";
+  $("micBtn").classList.remove("active");
+
+  toast("غادرت الغرفة التجريبية. يمكنك تحديث الصفحة للبدء من جديد.");
+};
+</script>
+
+<nav class="user-bottom-menu" aria-label="User menu">
+  <a href="./home.html"><span aria-hidden="true">⌂</span><span data-menu-key="home">Home</span></a>
+  <a href="./discover.html"><span aria-hidden="true">✦</span><span data-menu-key="discover">Discover</span></a>
+  <a href="./rooms.html" aria-current="page"><span aria-hidden="true">◉</span><span data-menu-key="rooms">Audio rooms</span></a>
+  <a href="./profile.html"><span aria-hidden="true">◌</span><span data-menu-key="profile">Profile</span></a>
+  <button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button>
+</nav>
+<script src="./language.js"></script>
+</body>
+</html>

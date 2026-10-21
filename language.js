@@ -1,7 +1,7 @@
 (() => {
   const translations = {
-    en: { home: 'Home', discover: 'Discover', profile: 'Profile', newSection: 'New section', switchTo: 'عربي', aria: 'Switch to Arabic' },
-    ar: { home: 'الرئيسية', discover: 'اكتشاف', profile: 'الملف الشخصي', newSection: 'قسم جديد', switchTo: 'EN', aria: 'Switch to English' },
+    en: { home: 'Home', discover: 'Discover', rooms: 'Audio rooms', profile: 'Profile', newSection: 'New section', switchTo: 'عربي', aria: 'Switch to Arabic' },
+    ar: { home: 'الرئيسية', discover: 'اكتشاف', rooms: 'غرف صوتية', profile: 'الملف الشخصي', newSection: 'قسم جديد', switchTo: 'EN', aria: 'Switch to English' },
   };
 
   const stored = window.localStorage.getItem('iqzodiac-language');
