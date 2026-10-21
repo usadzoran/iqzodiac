@@ -40,3 +40,9 @@
 - [x] Provide separate image capture/upload controls for a government ID photo and a face photo.
 - [x] Show local previews and require confirmation that the photos belong to the user.
 - [x] Keep the prototype local-only: no personal data or identity photos are uploaded yet.
+
+## Discover and fixed user menu
+- [x] Add a Discover page based on the supplied personality-elements quiz.
+- [x] Keep the Discover quiz in Arabic with twelve questions, four element choices, animated result orbs, and a restart action.
+- [x] Add a fixed bottom user menu on Home, Profile, and Discover.
+- [x] Add Home, Discover, Profile, and a placeholder “New section” item to the menu for later development.

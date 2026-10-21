@@ -3,6 +3,7 @@
     { "path": "/", "title": "IQZodiac" },
     { "path": "/profile", "title": "Your Profile — IQZodiac" },
     { "path": "/home", "title": "Home — IQZodiac" },
-    { "path": "/signup", "title": "Create Account — IQZodiac" }
+    { "path": "/signup", "title": "Create Account — IQZodiac" },
+    { "path": "/discover", "title": "Discover Your Element — IQZodiac" }
   ]
 }

@@ -22,6 +22,8 @@ const server = http.createServer((request, response) => {
         ? 'home.html'
       : requestPath === '/signup'
         ? 'signup.html'
+      : requestPath === '/discover'
+        ? 'discover.html'
       : requestPath.replace(/^\//, '');
   const filePath = path.resolve(root, relativePath);
 

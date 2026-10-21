@@ -687,3 +687,12 @@ h1 {
   .signup-actions .button { width: 100%; }
   .signup-footer { margin-top: 48px; }
 }
+
+/* Fixed user menu */
+body.has-user-menu { padding-bottom: 82px; }
+.user-bottom-menu { position: fixed; z-index: 30; right: 18px; bottom: 16px; left: 18px; display: flex; width: min(100% - 36px, 650px); align-items: center; justify-content: center; gap: 7px; margin: 0 auto; padding: 8px; border: 1px solid rgba(218,225,255,0.16); border-radius: 18px; background: rgba(9,14,29,0.88); box-shadow: 0 16px 45px rgba(0,0,0,0.42); backdrop-filter: blur(18px); }
+.user-bottom-menu a, .user-bottom-menu button { display: inline-flex; min-width: 105px; align-items: center; justify-content: center; gap: 7px; padding: 10px 12px; border: 1px solid transparent; border-radius: 11px; background: transparent; color: var(--dim); cursor: pointer; font: 9px "DM Mono", monospace; letter-spacing: 0.07em; text-decoration: none; text-transform: uppercase; transition: color 180ms ease, background 180ms ease, border-color 180ms ease, transform 180ms ease; }
+.user-bottom-menu a:hover, .user-bottom-menu a[aria-current="page"], .user-bottom-menu button:hover { border-color: rgba(131,229,232,0.3); background: rgba(131,229,232,0.08); color: var(--cyan); transform: translateY(-1px); }
+.user-bottom-menu .menu-placeholder { color: var(--lilac); }
+.user-bottom-menu span { font-size: 14px; line-height: 1; }
+@media (max-width: 560px) { body.has-user-menu { padding-bottom: 77px; } .user-bottom-menu { right: 8px; bottom: 8px; left: 8px; width: calc(100% - 16px); gap: 3px; padding: 6px; } .user-bottom-menu a, .user-bottom-menu button { min-width: 0; flex: 1; padding: 10px 5px; font-size: 8px; letter-spacing: 0.03em; } .user-bottom-menu span { font-size: 12px; } }
