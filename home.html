@@ -94,12 +94,14 @@
     </main>
 
     <nav class="user-bottom-menu" aria-label="User menu">
-      <a href="./home.html" aria-current="page"><span aria-hidden="true">⌂</span> Home</a>
-      <a href="./discover.html"><span aria-hidden="true">✦</span> Discover</a>
-      <a href="./profile.html"><span aria-hidden="true">◉</span> Profile</a>
-      <button type="button" class="menu-placeholder" title="Section coming later"><span aria-hidden="true">＋</span> New section</button>
+      <a href="./home.html" aria-current="page"><span aria-hidden="true">⌂</span><span data-menu-key="home">Home</span></a>
+      <a href="./discover.html"><span aria-hidden="true">✦</span><span data-menu-key="discover">Discover</span></a>
+      <a href="./profile.html"><span aria-hidden="true">◉</span><span data-menu-key="profile">Profile</span></a>
+      <button type="button" class="menu-placeholder" title="Section coming later"><span aria-hidden="true">＋</span><span data-menu-key="newSection">New section</span></button>
+      <button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button>
     </nav>
     <div class="toast" role="status" aria-live="polite" aria-atomic="true"><span class="toast-icon" aria-hidden="true">✦</span><span class="toast-message"></span></div>
+    <script src="./language.js"></script>
     <script src="./home.js"></script>
   </body>
 </html>

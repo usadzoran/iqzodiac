@@ -46,3 +46,8 @@
 - [x] Keep the Discover quiz in Arabic with twelve questions, four element choices, animated result orbs, and a restart action.
 - [x] Add a fixed bottom user menu on Home, Profile, and Discover.
 - [x] Add Home, Discover, Profile, and a placeholder “New section” item to the menu for later development.
+
+## Shared menu language
+- [x] Keep the menu language consistent across Home, Profile, and Discover instead of changing with the page.
+- [x] Automatically choose Arabic or English from the browser locale on first visit.
+- [x] Provide a manual EN / العربية toggle and persist the selected language between pages.
