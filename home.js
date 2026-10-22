@@ -83,13 +83,54 @@ document.querySelectorAll('[data-flow]').forEach((button) => {
   button.addEventListener('click', () => showToast(`${button.dataset.flow} is coming soon.`));
 });
 
-document.querySelectorAll('.feed-filter-button').forEach((button) => {
+const followedPeople = new Set(JSON.parse(window.localStorage.getItem('iqzodiac-following') || '[]'));
+const updateFollowState = (button) => {
+  const following = followedPeople.has(button.dataset.follow);
+  button.classList.toggle('is-following', following);
+  button.textContent = following ? '✓' : '+';
+  button.setAttribute('aria-label', `${following ? 'Unfollow' : 'Follow'} ${button.dataset.follow === 'linaortiz' ? 'Lina Ortiz' : 'Noah Williams'}`);
+};
+document.querySelectorAll('[data-follow]').forEach((button) => {
+  updateFollowState(button);
   button.addEventListener('click', () => {
-    document.querySelectorAll('.feed-filter-button').forEach((item) => item.classList.remove('is-active'));
-    button.classList.add('is-active');
-    if (button.dataset.flow) showToast(`${button.dataset.flow} is coming soon.`);
+    const handle = button.dataset.follow;
+    if (followedPeople.has(handle)) {
+      followedPeople.delete(handle);
+      showToast('You unfollowed this person.');
+    } else {
+      followedPeople.add(handle);
+      showToast('You’re following this person.');
+    }
+    window.localStorage.setItem('iqzodiac-following', JSON.stringify([...followedPeople]));
+    updateFollowState(button);
+    applyFeedFilter();
   });
 });
+const filters = [...document.querySelectorAll('.feed-filter-button')];
+const applyFeedFilter = () => {
+  const followingOnly = filters.find((item) => item.classList.contains('is-active'))?.dataset.filter === 'following';
+  document.querySelectorAll('#feed-list .post-card').forEach((post) => {
+    post.hidden = Boolean(followingOnly && !followedPeople.has(post.dataset.author));
+  });
+};
+filters.forEach((button) => {
+  button.addEventListener('click', () => {
+    filters.forEach((item) => item.classList.remove('is-active'));
+    button.classList.add('is-active');
+    applyFeedFilter();
+    if (button.dataset.filter === 'following' && followedPeople.size === 0) showToast('Follow someone to build your own feed.');
+  });
+});
+document.querySelectorAll('[data-prompt]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const textarea = document.querySelector('#post-text');
+    textarea.value = button.dataset.prompt;
+    textarea.focus();
+    document.querySelector('.composer-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+});
+const dateNode = document.querySelector('#today-date');
+if (dateNode) dateNode.textContent = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date());
 
 const mediaInput = document.querySelector('#post-media-input');
 const composerPreview = document.querySelector('#composer-media-preview');
@@ -115,8 +156,10 @@ document.querySelector('#publish-post').addEventListener('click', () => {
   post.querySelector('.post-body').textContent = text;
   if (!text) post.querySelector('.post-body').remove();
   if (composerMedia) createMediaPreview(composerMedia, post.querySelector('.post-media-slot'), 'post-uploaded-media');
+  post.dataset.author = 'alex.stone';
   document.querySelector('#feed-list').prepend(post);
   bindPost(post);
+  if (filters.find((item) => item.classList.contains('is-active'))?.dataset.filter === 'following') post.hidden = true;
   document.querySelector('#post-text').value = '';
   composerMedia = null;
   mediaInput.value = '';

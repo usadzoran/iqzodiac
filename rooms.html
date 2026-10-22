@@ -403,7 +403,7 @@ h1 {
 body{padding-bottom:96px}
 .user-bottom-menu{position:fixed;z-index:50;right:12px;bottom:12px;left:12px;display:flex;justify-content:center;gap:8px;padding:8px;border:1px solid #ffffff20;border-radius:18px;background:rgba(7,16,29,.9);box-shadow:0 14px 35px #0008;backdrop-filter:blur(18px)}
 .user-bottom-menu a,.user-bottom-menu button{display:flex;min-width:92px;align-items:center;justify-content:center;gap:6px;padding:10px 12px;border:1px solid transparent;border-radius:11px;background:transparent;color:#9aacc3;cursor:pointer;font:700 12px Tahoma,Arial,sans-serif;text-decoration:none;transition:.2s}
-.user-bottom-menu a:hover,.user-bottom-menu a[aria-current=page],.user-bottom-menu button:hover{border-color:#b6a5ff66;background:#a78bfa20;color:#fff}
+.user-bottom-menu a:hover,.user-bottom-menu a[aria-current=page],.user-bottom-menu a:focus,.user-bottom-menu button:hover,.user-bottom-menu button:focus{border-color:transparent;background:transparent;color:#9aacc3;transform:none;outline:none}
 .user-bottom-menu .language-toggle{color:#d9cfff}
 @media(max-width:620px){.user-bottom-menu{gap:3px;right:8px;bottom:8px;left:8px}.user-bottom-menu a,.user-bottom-menu button{min-width:0;flex:1;padding:10px 5px;font-size:10px}}
 </style>
@@ -738,12 +738,12 @@ $("leaveBtn").onclick = () => {
 };
 </script>
 
+<footer class="footer rooms-footer">© 2026 IQZodiac <button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>
 <nav class="user-bottom-menu" aria-label="User menu">
   <a href="./home.html"><span aria-hidden="true">⌂</span><span data-menu-key="home">Home</span></a>
   <a href="./discover.html"><span aria-hidden="true">✦</span><span data-menu-key="discover">Discover</span></a>
   <a href="./rooms.html" aria-current="page"><span aria-hidden="true">◉</span><span data-menu-key="rooms">Audio rooms</span></a>
   <a href="./profile.html"><span aria-hidden="true">◌</span><span data-menu-key="profile">Profile</span></a>
-  <button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button>
 </nav>
 <script src="./language.js"></script>
 </body>

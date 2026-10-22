@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=user-menu-20261021" />
+    <link rel="stylesheet" href="./styles.css?v=home-refresh-20261022" />
   </head>
   <body class="home-page has-user-menu">
     <div class="aurora aurora-one" aria-hidden="true"></div>
@@ -30,12 +30,21 @@
         <section class="feed-column" aria-labelledby="home-title">
           <div class="home-welcome-bar">
             <div>
-              <p class="welcome-eyebrow"><span class="status-dot" aria-hidden="true"></span> Tuesday, October 20</p>
+              <p class="welcome-eyebrow"><span class="status-dot" aria-hidden="true"></span> <time id="today-date"></time> <span class="welcome-note">· Your little corner of the cosmos</span></p>
               <h1>Good to see you, <span>Alex.</span></h1>
               <p class="welcome-copy">Stay close to what matters and share what moves you.</p>
             </div>
             <div class="welcome-orbit" aria-hidden="true"><span></span><i></i></div>
           </div>
+
+          <section class="daily-spark" aria-labelledby="spark-title">
+            <div class="spark-heading"><span class="spark-icon" aria-hidden="true">✦</span><div><p class="spark-kicker">A tiny prompt for today</p><h2 id="spark-title">What felt like a little win?</h2></div></div>
+            <div class="spark-options" aria-label="Choose a writing prompt">
+              <button type="button" data-prompt="Today, I’m proud that…">I showed up</button>
+              <button type="button" data-prompt="A small thing that made me smile today was…">Something made me smile</button>
+              <button type="button" data-prompt="One thing I want to remember from today is…">A moment to keep</button>
+            </div>
+          </section>
 
           <div class="feed-heading">
             <div><p class="card-kicker">01 / Home</p><h2 id="home-title">Your feed</h2></div>
@@ -52,9 +61,9 @@
             </div>
           </section>
 
-          <div class="feed-filter" role="tablist" aria-label="Feed filter"><button class="feed-filter-button is-active" type="button">For you</button><button class="feed-filter-button" type="button" data-flow="Following feed">Following</button></div>
+          <div class="feed-filter" role="tablist" aria-label="Feed filter"><button class="feed-filter-button is-active" data-filter="for-you" type="button">For you</button><button class="feed-filter-button" data-filter="following" type="button">Following</button></div>
           <div id="feed-list" class="feed-list">
-            <article class="post-card" data-post-id="1">
+            <article class="post-card" data-post-id="1" data-author="mayachen">
               <header class="post-header"><div class="post-avatar avatar-maya">M</div><div class="post-author"><strong>Maya Chen</strong><span>@mayachen · 12 min ago</span></div><button class="post-more" type="button" aria-label="More options">···</button></header>
               <p class="post-body">A quiet morning can change the shape of an entire day. Leaving this here for anyone who needs the reminder.</p>
               <div class="post-meta"><span class="like-count">248 likes</span><span class="comment-count">18 comments</span></div>
@@ -63,7 +72,7 @@
               <form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment on Maya's post" /><button type="submit" aria-label="Post comment">↗</button></form>
             </article>
 
-            <article class="post-card" data-post-id="2">
+            <article class="post-card" data-post-id="2" data-author="noahw">
               <header class="post-header"><div class="post-avatar avatar-noah">N</div><div class="post-author"><strong>Noah Williams</strong><span>@noahw · 1 hr ago</span></div><button class="post-more" type="button" aria-label="More options">···</button></header>
               <p class="post-body">Found a little more light on the way home.</p>
               <div class="post-media post-photo photo-dawn" role="img" aria-label="Abstract sunset photo"><span>PHOTO</span><strong>More light on the way home</strong></div>
@@ -72,7 +81,7 @@
               <div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment on Noah's post" /><button type="submit" aria-label="Post comment">↗</button></form>
             </article>
 
-            <article class="post-card" data-post-id="3">
+            <article class="post-card" data-post-id="3" data-author="linaortiz">
               <header class="post-header"><div class="post-avatar avatar-lina">L</div><div class="post-author"><strong>Lina Ortiz</strong><span>@linaortiz · 3 hrs ago</span></div><button class="post-more" type="button" aria-label="More options">···</button></header>
               <p class="post-body">A small reset before the next big thing.</p>
               <div class="post-media post-video video-night" role="img" aria-label="Short night sky video"><span class="video-play">▶</span><span class="video-label">VIDEO · 0:18</span><strong>Night walk / city lights</strong></div>
@@ -85,12 +94,12 @@
 
         <aside class="home-trends">
           <div class="trend-card profile-summary-card"><div class="summary-cover" aria-hidden="true"></div><div class="summary-body"><div class="summary-avatar home-avatar">AS</div><strong>alex.stone</strong><span>@alex.stone</span><div class="summary-stats"><span><b>1.2k</b> followers</span><span><b>8.6k</b> likes</span></div><a class="summary-link" href="./profile.html">View profile <span aria-hidden="true">↗</span></a></div></div>
-          <div class="trend-card"><p class="card-kicker">02 / Around you</p><h3>People to notice</h3><div class="suggested-person"><span class="post-avatar avatar-lina">L</span><div><strong>Lina Ortiz</strong><small>@linaortiz</small></div><button class="tiny-follow" type="button" data-flow="Following Lina">+</button></div><div class="suggested-person"><span class="post-avatar avatar-noah">N</span><div><strong>Noah Williams</strong><small>@noahw</small></div><button class="tiny-follow" type="button" data-flow="Following Noah">+</button></div></div>
-          <div class="trend-card trend-tags"><p class="card-kicker">03 / In orbit</p><h3>Trending now</h3><span>#quietmornings</span><span>#newperspective</span><span>#smalljoys</span></div>
+          <div class="trend-card"><p class="card-kicker">02 / Around you</p><h3>People to notice</h3><div class="suggested-person"><span class="post-avatar avatar-lina">L</span><div><strong>Lina Ortiz</strong><small>@linaortiz</small></div><button class="tiny-follow" type="button" data-follow="linaortiz" aria-label="Follow Lina Ortiz">+</button></div><div class="suggested-person"><span class="post-avatar avatar-noah">N</span><div><strong>Noah Williams</strong><small>@noahw</small></div><button class="tiny-follow" type="button" data-follow="noahw" aria-label="Follow Noah Williams">+</button></div></div>
+          <div class="trend-card trend-tags"><p class="card-kicker">03 / In orbit</p><h3>Little things worth sharing</h3><span>#quietmornings</span><span>#newperspective</span><span>#smalljoys</span><p class="trend-invite">A good conversation can start with one small thought.</p></div>
         </aside>
       </div>
 
-      <footer class="footer home-footer"><span>© 2026 IQZodiac</span><span class="footer-orbit" aria-hidden="true"><i></i><i></i><i></i></span><span>Look inward. Move forward.</span></footer>
+      <footer class="footer home-footer"><span>© 2026 IQZodiac</span><span class="footer-orbit" aria-hidden="true"><i></i><i></i><i></i></span><span>Look inward. Move forward.</span><button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>
     </main>
 
     <nav class="user-bottom-menu" aria-label="User menu">
@@ -98,7 +107,6 @@
       <a href="./discover.html"><span aria-hidden="true">✦</span><span data-menu-key="discover">Discover</span></a>
       <a href="./rooms.html"><span aria-hidden="true">◉</span><span data-menu-key="rooms">Audio rooms</span></a>
       <a href="./profile.html"><span aria-hidden="true">◌</span><span data-menu-key="profile">Profile</span></a>
-      <button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button>
     </nav>
     <div class="toast" role="status" aria-live="polite" aria-atomic="true"><span class="toast-icon" aria-hidden="true">✦</span><span class="toast-message"></span></div>
     <script src="./language.js"></script>
