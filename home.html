@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=home-mobile-20261022" />
+    <link rel="stylesheet" href="./styles.css?v=home-mood-20261022" />
   </head>
   <body class="home-page has-user-menu">
     <div class="aurora aurora-one" aria-hidden="true"></div>
@@ -45,6 +45,21 @@
               <button type="button" data-prompt="A small thing that made me smile today was…">Something made me smile</button>
               <button type="button" data-prompt="One thing I want to remember from today is…">A moment to keep</button>
             </div>
+          </section>
+
+          <section class="mood-checkin" aria-labelledby="mood-title">
+            <div class="mood-heading"><span class="mood-spark" aria-hidden="true">☼</span><div><p class="mood-kicker">A moment for you</p><h2 id="mood-title">How are you arriving today?</h2></div></div>
+            <div class="mood-options" role="group" aria-label="Choose how you feel today">
+              <button type="button" data-mood="bright" aria-pressed="false"><span aria-hidden="true">☀</span><small>Bright</small></button>
+              <button type="button" data-mood="steady" aria-pressed="false"><span aria-hidden="true">◒</span><small>Steady</small></button>
+              <button type="button" data-mood="tender" aria-pressed="false"><span aria-hidden="true">♡</span><small>Tender</small></button>
+              <button type="button" data-mood="low" aria-pressed="false"><span aria-hidden="true">☾</span><small>A little low</small></button>
+            </div>
+            <div id="mood-reflection" class="mood-reflection" aria-live="polite" hidden>
+              <p id="mood-message"></p>
+              <button id="mood-write" type="button">Put it into words <span aria-hidden="true">↗</span></button>
+            </div>
+            <p class="mood-privacy">A private check-in, saved only in this browser. Sharing is always your choice.</p>
           </section>
 
           <div class="feed-heading">

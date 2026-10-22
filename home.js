@@ -132,6 +132,40 @@ document.querySelectorAll('[data-prompt]').forEach((button) => {
 const dateNode = document.querySelector('#today-date');
 if (dateNode) dateNode.textContent = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date());
 
+const moodButtons = [...document.querySelectorAll('[data-mood]')];
+const moodReflection = document.querySelector('#mood-reflection');
+const moodMessage = document.querySelector('#mood-message');
+const moodCopy = {
+  bright: 'Let yourself enjoy the light. What is one thing you want to carry into the rest of your day?',
+  steady: 'Steady is its own kind of strength. You can take today one moment at a time.',
+  tender: 'There is room for softness here. What would feel kind to you right now?',
+  low: 'You don’t have to turn the day around all at once. One small, gentle thing is enough.',
+};
+const todayKey = new Date().toLocaleDateString('en-CA');
+const moodStorageKey = `iqzodiac-mood-${todayKey}`;
+let selectedMood = null;
+try { selectedMood = window.localStorage.getItem(moodStorageKey); } catch { selectedMood = null; }
+const selectMood = (mood) => {
+  selectedMood = mood;
+  moodButtons.forEach((button) => {
+    const selected = button.dataset.mood === mood;
+    button.classList.toggle('is-selected', selected);
+    button.setAttribute('aria-pressed', String(selected));
+  });
+  moodMessage.textContent = moodCopy[mood];
+  moodReflection.hidden = false;
+  try { window.localStorage.setItem(moodStorageKey, mood); } catch { /* Keep the check-in usable when storage is disabled. */ }
+};
+moodButtons.forEach((button) => button.addEventListener('click', () => selectMood(button.dataset.mood)));
+if (moodCopy[selectedMood]) selectMood(selectedMood);
+document.querySelector('#mood-write').addEventListener('click', () => {
+  if (!selectedMood) return;
+  const textarea = document.querySelector('#post-text');
+  textarea.value = `Today I’m feeling ${selectedMood === 'low' ? 'a little low' : selectedMood}, and I’m giving myself permission to take it one moment at a time.`;
+  textarea.focus();
+  document.querySelector('.composer-card').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+});
+
 const mediaInput = document.querySelector('#post-media-input');
 const composerPreview = document.querySelector('#composer-media-preview');
 mediaInput.addEventListener('change', (event) => {
@@ -175,6 +209,7 @@ if ('IntersectionObserver' in window && !reduceMotion) {
   const revealTargets = [
     document.querySelector('.home-welcome-bar'),
     document.querySelector('.daily-spark'),
+    document.querySelector('.mood-checkin'),
     document.querySelector('.feed-heading'),
     document.querySelector('.composer-card'),
     document.querySelector('.feed-filter'),

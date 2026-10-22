@@ -848,3 +848,26 @@ html.has-scroll-reveal .home-page [data-scroll-reveal].is-revealed { opacity: 1;
   .home-page .user-bottom-menu span { font-size: 13px; }
   .home-page .post-action { font-size: 8px; }
 }
+
+/* Optional daily mood reflection: personal, calm and non-competitive */
+.home-page .mood-checkin { margin: 0 0 28px; padding: 18px 20px; border: 1px solid rgba(185,166,255,.2); border-radius: 18px; background: radial-gradient(circle at 100% 0,rgba(185,166,255,.09),transparent 42%),rgba(15,21,40,.62); }
+.home-page .mood-heading { display:flex; align-items:center; gap:10px; }
+.home-page .mood-spark { display:grid; flex:none; width:34px; height:34px; place-items:center; border-radius:12px; background:rgba(185,166,255,.12); color:var(--lilac); font-size:18px; }
+.home-page .mood-kicker { margin:0 0 3px; color:var(--lilac); font:9px "DM Mono",monospace; letter-spacing:.09em; text-transform:uppercase; }
+.home-page .mood-heading h2 { margin:0; color:var(--ink); font-size:15px; }
+.home-page .mood-options { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:14px; }
+.home-page .mood-options button { display:grid; min-height:62px; place-items:center; gap:3px; padding:8px 4px; border:1px solid rgba(218,225,255,.11); border-radius:13px; background:rgba(5,8,17,.24); color:var(--muted); cursor:pointer; transition:transform 160ms ease,border-color 180ms ease,background 180ms ease,color 180ms ease; }
+.home-page .mood-options button:hover { transform:translateY(-2px); border-color:rgba(185,166,255,.35); background:rgba(185,166,255,.08); color:var(--ink); }
+.home-page .mood-options button:focus-visible { outline:2px solid var(--cyan); outline-offset:2px; }
+.home-page .mood-options button.is-selected { border-color:rgba(185,166,255,.52); background:linear-gradient(145deg,rgba(185,166,255,.16),rgba(131,229,232,.08)); color:var(--ink); box-shadow:inset 0 0 0 1px rgba(185,166,255,.08); }
+.home-page .mood-options button span { font-size:17px; }
+.home-page .mood-options button small { font:9px Manrope,sans-serif; }
+.home-page .mood-reflection { margin-top:12px; padding:12px 13px; border-left:2px solid var(--lilac); border-radius:0 11px 11px 0; background:rgba(185,166,255,.06); animation:mood-reflection-in 280ms ease both; }
+@keyframes mood-reflection-in { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+.home-page .mood-reflection p { margin:0; color:var(--muted); font-size:10px; line-height:1.7; }
+.home-page .mood-write { color:var(--cyan); }
+.home-page #mood-write { margin-top:8px; padding:0; border:0; background:none; color:var(--cyan); font:600 9px Manrope,sans-serif; cursor:pointer; }
+.home-page #mood-write:hover { color:var(--ink); }
+.home-page .mood-privacy { margin:11px 0 0; color:var(--dim); font-size:8px; line-height:1.5; }
+@media(max-width:560px) { .home-page .mood-checkin { margin-bottom:23px; padding:15px; } .home-page .mood-options { gap:6px; } .home-page .mood-options button { min-height:62px; } .home-page .mood-options button small { font-size:8px; } }
+@media(prefers-reduced-motion:reduce) { .home-page .mood-options button,.home-page .mood-reflection { animation:none!important; transition:none!important; } .home-page .mood-options button:hover { transform:none; } }
