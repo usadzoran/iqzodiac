@@ -1,30 +1,12 @@
 (() => {
   const { adapter } = window.IQZodiacData;
-  const card = document.querySelector('#match-card');
-  const matchesList = document.querySelector('#matches-list');
-  const toast = document.querySelector('.toast');
-  const toastMessage = document.querySelector('.toast-message');
-  let toastTimer;
-  let candidates = [];
-  let index = 0;
+  const card = document.querySelector('#match-card'); const matchesList = document.querySelector('#matches-list'); const toast = document.querySelector('.toast'); const toastMessage = document.querySelector('.toast-message'); let toastTimer; let candidates = []; let index = 0;
   const showToast = (message) => { toastMessage.textContent = message; toast.classList.add('is-visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2800); };
-  const renderCard = () => {
-    const person = candidates[index];
-    if (!person) { card.innerHTML = '<div class="match-card-content"><p class="card-kicker">END OF THE ORBIT</p><h2>You’re all caught up.</h2><p>Come back when there is a new person to notice.</p></div>'; return; }
-    card.className = `match-card ${person.preview}`;
-    card.innerHTML = `<div class="match-card-content"><p class="card-kicker">${person.element} energy · ${person.city}</p><h2>${person.name} <span>${person.age}</span></h2><p>${person.bio}</p><div class="interest-row">${person.interests.map((item) => `<span class="interest-chip">${item}</span>`).join('')}</div><div class="protected-note"><b>◉</b> Face protected until mutual consent</div></div>`;
-  };
-  const renderMatches = async () => {
-    const matches = await adapter.getMatches();
-    document.querySelector('#match-count').textContent = `${matches.length} ${matches.length === 1 ? 'match' : 'matches'}`;
-    matchesList.replaceChildren();
-    if (!matches.length) { matchesList.innerHTML = '<p class="match-empty">Your mutual matches will appear here.</p>'; return; }
-    matches.forEach((person) => { const item = document.createElement('a'); item.className = 'match-mini'; item.href = `./messages.html?match=${encodeURIComponent(person.id)}`; item.innerHTML = `<span class="mini-protected ${person.preview}" style="--mini-gradient:var(--protected-gradient)"></span><span><strong>${person.name}</strong><small>Face protected · chat ↗</small></span>`; matchesList.append(item); });
-  };
+  const renderCard = () => { const person = candidates[index]; if (!person) { card.innerHTML = '<div class="match-card-content"><p class="card-kicker">END OF THE ORBIT</p><h2>You’re all caught up.</h2><p>Come back when there is a new person to notice.</p></div>'; return; } card.className = `match-card ${person.preview}`; card.innerHTML = `<div class="match-card-content"><div class="match-score"><strong>${person.compatibilityScore}%</strong><span>compatibility</span></div><p class="card-kicker">${person.element} energy · ${person.city} · ${person.zodiac}</p><h2>${person.name} <span>${person.age}</span></h2><p>${person.bio}</p><div class="interest-row">${person.interests.map((item) => `<span class="interest-chip">${item}</span>`).join('')}</div><div class="match-reasons">${person.matchReasons.slice(0, 2).map((reason) => `<span>✦ ${reason}</span>`).join('')}</div><div class="protected-note"><b>◉</b> Face protected until mutual consent</div></div>`; };
+  const renderMatches = async () => { const matches = await adapter.getMatches(); document.querySelector('#match-count').textContent = `${matches.length} ${matches.length === 1 ? 'match' : 'matches'}`; matchesList.replaceChildren(); if (!matches.length) { matchesList.innerHTML = '<p class="match-empty">Your mutual matches will appear here.</p>'; return; } matches.forEach((person) => { const item = document.createElement('a'); item.className = 'match-mini'; item.href = `./messages.html?match=${encodeURIComponent(person.id)}`; item.innerHTML = `<span class="mini-protected ${person.preview}" style="--mini-gradient:var(--protected-gradient)"></span><span><strong>${person.name}</strong><small>${person.compatibilityScore || '—'}% compatible · chat ↗</small></span>`; matchesList.append(item); }); };
   const openMatchModal = (person) => { document.querySelector('#modal-them').textContent = person.initials; document.querySelector('#match-modal').hidden = false; document.querySelector('#open-conversation').href = `./messages.html?match=${encodeURIComponent(person.id)}`; document.querySelector('#close-match').focus(); };
-  document.querySelector('#skip-button').addEventListener('click', async () => { const person = candidates[index]; if (!person) return; await adapter.recordSkip(person.id); index += 1; renderCard(); showToast('Passed. The next orbit is ready.'); });
-  document.querySelector('#like-button').addEventListener('click', async () => { const person = candidates[index]; if (!person) return; const result = await adapter.recordLike(person.id); index += 1; renderCard(); await renderMatches(); if (result.matched) openMatchModal(person); else showToast('Like saved. If they choose you too, it becomes a Match.'); });
-  document.querySelector('#close-match').addEventListener('click', () => { document.querySelector('#match-modal').hidden = true; });
-  document.querySelector('#match-modal').addEventListener('click', (event) => { if (event.target.id === 'match-modal') event.currentTarget.hidden = true; });
+  document.querySelector('#skip-button').addEventListener('click', async () => { const person = candidates[index]; if (!person) return; await adapter.recordSkip(person.id); index += 1; renderCard(); showToast('Passed. The next compatible orbit is ready.'); });
+  document.querySelector('#like-button').addEventListener('click', async () => { const person = candidates[index]; if (!person) return; const result = await adapter.recordLike(person.id); index += 1; renderCard(); await renderMatches(); if (result.matched) openMatchModal(person); else showToast(`Like saved. ${person.compatibilityScore}% compatibility noted.`); });
+  document.querySelector('#close-match').addEventListener('click', () => { document.querySelector('#match-modal').hidden = true; }); document.querySelector('#match-modal').addEventListener('click', (event) => { if (event.target.id === 'match-modal') event.currentTarget.hidden = true; });
   (async () => { candidates = await adapter.listCandidates(); renderCard(); await renderMatches(); })();
 })();

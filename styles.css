@@ -871,3 +871,14 @@ html.has-scroll-reveal .home-page [data-scroll-reveal].is-revealed { opacity: 1;
 .home-page .mood-privacy { margin:11px 0 0; color:var(--dim); font-size:8px; line-height:1.5; }
 @media(max-width:560px) { .home-page .mood-checkin { margin-bottom:23px; padding:15px; } .home-page .mood-options { gap:6px; } .home-page .mood-options button { min-height:62px; } .home-page .mood-options button small { font-size:8px; } }
 @media(prefers-reduced-motion:reduce) { .home-page .mood-options button,.home-page .mood-reflection { animation:none!important; transition:none!important; } .home-page .mood-options button:hover { transform:none; } }
+.compatibility-card { margin-top: 17px; padding: clamp(22px, 3vw, 34px); }
+.compatibility-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 17px; margin-top: 10px; }
+.compatibility-fields .signup-field { display: grid; gap: 8px; color: var(--muted); font: 9px "DM Mono", monospace; letter-spacing: .08em; text-transform: uppercase; }
+.compatibility-fields select, .compatibility-fields input { width: 100%; border: 1px solid rgba(218,225,255,.14); border-radius: 3px; padding: 12px; outline: 0; background: rgba(5,8,17,.36); color: var(--ink); font: 12px "Manrope", sans-serif; text-transform: none; letter-spacing: 0; }
+.compatibility-fields select:focus, .compatibility-fields input:focus { border-color: var(--cyan); }
+.signup-field-wide { grid-column: 1 / -1; }
+.vip-access-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 24px; padding-top: 18px; border-top: 1px solid rgba(218,225,255,.11); }
+.vip-access-row strong, .vip-access-row small { display: block; }
+.vip-access-row strong { color: var(--ink); font-size: 12px; }
+.vip-access-row small { max-width: 490px; margin-top: 6px; color: var(--dim); font-size: 10px; line-height: 1.5; }
+@media (max-width: 620px) { .compatibility-fields { grid-template-columns: 1fr; } .signup-field-wide { grid-column: auto; } .vip-access-row { align-items: flex-start; flex-direction: column; } .vip-access-row .button { width: 100%; } }

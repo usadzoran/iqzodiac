@@ -8,6 +8,7 @@
     { "path": "/rooms", "title": "Audio Rooms — IQZodiac" },
     { "path": "/messages", "title": "Messages — IQZodiac" },
     { "path": "/match", "title": "Match — IQZodiac" },
-    { "path": "/daily", "title": "Daily — IQZodiac" }
+    { "path": "/daily", "title": "Daily — IQZodiac" },
+    { "path": "/vip", "title": "VIP Orbit — IQZodiac" }
   ]
 }

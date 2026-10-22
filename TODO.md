@@ -72,3 +72,9 @@
 - [x] Add a Daily page with live weather and news panels that follows the current IQZodiac visual language and supports English/Arabic menu labels.
 - [x] Fetch weather from Open-Meteo and news from an external BBC RSS feed through the server without writing to the database or localStorage.
 - [x] Mark the daily feed as `no-store`, refresh it on demand, and reload the page when the calendar day changes so the previous day’s items leave the view.
+
+## User roles, compatibility matching, and VIP access
+- [x] Model regular users and VIP users through a shared account-access layer with extensible entitlements.
+- [x] Store zodiac sign, personality element, interests, and personality-answer placeholders as Match inputs in the existing profile/account model.
+- [x] Rank Match candidates by compatibility score using shared interests, zodiac alignment, and personality-element compatibility instead of presenting a fixed random order.
+- [x] Add a VIP-gated orbit page and keep the payment/checkout boundary ready without pretending that billing is connected.
