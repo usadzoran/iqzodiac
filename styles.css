@@ -721,3 +721,60 @@ body.has-user-menu { padding-bottom: 82px; }
 @media (prefers-reduced-motion: reduce) { .home-page .post-card,.home-page .spark-options button { transition:none; } .home-page .post-card:hover { transform:none; } }
 
 .home-page .tiny-message-link { display:grid; place-items:center; text-decoration:none; }
+
+/* Home page motion system: gentle entrances, ambient orbit and tactile feedback */
+@keyframes home-orbit-drift {
+  0%, 100% { transform: rotate(-18deg) translate3d(0, 0, 0); }
+  50% { transform: rotate(-12deg) translate3d(0, -5px, 0); }
+}
+@keyframes home-orbit-turn { to { rotate: 360deg; } }
+@keyframes home-star-glow {
+  0%, 100% { transform: scale(1) rotate(0); box-shadow: 0 0 0 rgba(242,167,124,0); }
+  50% { transform: scale(1.07) rotate(10deg); box-shadow: 0 0 24px rgba(242,167,124,.22); }
+}
+@keyframes home-status-breathe { 0%,100% { box-shadow: 0 0 0 0 rgba(131,229,232,.34); } 50% { box-shadow: 0 0 0 5px rgba(131,229,232,0); } }
+@keyframes home-button-press { 0% { transform: scale(.97); } 100% { transform: scale(1); } }
+.home-page .welcome-orbit { animation: home-orbit-drift 8s ease-in-out infinite; transform-origin: 50% 50%; }
+.home-page .welcome-orbit::before { animation: home-orbit-turn 28s linear infinite; }
+.home-page .welcome-orbit::after { animation: home-orbit-turn 36s linear infinite reverse; }
+.home-page .spark-icon { animation: home-star-glow 4.8s ease-in-out infinite; }
+.home-page .feed-live .privacy-dot { animation: home-status-breathe 2.6s ease-out infinite; }
+.home-page .spark-options button:active,
+.home-page .feed-filter-button:active,
+.home-page .post-action:active,
+.home-page .tiny-follow:active { transform: scale(.96); }
+.home-page .spark-options button,
+.home-page .feed-filter-button,
+.home-page .post-action,
+.home-page .tiny-follow { transition: transform 160ms ease, color 180ms ease, background 180ms ease, border-color 180ms ease; }
+.home-page .post-card { transition: opacity 420ms ease, transform 220ms ease, border-color 200ms ease, box-shadow 220ms ease; }
+.home-page .post-card:hover { box-shadow: 0 16px 38px rgba(0,0,0,.18); }
+.home-page .composer-card:focus-within { border-color: rgba(131,229,232,.4); box-shadow: 0 0 0 3px rgba(131,229,232,.055), 0 14px 38px rgba(0,0,0,.16); transition: border-color 220ms ease, box-shadow 220ms ease; }
+.home-page .trend-card { transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease; }
+.home-page .trend-card:hover { transform: translateY(-3px); border-color: rgba(185,166,255,.24); box-shadow: 0 16px 38px rgba(0,0,0,.16); }
+.home-page .home-nav-link { transition: color 180ms ease, transform 180ms ease; }
+.home-page .home-nav-link:hover { transform: translateY(-1px); }
+html.has-scroll-reveal .home-page [data-scroll-reveal] { opacity: 0; translate: 0 18px; transition: opacity 560ms cubic-bezier(.2,.7,.25,1) var(--reveal-delay,0ms), translate 560ms cubic-bezier(.2,.7,.25,1) var(--reveal-delay,0ms); }
+html.has-scroll-reveal .home-page [data-scroll-reveal].is-revealed { opacity: 1; translate: 0 0; }
+@media (prefers-reduced-motion: reduce) {
+  .home-page .welcome-orbit,
+  .home-page .welcome-orbit::before,
+  .home-page .welcome-orbit::after,
+  .home-page .spark-icon,
+  .home-page .feed-live .privacy-dot { animation: none !important; }
+  .home-page .post-card,
+  .home-page .trend-card,
+  .home-page .spark-options button,
+  .home-page .feed-filter-button,
+  .home-page .post-action,
+  .home-page .tiny-follow,
+  .home-page .home-nav-link { transition: none !important; }
+  .home-page .post-card:hover,
+  .home-page .trend-card:hover,
+  .home-page .home-nav-link:hover,
+  .home-page .spark-options button:active,
+  .home-page .feed-filter-button:active,
+  .home-page .post-action:active,
+  .home-page .tiny-follow:active { transform: none; }
+  html.has-scroll-reveal .home-page [data-scroll-reveal] { opacity: 1; translate: none; transition: none; }
+}

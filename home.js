@@ -167,3 +167,31 @@ document.querySelector('#publish-post').addEventListener('click', () => {
   composerPreview.hidden = true;
   showToast('Your post is live.');
 });
+
+// Reveal home sections as they enter view; keep the page fully visible if motion is reduced.
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if ('IntersectionObserver' in window && !reduceMotion) {
+  document.documentElement.classList.add('has-scroll-reveal');
+  const revealTargets = [
+    document.querySelector('.home-welcome-bar'),
+    document.querySelector('.daily-spark'),
+    document.querySelector('.feed-heading'),
+    document.querySelector('.composer-card'),
+    document.querySelector('.feed-filter'),
+    ...document.querySelectorAll('.post-card'),
+    ...document.querySelectorAll('.home-trends .trend-card'),
+    document.querySelector('.home-footer'),
+  ].filter(Boolean);
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-revealed');
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -24px 0px' });
+  revealTargets.forEach((target, index) => {
+    target.dataset.scrollReveal = 'true';
+    target.style.setProperty('--reveal-delay', `${Math.min(index % 4, 3) * 70}ms`);
+    revealObserver.observe(target);
+  });
+}
