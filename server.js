@@ -11,24 +11,21 @@ const types = {
   '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml',
 };
+const routeFiles = {
+  '/profile': 'profile.html',
+  '/home': 'home.html',
+  '/signup': 'signup.html',
+  '/discover': 'discover.html',
+  '/rooms': 'rooms.html',
+  '/messages': 'messages.html',
+  '/match': 'match.html',
+};
 
 const server = http.createServer((request, response) => {
   const requestPath = request.url === '/' ? '/index.html' : request.url.split('?')[0];
   const relativePath = requestPath === '/manus-routes.json'
     ? path.join('public', 'manus-routes.json')
-    : requestPath === '/profile'
-      ? 'profile.html'
-    : requestPath === '/home'
-        ? 'home.html'
-      : requestPath === '/signup'
-        ? 'signup.html'
-      : requestPath === '/discover'
-        ? 'discover.html'
-      : requestPath === '/rooms'
-        ? 'rooms.html'
-      : requestPath === '/messages'
-        ? 'messages.html'
-      : requestPath.replace(/^\//, '');
+    : (routeFiles[requestPath] || requestPath.replace(/^\//, ''));
   const filePath = path.resolve(root, relativePath);
 
   if (filePath !== root && !filePath.startsWith(`${root}${path.sep}`)) {

@@ -59,3 +59,10 @@
 - [x] Show rooms as closed directory cards by default with each room name and visitor count visible.
 - [x] Add a second experimental room card, “نبض المدينة”, with its own visitor count.
 - [x] Open the selected room only after the user presses its join button, and return to the card directory when leaving.
+
+## Face privacy and Match
+- [x] Add a Match section to the existing navigation and route system without removing existing sections.
+- [x] Show protected profile previews with personality information and interests, while keeping original face asset references out of the browser-facing candidate data.
+- [x] Persist likes, skips, mutual matches, reveal requests, consent state, and conversation data behind a shared repository-shaped adapter that can later be replaced by authenticated database/API calls.
+- [x] Keep faces hidden in private conversations until both sides have explicit consent; expose the second-party control only as a clearly labelled demo bridge until a real backend exists.
+- [x] Persist account metadata from signup with a protected-preview/original-asset reference boundary rather than storing original image bytes in the UI layer.

@@ -24,6 +24,7 @@
   const callButton = document.querySelector('#call-button');
   const callStatus = document.querySelector('#call-status');
   const callTimer = document.querySelector('#call-timer');
+  const dataAdapter = window.IQZodiacData?.adapter;
   const escapeHTML = (value) => value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 
   const renderContacts = (filter = '') => {
@@ -70,6 +71,28 @@
     });
     messageList.scrollTop = messageList.scrollHeight;
     renderContacts(document.querySelector('#contact-search').value);
+    renderRevealState();
+  };
+
+  const renderRevealState = async () => {
+    if (!dataAdapter) return;
+    const state = await dataAdapter.getRevealState(activeId);
+    const status = document.querySelector('#face-consent-status');
+    const request = document.querySelector('#request-reveal');
+    if (dataAdapter.canRevealFace(state)) {
+      status.textContent = 'Both people agreed. The face may now be revealed inside this private match.';
+      request.textContent = 'Face reveal approved'; request.disabled = true;
+    } else if (state.mine && !state.partner) {
+      status.textContent = 'Your request is recorded. The face stays hidden until the other person agrees too.';
+      request.textContent = 'Request sent'; request.disabled = true;
+    } else if (!state.mine && state.partner) {
+      status.textContent = 'They agreed first. You must also give explicit consent before the face can appear.';
+      request.textContent = 'I agree to reveal'; request.disabled = false;
+    } else {
+      status.textContent = 'A reveal requires two explicit yeses.';
+      request.textContent = 'Request reveal'; request.disabled = false;
+    }
+    document.querySelector('#partner-consent').textContent = state.partner ? 'Partner consent recorded · DEMO' : 'Simulate partner consent · DEMO';
   };
 
   const selectContact = (id) => {
@@ -81,6 +104,16 @@
   messageInput.addEventListener('input', () => {
     document.querySelector('#message-counter').textContent = `${messageInput.value.length} / 600`;
   });
+  document.querySelector('#request-reveal')?.addEventListener('click', async () => {
+    await dataAdapter?.requestReveal(activeId);
+    renderRevealState();
+  });
+  document.querySelector('#partner-consent')?.addEventListener('click', async () => {
+    const state = await dataAdapter?.getRevealState(activeId);
+    await dataAdapter?.setPartnerRevealConsent(activeId, !state.partner);
+    renderRevealState();
+  });
+
   document.querySelector('#message-form').addEventListener('submit', (event) => {
     event.preventDefault();
     const text = messageInput.value.trim();

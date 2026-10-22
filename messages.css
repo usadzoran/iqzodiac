@@ -24,3 +24,4 @@
   .messages-page .conversation-view{min-height:48vh}
   .messages-page .message-list{min-height:185px;max-height:35vh}
 }
+.face-consent-panel{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:14px 18px 0;padding:12px 14px;border:1px solid rgba(131,229,232,.16);border-radius:14px;background:rgba(131,229,232,.045)}.face-consent-panel h3{margin:0;color:var(--ink);font-size:12px}.face-consent-panel p:not(.card-kicker){margin:4px 0 0;color:var(--muted);font-size:9px}.face-consent-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px}.face-consent-actions .call-button{font-size:9px}.demo-consent{border-color:rgba(242,167,124,.25);color:var(--orange)}@media(max-width:760px){.face-consent-panel{align-items:flex-start;flex-direction:column}.face-consent-actions{justify-content:flex-start}}

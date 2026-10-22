@@ -2,8 +2,8 @@
   const STORE_KEY = 'iqzodiac-language';
   const dictionaries = window.IQZodiacTranslations || { enToAr: {}, arToEn: {} };
   const menuLabels = {
-    en: { home: 'Home', discover: 'Discover', rooms: 'Audio rooms', profile: 'Profile' },
-    ar: { home: 'الرئيسية', discover: 'اكتشاف', rooms: 'الغرف الصوتية', profile: 'الملف الشخصي' },
+    en: { home: 'Home', match: 'Match', discover: 'Discover', rooms: 'Audio rooms', profile: 'Profile' },
+    ar: { home: 'الرئيسية', match: 'Match', discover: 'اكتشاف', rooms: 'الغرف الصوتية', profile: 'الملف الشخصي' },
   };
   const pageLanguage = /^ar(?:-|$)/i.test(document.documentElement.lang) ? 'ar' : 'en';
   let storedLanguage = null;

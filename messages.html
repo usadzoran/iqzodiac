@@ -38,6 +38,10 @@
           <div class="conversation-person"><div id="active-avatar" class="contact-avatar avatar-maya">M</div><div><h2 id="active-name">Maya Chen</h2><p id="active-handle">@mayachen · Sample profile</p></div></div>
           <button id="call-button" class="call-button" type="button"><span aria-hidden="true">◖</span> Audio call <span class="call-demo-label">DEMO</span></button>
         </header>
+        <section class="face-consent-panel" aria-labelledby="face-consent-title">
+          <div><p class="card-kicker">FACE PRIVACY</p><h3 id="face-consent-title">The face stays protected.</h3><p id="face-consent-status">A reveal requires two explicit yeses.</p></div>
+          <div class="face-consent-actions"><button id="request-reveal" class="call-button" type="button">Request reveal</button><button id="partner-consent" class="call-button demo-consent" type="button">Simulate partner consent · DEMO</button></div>
+        </section>
         <div id="message-list" class="message-list" aria-live="polite" aria-label="Messages"></div>
         <form id="message-form" class="message-form">
           <label class="sr-only" for="message-input">Write a message</label>
@@ -70,6 +74,7 @@
   </div>
   <script src="./i18n-data.js?v=20261022-global"></script>
   <script src="./language.js?v=20261022-global"></script>
+  <script src="./privacy-core.js"></script>
   <script src="./messages.js"></script>
 </body>
 </html>

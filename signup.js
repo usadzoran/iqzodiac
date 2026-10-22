@@ -35,5 +35,15 @@ form.addEventListener('submit', (event) => {
     form.reportValidity();
     return;
   }
+  const profile = {
+    id: `user-${Date.now()}`,
+    name: `${document.querySelector('#first-name').value.trim()} ${document.querySelector('#last-name').value.trim()}`,
+    age: Number(document.querySelector('#age').value),
+    handle: `@${document.querySelector('#first-name').value.trim().toLowerCase()}`,
+    facePhoto: { originalAssetRef: null, protectedPreviewRef: null, faceHidden: true },
+    privacy: { revealRequiresMutualConsent: true },
+    createdAt: new Date().toISOString(),
+  };
+  try { localStorage.setItem('iqzodiac-current-profile', JSON.stringify(profile)); } catch { /* Keep the form usable when storage is unavailable. */ }
   showToast('Your details are ready. Secure account setup will be connected soon.');
 });
