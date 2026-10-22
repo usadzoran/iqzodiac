@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Daily news and weather for your orbit." />
+  <title>Daily — IQZodiac</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css?v=daily-20261022" />
+  <link rel="stylesheet" href="./daily.css?v=daily-20261022" />
+</head>
+<body class="daily-page has-site-nav">
+  <div class="aurora aurora-one" aria-hidden="true"></div><div class="aurora aurora-two" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
+  <main class="daily-shell">
+    <header class="topbar daily-topbar"><a class="mini-mark" href="./home.html" aria-label="IQZodiac home"><span class="mini-mark-orbit" aria-hidden="true"></span><span>IQZ</span></a><div class="daily-heading"><p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> YOUR DAILY ORBIT</p><h1>News <span>&amp; weather.</span></h1></div><a class="back-link" href="./home.html">Back to home <span aria-hidden="true">↗</span></a></header>
+    <section class="daily-meta"><div><p class="card-kicker">LIVE SNAPSHOT</p><h2 id="daily-date">Today’s briefing</h2><p id="daily-source-note">Fetching fresh stories and local conditions…</p></div><button id="refresh-daily" class="button button-secondary" type="button"><span>Refresh now</span><span class="button-arrow" aria-hidden="true">↻</span></button></section>
+    <section class="daily-grid">
+      <article class="weather-card daily-card" aria-labelledby="weather-title"><div class="daily-card-heading"><div><p class="card-kicker">01 / Local weather</p><h2 id="weather-title">Your sky</h2></div><span id="weather-location" class="live-badge">Auto location</span></div><div id="weather-content" class="weather-content"><div class="loading-pulse">Reading the sky…</div></div><p class="data-note">Weather supplied live by Open-Meteo. Nothing is saved.</p></article>
+      <article class="news-card daily-card" aria-labelledby="news-title"><div class="daily-card-heading"><div><p class="card-kicker">02 / Fresh from the orbit</p><h2 id="news-title">Today’s news</h2></div><span id="news-count" class="live-badge">Updating</span></div><div id="news-list" class="news-list"><div class="loading-pulse">Gathering today’s stories…</div></div><p class="data-note">Stories are fetched from an external RSS feed and expire from this view with the day.</p></article>
+    </section>
+    <footer class="footer daily-footer"><span>© 2026 IQZodiac</span><span class="footer-orbit" aria-hidden="true"><i></i><i></i><i></i></span><span>No permanent feed storage</span><button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>
+  </main>
+  <div class="toast" role="status" aria-live="polite" aria-atomic="true"><span class="toast-icon">✦</span><span class="toast-message"></span></div>
+  <nav class="site-nav" aria-label="Main navigation"><a href="./home.html"><span class="nav-glyph" aria-hidden="true">⌂</span><span data-menu-key="home">Home</span></a><a href="./match.html"><span class="nav-glyph" aria-hidden="true">♡</span><span data-menu-key="match">Match</span></a><a href="./daily.html" aria-current="page"><span class="nav-glyph" aria-hidden="true">◌</span><span data-menu-key="daily">Daily</span></a><a href="./discover.html"><span class="nav-glyph" aria-hidden="true">✦</span><span data-menu-key="discover">Discover</span></a><a href="./rooms.html"><span class="nav-glyph" aria-hidden="true">◉</span><span data-menu-key="rooms">Rooms</span></a><a href="./profile.html"><span class="nav-glyph" aria-hidden="true">◍</span><span data-menu-key="profile">Profile</span></a></nav>
+  <script src="./i18n-data.js?v=20261022-global"></script><script src="./language.js?v=20261022-global"></script><script src="./daily.js"></script>
+</body>
+</html>

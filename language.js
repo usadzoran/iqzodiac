@@ -2,8 +2,8 @@
   const STORE_KEY = 'iqzodiac-language';
   const dictionaries = window.IQZodiacTranslations || { enToAr: {}, arToEn: {} };
   const menuLabels = {
-    en: { home: 'Home', match: 'Match', discover: 'Discover', rooms: 'Audio rooms', profile: 'Profile' },
-    ar: { home: 'الرئيسية', match: 'Match', discover: 'اكتشاف', rooms: 'الغرف الصوتية', profile: 'الملف الشخصي' },
+    en: { home: 'Home', match: 'Match', daily: 'Daily', discover: 'Discover', rooms: 'Rooms', profile: 'Profile' },
+    ar: { home: 'الرئيسية', match: 'Match', daily: 'اليومي', discover: 'اكتشاف', rooms: 'الغرف', profile: 'الملف الشخصي' },
   };
   const pageLanguage = /^ar(?:-|$)/i.test(document.documentElement.lang) ? 'ar' : 'en';
   let storedLanguage = null;
@@ -131,37 +131,12 @@
   const style = document.createElement('style');
   style.id = 'iqzodiac-menu-stability';
   style.textContent = `
-    .user-bottom-menu {
-      position: fixed !important; z-index: 9999 !important; left: 50% !important; right: auto !important;
-      bottom: 16px !important; transform: translateX(-50%) !important; width: min(calc(100% - 36px), 650px) !important;
-      display: flex !important; align-items: center !important; justify-content: space-between !important;
-      gap: 7px !important; margin: 0 !important; padding: 8px !important;
-      border: 1px solid rgba(218,225,255,.16) !important; border-radius: 18px !important;
-      background: rgba(9,14,29,.9) !important; box-shadow: 0 16px 45px rgba(0,0,0,.38) !important;
-      backdrop-filter: blur(18px) !important;
-    }
-    .user-bottom-menu a, .user-bottom-menu button {
-      box-sizing: border-box !important; flex: 1 1 0% !important; min-width: 0 !important;
-      min-height: 44px !important; display: inline-flex !important; align-items: center !important;
-      justify-content: center !important; -webkit-tap-highlight-color: transparent !important;
-      text-decoration: none !important; box-shadow: none !important;
-    }
-    .user-bottom-menu a:hover, .user-bottom-menu a:active, .user-bottom-menu a:focus,
-    .user-bottom-menu a[aria-current], .user-bottom-menu button:hover,
-    .user-bottom-menu button:active, .user-bottom-menu button:focus {
-      border-color: transparent !important; background: transparent !important;
-      color: var(--dim, #9aacc3) !important; transform: none !important;
-      filter: none !important; box-shadow: none !important; outline: none !important;
-    }
-    .user-bottom-menu a:focus-visible, .user-bottom-menu button:focus-visible {
-      outline: 2px solid var(--cyan, #83e5e8) !important; outline-offset: 2px !important;
-    }
-    @media (max-width: 560px) {
-      .user-bottom-menu { bottom: max(8px, env(safe-area-inset-bottom, 0px)) !important; width: calc(100% - 16px) !important; gap: 3px !important; padding: 6px !important; }
-      .user-bottom-menu a, .user-bottom-menu button { padding: 9px 5px !important; font-size: 8px !important; letter-spacing: .02em !important; }
-    }
-    html[dir="rtl"] .home-page, html[dir="rtl"] .messages-page,
-    html[dir="rtl"] .profile-page, html[dir="rtl"] .signup-page { text-align: start; }
+    .site-nav { position: fixed; z-index: 9999; left: 50%; bottom: 18px; transform: translateX(-50%); width: min(calc(100% - 32px), 760px); display: flex; align-items: stretch; gap: 4px; padding: 7px; border: 1px solid rgba(131,229,232,.2); border-radius: 22px; background: rgba(7,12,26,.9); box-shadow: 0 18px 55px rgba(0,0,0,.42), 0 0 35px rgba(131,229,232,.05); backdrop-filter: blur(20px); }
+    .site-nav a { position: relative; flex: 1 1 0; min-width: 0; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 48px; border: 1px solid transparent; border-radius: 15px; color: var(--dim, #9aacc3); font: 9px "DM Mono", monospace; letter-spacing: .04em; text-decoration: none; transition: color .18s ease, background .18s ease, border-color .18s ease, transform .18s ease; }
+    .site-nav a:hover, .site-nav a:focus-visible { color: var(--ink, #f6f6f0); background: rgba(131,229,232,.07); border-color: rgba(131,229,232,.2); transform: translateY(-2px); outline: none; }
+    .site-nav a[aria-current="page"] { color: var(--cyan, #83e5e8); background: linear-gradient(145deg, rgba(131,229,232,.14), rgba(185,166,255,.1)); border-color: rgba(131,229,232,.28); }
+    .nav-glyph { font: 18px/1 Manrope, sans-serif; }
+    @media (max-width: 600px) { .site-nav { bottom: max(8px, env(safe-area-inset-bottom, 0px)); width: calc(100% - 14px); padding: 5px; gap: 2px; } .site-nav a { min-height: 45px; font-size: 7px; letter-spacing: 0; } .nav-glyph { font-size: 16px; } }
   `;
   document.head.append(style);
   applyLanguage();

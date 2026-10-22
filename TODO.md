@@ -66,3 +66,9 @@
 - [x] Persist likes, skips, mutual matches, reveal requests, consent state, and conversation data behind a shared repository-shaped adapter that can later be replaced by authenticated database/API calls.
 - [x] Keep faces hidden in private conversations until both sides have explicit consent; expose the second-party control only as a clearly labelled demo bridge until a real backend exists.
 - [x] Persist account metadata from signup with a protected-preview/original-asset reference boundary rather than storing original image bytes in the UI layer.
+
+## New site navigation and daily briefing
+- [x] Replace the old user menu with a unified site navigation that keeps Home, Match, Discover, Rooms, and Profile reachable and adds Daily.
+- [x] Add a Daily page with live weather and news panels that follows the current IQZodiac visual language and supports English/Arabic menu labels.
+- [x] Fetch weather from Open-Meteo and news from an external BBC RSS feed through the server without writing to the database or localStorage.
+- [x] Mark the daily feed as `no-store`, refresh it on demand, and reload the page when the calendar day changes so the previous day’s items leave the view.
