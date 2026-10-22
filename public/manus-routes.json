@@ -5,6 +5,7 @@
     { "path": "/home", "title": "Home — IQZodiac" },
     { "path": "/signup", "title": "Create Account — IQZodiac" },
     { "path": "/discover", "title": "Discover Your Element — IQZodiac" },
-    { "path": "/rooms", "title": "Audio Rooms — IQZodiac" }
+    { "path": "/rooms", "title": "Audio Rooms — IQZodiac" },
+    { "path": "/messages", "title": "Messages — IQZodiac" }
   ]
 }

@@ -719,3 +719,5 @@ body.has-user-menu { padding-bottom: 82px; }
 .home-page .post-card[hidden] { display:none; }
 @media (max-width:560px) { .home-page .daily-spark { margin-top:-12px; padding:16px; } .home-page .spark-options { gap:6px; } .home-page .spark-options button { font-size:9px; } }
 @media (prefers-reduced-motion: reduce) { .home-page .post-card,.home-page .spark-options button { transition:none; } .home-page .post-card:hover { transform:none; } }
+
+.home-page .tiny-message-link { display:grid; place-items:center; text-decoration:none; }

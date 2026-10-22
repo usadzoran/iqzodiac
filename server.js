@@ -26,6 +26,8 @@ const server = http.createServer((request, response) => {
         ? 'discover.html'
       : requestPath === '/rooms'
         ? 'rooms.html'
+      : requestPath === '/messages'
+        ? 'messages.html'
       : requestPath.replace(/^\//, '');
   const filePath = path.resolve(root, relativePath);
 
