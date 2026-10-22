@@ -7,3 +7,20 @@
 @media(max-width:760px){.messages-shell{width:min(100% - 22px,620px);padding-top:18px}.messages-topbar{grid-template-columns:auto 1fr auto;gap:8px}.messages-topbar .mini-mark{font-size:13px}.messages-title{text-align:left}.messages-title .eyebrow{justify-content:flex-start;font-size:7px}.messages-title h1{font-size:23px}.messages-back{font-size:9px}.messages-panel{grid-template-columns:1fr;min-height:0}.conversation-sidebar{border-right:0;border-bottom:1px solid rgba(218,225,255,.1);padding:13px}.conversation-heading{padding-bottom:10px}.contact-list{display:flex;overflow:auto;gap:6px;padding-bottom:2px}.contact-item{flex:0 0 150px;padding:8px}.sidebar-note{display:none}.conversation-view{min-height:58vh}.message-list{max-height:46vh;padding:18px 14px}.conversation-topbar{padding:13px}.messages-footer{margin-top:20px}}
 @media(max-width:430px){.messages-title .eyebrow{display:none}.messages-title h1{font-size:19px}.messages-back{max-width:72px;text-align:right}.call-button{padding:8px;font-size:9px}.call-demo-label{display:none}.conversation-person h2{font-size:12px}.message-form{margin:0 10px;padding:9px}.message-counter{display:none}.message-form button{padding:8px 10px}.message-bubble{max-width:87%}}
 @media(prefers-reduced-motion:reduce){.contact-item,.call-button,.message-form button{transition:none}}
+
+/* Keep the messaging header and composer readable at phone widths */
+@media(max-width:760px){
+  .messages-page .messages-topbar{grid-template-columns:auto 1fr;grid-template-areas:"brand back" "title title";gap:9px 12px;padding-bottom:13px}
+  .messages-page .messages-topbar .mini-mark{grid-area:brand}
+  .messages-page .messages-title{grid-area:title;text-align:left}
+  .messages-page .messages-back{grid-area:back;max-width:none;white-space:nowrap}
+  .messages-page .conversation-view{min-height:50vh}
+  .messages-page .message-list{min-height:200px;max-height:38vh}
+}
+@media(max-width:430px){
+  .messages-page .messages-title .eyebrow{display:flex;font-size:7px}
+  .messages-page .messages-title h1{font-size:23px}
+  .messages-page .messages-back{font-size:9px}
+  .messages-page .conversation-view{min-height:48vh}
+  .messages-page .message-list{min-height:185px;max-height:35vh}
+}
