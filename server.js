@@ -22,6 +22,8 @@ const routeFiles = {
   '/match': 'match.html',
   '/daily': 'daily.html',
   '/vip': 'vip.html',
+  '/gift-store': 'gift-store.html',
+  '/wallet': 'wallet.html',
 };
 const fetchText = (url) => new Promise((resolve, reject) => {
   https.get(url, { headers: { 'User-Agent': 'IQZodiac Daily/1.0' } }, (res) => {

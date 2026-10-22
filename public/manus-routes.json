@@ -9,6 +9,8 @@
     { "path": "/messages", "title": "Messages — IQZodiac" },
     { "path": "/match", "title": "Match — IQZodiac" },
     { "path": "/daily", "title": "Daily — IQZodiac" },
-    { "path": "/vip", "title": "VIP Orbit — IQZodiac" }
+    { "path": "/vip", "title": "VIP Orbit — IQZodiac" },
+    { "path": "/gift-store", "title": "Gift Store — IQZodiac" },
+    { "path": "/wallet", "title": "Wallet — IQZodiac" }
   ]
 }

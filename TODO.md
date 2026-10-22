@@ -78,3 +78,9 @@
 - [x] Store zodiac sign, personality element, interests, and personality-answer placeholders as Match inputs in the existing profile/account model.
 - [x] Rank Match candidates by compatibility score using shared interests, zodiac alignment, and personality-element compatibility instead of presenting a fixed random order.
 - [x] Add a VIP-gated orbit page and keep the payment/checkout boundary ready without pretending that billing is connected.
+
+## Match refresh, gift store, and wallet
+- [x] Rebuilt Match layout from the broken compressed stylesheet into a structured responsive discovery experience.
+- [x] Added a gift store with coin-priced gifts, recipient selection, gift ledger entries, and Match-to-gift flow.
+- [x] Added user wallet balances, received-gift accounting, coin top-up packages, platform fee, minimum withdrawal, transaction history, and payout provider boundaries.
+- [x] Kept PayPal/Visa/Mastercard actions as server-side integration contracts only; no card data or real money is collected in the prototype.
