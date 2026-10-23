@@ -1,34 +1,33 @@
 # IQZodiac Discovery / AI Assistant — préparation d’intégration
 
-**Statut : non connecté.** IQZodiac est actuellement un site prototype servi par `server.js`. L’inscription n’authentifie pas un compte, les données locales du navigateur ne constituent pas une base partagée, aucun fournisseur d’IA n’est appelé, et le dépôt ne contient pas de répertoire de membres réels. Le schéma `database/schema.sql` est une proposition de migration Supabase/PostgreSQL uniquement ; elle n’a pas été appliquée.
+**État actuel : démonstration locale uniquement.** L’écran Assistant propose maintenant une conversation séquentielle, les questions de personnalité déjà utilisées dans le projet, des choix et des réponses libres. Le résultat est calculé dans le navigateur par des règles simples; aucun modèle d’IA n’est appelé. Les réponses, intérêts et date de naissance sont conservés dans le `localStorage` de ce navigateur, par profil local. Ils ne sont ni envoyés à un serveur, ni synchronisés, ni protégés comme un compte authentifié. L’inscription du projet reste également une maquette locale.
 
-## Flux visé
+Le projet n’est relié à aucun fournisseur d’IA ou backend de compte. Aucune base Supabase n’a été connectée. `database/schema.sql` demeure un schéma préparatoire non appliqué; aucune requête n’y est adressée par la démo.
 
-1. Après la création locale du profil par le formulaire d’inscription actuel, ouvrir `assistant.html`. Tant que l’authentification n’est pas raccordée, l’écran explique honnêtement que la conversation n’a pas commencé.
-2. Une fois un fournisseur IA et un backend authentifié raccordés, reprendre les réponses existantes si le statut de découverte est `completed`; sinon demander une seule question à la fois. Chaque tour accepte un identifiant d’option ou un texte libre, valide la réponse, la sauvegarde côté serveur, puis renvoie la question suivante.
-3. À la fin, le serveur calcule un résumé/personnalité et les intérêts à partir des réponses. Le signe zodiacal est calculé uniquement depuis `birth_date` avec les limites de dates appropriées; il ne doit jamais être déduit des réponses de personnalité.
-4. Chercher des profils réels avec découverte terminée et visibilité explicite activée, exclure l’utilisateur connecté, filtrer selon ses préférences et retourner une liste vide si aucun membre n’est admissible. Ne pas utiliser les profils statiques de `privacy-core.js` comme résultats réels.
-5. Renvoyer les profils via une route serveur authentifiée et filtrée; ne pas rendre public l’accès aux tables de réponse. Toute révélation de profil ou toute mise en relation reste soumise au consentement et aux règles d’accès déjà prévues par le site.
+## Comportement de la démo
 
-## Contrat API proposé (à implémenter après connexion)
+1. Après l’inscription prototype, `assistant.html?welcome=1` affiche un accueil humoristique qui explique que les réponses servent à explorer la communauté dans laquelle l’utilisateur pourrait se sentir à sa place et le type de personne qu’il souhaite rencontrer.
+2. Le guide pose une question à la fois à partir de la série actuelle de 12 questions. L’utilisateur peut choisir une réponse ou saisir son propre texte. Les intérêts sont demandés séparément.
+3. Les réponses à choix produisent un résultat illustratif à partir du décompte des quatre éléments. Les réponses libres restent enregistrées comme notes et une petite liste de mots-clés, clairement indicative, peut contribuer au résultat. Ce n’est pas une compréhension par IA ni une évaluation psychologique.
+4. La date de naissance est demandée séparément pour calculer le signe zodiacal; ce dernier n’est jamais déduit des réponses de personnalité.
+5. La progression peut reprendre sur le même navigateur pour le même profil local. Le bouton de redémarrage efface la progression de démonstration de ce profil.
+6. Le lien vers Match mène à l’état d’attente du site : faute de base de membres réels, aucun profil ou score de compatibilité fictif n’est présenté.
 
-- `POST /api/discovery/session` — authentifie l’utilisateur, retourne son état de découverte; accepte `start` uniquement si aucune réponse complète n’existe.
-- `POST /api/assistant/discovery/turn` — reçoit `{ sessionId, answerChoice?, answerText? }`; ne traite qu’une réponse au tour courant, stocke la réponse, retourne la prochaine question ou un état `completed`. Les clés fournisseur IA restent côté serveur.
-- `GET /api/discovery/result` — retourne uniquement le résultat de l’utilisateur authentifié et son `zodiac_sign` calculé depuis sa date de naissance.
-- `GET /api/matches` — retourne seulement des comptes réels qui ont choisi d’être visibles et des résultats admissibles. Répond par `[]` si aucun profil ne correspond; ne crée jamais de membres ou de scores fictifs.
+Ne saisissez pas de données sensibles dans cette démo. L’effacement des données du navigateur ou le changement de navigateur/appareil supprime l’accès à la progression locale.
 
-Ces routes sont des contrats de conception, pas des endpoints opérationnels dans cette livraison. La route existante `/api/daily-feed` n’est pas un backend d’authentification ou de découverte.
+## Contrat futur — seulement si une intégration réelle est demandée
 
-## Raccordement de production requis
+- `POST /api/discovery/session` — authentifie l’utilisateur et récupère son état de découverte.
+- `POST /api/assistant/discovery/turn` — traite une seule réponse et sauvegarde l’avancement côté serveur.
+- `GET /api/discovery/result` — retourne le résultat de l’utilisateur et son `zodiac_sign` calculé depuis sa date de naissance.
+- `GET /api/matches` — retourne seulement des comptes réels admissibles ayant choisi d’être visibles; renvoie `[]` lorsqu’aucun profil ne correspond.
 
-- Choisir et activer Supabase (Auth + base) et un fournisseur IA compatible avec le traitement côté serveur; aucun fournisseur n’est activé dans cette session.
-- Ajouter une authentification réelle et une migration/recréation de profils. Les profils `localStorage` créés par le prototype ne peuvent pas être considérés comme des comptes vérifiés ou transférés automatiquement.
-- Appliquer et tester la migration avec RLS. Ajouter une méthode explicite de consentement/visibilité des profils et des champs privés avant de rendre la recherche disponible.
-- Mettre les clés dans les secrets du serveur; ne jamais exposer une clé de service ou d’IA dans le navigateur. Ajouter contrôle de débit, validation des entrées, rétention/suppression et consentement adapté avant d’envoyer des réponses à un fournisseur IA.
-- Tester authentification, reprise de progression, calcul de date zodiacale aux limites de signes, politiques RLS, résultats vides, visibilité, et accès multi-utilisateurs avant d’annoncer le service comme actif.
+Ces routes sont des contrats de conception, pas des endpoints opérationnels. La route existante `/api/daily-feed` n’est pas un backend de comptes ou de découverte.
 
-## Fichiers de cette préparation
+Une intégration réelle nécessiterait une authentification, une base, des règles RLS testées, un service IA côté serveur, des secrets serveur, une politique de consentement/visibilité, des contrôles de débit et une stratégie de migration des profils locaux. Rien de cela n’est activé dans cette version.
 
-- `assistant.html` / `assistant.css` : écran et état d’intégration visibles, sans fausse conversation ni faux résultat.
-- `database/schema.sql` : structure candidate avec réponses, profil, état de progression et règles RLS utilisateur.
-- `discover.html` : porte d’entrée vers l’assistant pour la découverte de soi et vers Match pour rencontrer des personnes.
+## Fichiers
+
+- `assistant.html`, `assistant.css`, `assistant.js` : interface conversationnelle locale et démo à règles explicites.
+- `database/schema.sql` : structure candidate avec profils, réponses, progression et politiques RLS; non appliquée.
+- `discover.html` : porte d’entrée vers Assistant et Match.

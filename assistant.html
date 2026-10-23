@@ -3,34 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="IQZodiac discovery assistant setup status." />
+  <meta name="description" content="IQZodiac local personality discovery conversation demo." />
   <title>AI Assistant — IQZodiac</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=assistant-foundation-20261023" />
-  <link rel="stylesheet" href="./assistant.css?v=assistant-foundation-20261023" />
+  <link rel="stylesheet" href="./styles.css?v=assistant-demo-20261023" />
+  <link rel="stylesheet" href="./assistant.css?v=assistant-demo-20261023" />
 </head>
 <body class="has-site-nav assistant-page">
   <div class="aurora aurora-one" aria-hidden="true"></div><div class="aurora aurora-two" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
   <main class="assistant-shell">
     <header class="topbar assistant-topbar"><a class="mini-mark" href="./home.html" aria-label="IQZodiac home"><span class="mini-mark-orbit" aria-hidden="true"></span><span>IQZ</span></a><div class="assistant-heading"><p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> YOUR DISCOVERY CONVERSATION</p><h1>AI <span>Assistant.</span></h1></div><a class="back-link" href="./discover.html">Discover <span aria-hidden="true">↗</span></a></header>
-    <section class="assistant-intro"><div><p class="card-kicker">PERSONALITY · INTERESTS · ZODIAC</p><h2>A more thoughtful way<br /><em>to meet your people.</em></h2><p>The planned conversation asks one discovery question at a time, accepts a choice or a written response, and uses your birth date—not personality answers—to determine your zodiac sign.</p></div><div class="assistant-orbit" aria-hidden="true"><span>✦</span><i></i><b></b></div></section>
-    <section class="assistant-status" aria-labelledby="assistant-status-title">
-      <div class="assistant-status-mark" aria-hidden="true">✦</div>
-      <div class="assistant-status-copy"><p class="card-kicker">INTEGRATION STATUS</p><h2 id="assistant-status-title">AI Assistant is not connected yet</h2><p>This repository currently has no AI provider, authenticated account service, or shared database. The conversation is therefore not started, and no personality result, zodiac sign, or compatibility group is being generated.</p><span class="assistant-status-tag"><i aria-hidden="true"></i> Setup foundation only · no live AI</span></div>
+    <section class="assistant-intro"><div><p class="card-kicker">PERSONALITY · INTERESTS · ZODIAC</p><h2>A more thoughtful way<br /><em>to meet your people.</em></h2><p>A guided demo inspired by the personality questions already in IQZodiac. It asks one question at a time, accepts a suggested answer or your own words, and calculates a zodiac sign from the birth date you enter.</p></div><div class="assistant-orbit" aria-hidden="true"><span>✦</span><i></i><b></b></div></section>
+    <section class="assistant-demo-notice" aria-label="Demo status"><span class="demo-pulse" aria-hidden="true"></span><div><strong>Local demo · not a connected AI</strong><p>Responses use simple browser-side rules. Nothing is sent to an AI provider or database.</p></div><span class="assistant-status-tag"><i aria-hidden="true"></i> SAVED ON THIS DEVICE ONLY</span></section>
+    <section class="assistant-chat" aria-label="Discovery conversation">
+      <header class="assistant-chat-head"><div class="assistant-chat-avatar" aria-hidden="true">✦</div><div><strong>IQZodiac Discovery Guide</strong><small id="chat-progress">Ready to begin</small></div><span class="assistant-local-badge">DEMO</span></header>
+      <div id="chat-log" class="assistant-chat-log" role="log" aria-live="polite" aria-relevant="additions text"></div>
+      <section id="chat-turn" class="assistant-turn" aria-live="polite"></section>
+      <section id="discovery-result" class="assistant-result" hidden aria-live="polite"></section>
+      <div class="assistant-chat-foot"><p>Prototype only: answers and birth date stay in this browser’s local storage. Please do not enter sensitive personal information.</p><button id="restart-discovery" class="assistant-reset" type="button">Start over</button></div>
     </section>
-    <section class="assistant-plan" aria-label="Planned discovery flow">
-      <div class="section-heading"><div><p class="card-kicker">THE PLANNED FLOW</p><h2>One clear step at a time</h2></div></div>
-      <ol class="assistant-steps">
-        <li><span>01</span><div><strong>Discover</strong><p>Ask the existing personality prompts one at a time; accept suggested choices or the member’s own words.</p></div></li>
-        <li><span>02</span><div><strong>Understand</strong><p>Summarize personality traits and interests from completed answers. Never infer a zodiac sign from personality answers.</p></div></li>
-        <li><span>03</span><div><strong>Calculate</strong><p>Use the member’s verified or explicitly supplied birth date to calculate a zodiac sign, when available.</p></div></li>
-        <li><span>04</span><div><strong>Connect</strong><p>Query only real, eligible member profiles from the shared database. If there are none, show an honest empty state.</p></div></li>
-      </ol>
-    </section>
-    <div class="assistant-actions"><a class="button button-secondary" href="./discover.html">Back to Discover <span class="button-arrow">↗</span></a><p>Answers and results cannot yet be saved to a shared account. The SQL foundation and integration notes are in the project documentation.</p></div>
     <footer class="footer assistant-footer"><span>© 2026 IQZodiac</span><span class="footer-orbit" aria-hidden="true"><i></i><i></i><i></i></span><span>Look inward. Move forward.</span><button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>
   </main>
   <nav class="site-nav" aria-label="Main navigation">
@@ -42,6 +36,6 @@
     <a href="./rooms.html"><span class="nav-glyph" aria-hidden="true">◉</span><span data-menu-key="rooms">Rooms</span></a>
     <a href="./profile.html"><span class="nav-glyph" aria-hidden="true">◍</span><span data-menu-key="profile">Profile</span></a>
   </nav>
-  <script src="./i18n-data.js?v=20261022-global"></script><script src="./language.js?v=20261022-global"></script>
+  <script src="./i18n-data.js?v=20261022-global"></script><script src="./language.js?v=20261022-global"></script><script src="./assistant.js?v=assistant-demo-20261023"></script>
 </body>
 </html>

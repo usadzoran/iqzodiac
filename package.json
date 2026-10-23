@@ -4,6 +4,6 @@
   "private": true,
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check script.js && node --check profile.js && node --check home.js && node --check messages.js && node --check privacy-core.js && node --check signup.js && node --check match.js && node --check i18n-data.js"
+    "check": "node --check server.js && node --check script.js && node --check profile.js && node --check home.js && node --check messages.js && node --check privacy-core.js && node --check signup.js && node --check match.js && node --check i18n-data.js && node --check assistant.js"
   }
 }
