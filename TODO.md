@@ -42,10 +42,9 @@
 - [x] Keep the prototype local-only: no personal data or identity photos are uploaded yet.
 
 ## Discover and fixed user menu
-- [x] Add a Discover page based on the supplied personality-elements quiz.
-- [x] Keep the Discover quiz in Arabic with twelve questions, four element choices, animated result orbs, and a restart action.
+- [x] Add a distinct Discover hub for people, rooms, and new paths around IQZodiac.
 - [x] Add a fixed bottom user menu on Home, Profile, and Discover.
-- [x] Add Home, Discover, Profile, and a placeholder “New section” item to the menu for later development.
+- [x] Keep Home, Discover, Entertainment, Rooms, and Profile reachable from the shared menu.
 
 ## Shared menu language
 - [x] Keep the menu language consistent across Home, Profile, and Discover instead of changing with the page.
@@ -53,7 +52,7 @@
 - [x] Provide a manual EN / العربية toggle and persist the selected language between pages.
 
 ## Entertainment
-- [x] Add an “Entertainment / ترفيه” menu section that opens the existing personality-elements quiz game.
+- [x] Add a distinct “Entertainment / ترفيه” menu section that opens the personality-elements quiz game.
 
 ## Audio rooms
 - [x] Add a “Audio rooms / غرف صوتية” section to the fixed user menu.

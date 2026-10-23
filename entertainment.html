@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07101d">
+<title>Entertainment — IQZodiac</title>
+
+<style>
+*{box-sizing:border-box}
+:root{color-scheme:dark}
+body{
+  margin:0;background:radial-gradient(ellipse at top,#1b3048,#07101d 65%,#03060d);
+  color:#fff;font-family:Tahoma,Arial,sans-serif;min-height:100vh
+}
+button{font:inherit}
+header{text-align:center;padding:30px 15px 10px}
+header h1{
+  font-size:clamp(25px,6vw,39px);margin:0 0 12px;
+  background:linear-gradient(90deg,#ffad6b,#d9f3ff,#b6a5ff);
+  color:transparent;background-clip:text;-webkit-background-clip:text
+}
+header p{color:#b8c8dc;font-size:14px;line-height:1.9}
+main{width:min(100% - 24px,680px);margin:auto}
+.panel{
+  background:rgba(255,255,255,.055);
+  border:1px solid #ffffff20;border-radius:22px;
+  padding:20px;margin:20px 0;
+  box-shadow:0 15px 45px #0003
+}
+.progress{
+  height:5px;border-radius:9px;background:#ffffff17;
+  overflow:hidden;margin:15px 0 24px
+}
+#progressBar{height:100%;width:0;background:#b6a5ff;transition:width .3s}
+.question{margin-bottom:24px}
+.question h3{font-size:17px;line-height:1.8;margin:0 0 13px}
+.option{
+  display:flex;align-items:center;gap:10px;
+  padding:13px;margin:9px 0;border:1px solid #ffffff20;
+  background:#ffffff07;border-radius:12px;cursor:pointer;
+  line-height:1.7;font-size:14px;transition:.2s
+}
+.option:has(input:checked){
+  border-color:#b6a5ff;background:#a78bfa20
+}
+.option input{accent-color:#a78bfa;width:17px;height:17px;flex-shrink:0}
+.btn{
+  border:0;border-radius:12px;padding:14px 20px;
+  background:linear-gradient(120deg,#a78bfa,#6366f1);
+  color:white;font-weight:bold;cursor:pointer;width:100%;
+  transition:transform .2s,filter .2s
+}
+.btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.btn.secondary{background:#ffffff10;border:1px solid #ffffff30;margin-top:10px}
+.note{color:#9aacc3;font-size:12px;line-height:1.9;text-align:center}
+.hidden{display:none!important}
+
+/* عالم العناصر */
+#result{text-align:center}
+#result h2{font-size:clamp(23px,5vw,32px)}
+#scene{
+  position:relative;height:390px;max-width:500px;
+  margin:0 auto;perspective:900px;overflow:hidden
+}
+#mainOrb{
+  position:absolute;left:50%;top:50%;width:190px;height:190px;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:conic-gradient(#ff5b20 0 25%,#79a84d 25% 50%,
+  #159ce0 50% 75%,#c8edff 75% 100%);
+  border:2px solid #ffffff99;
+  box-shadow:inset -18px -15px 30px #0008,
+  inset 8px 8px 25px #fff8,0 0 45px #8fcfff66;
+  animation:float 2.5s ease-in-out infinite;
+  transition:opacity .5s,transform .8s
+}
+#mainOrb:before{
+  content:"✦";position:absolute;inset:0;display:grid;place-items:center;
+  font-size:55px;text-shadow:0 0 25px white
+}
+#mainOrb:after{
+  content:"عناصر الطبيعة";position:absolute;top:65%;width:100%;
+  font-weight:bold;font-size:14px;text-shadow:0 2px 8px black
+}
+#orbs{
+  position:absolute;inset:0;display:grid;
+  grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+  align-items:center;justify-items:center;gap:12px;
+  opacity:0;pointer-events:none;transition:opacity .5s
+}
+.orb{
+  --c:#fff;--g:#fff;
+  position:relative;width:clamp(115px,29vw,155px);
+  height:clamp(115px,29vw,155px);border-radius:50%;
+  border:1px solid #ffffff90;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:6px;color:white;cursor:pointer;
+  opacity:0;transform:scale(.1) rotate(-45deg);
+  box-shadow:inset -15px -18px 28px #0008,
+  inset 8px 8px 20px #ffffff50,0 0 22px var(--g);
+  text-shadow:0 2px 8px #000;
+  transition:filter .3s,box-shadow .3s,outline .3s
+}
+.orb:before{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(ellipse at 28% 20%,#ffffffbb,transparent 17%),
+  linear-gradient(130deg,transparent 35%,#0006)
+}
+.orb>*{position:relative;z-index:1}
+.orb .emoji{font-size:29px}
+.orb strong{font-size:20px}
+.orb small{font-size:11px}
+.fire{--g:#ff4a19;background:radial-gradient(circle at 40% 35%,#ffcb56,#f04413 38%,#59100a 85%)}
+.earth{--g:#9fcf62;background:radial-gradient(circle at 40% 30%,#c8d986,#657e39 43%,#292b1a 85%)}
+.water{--g:#28bfff;background:repeating-radial-gradient(ellipse at 40% 30%,#8cf3ff 0 4px,#168cc9 9px,#063b6b 19px)}
+.air{--g:#c5edff;background:radial-gradient(circle at 30% 25%,#fff,#a5e1fa 28%,#5989b5 65%,#243b65)}
+#scene.split #mainOrb{opacity:0;transform:translate(-50%,-50%) scale(.1) rotate(140deg)}
+#scene.split #orbs{opacity:1;pointer-events:auto}
+#scene.split .orb{animation:arrive .8s cubic-bezier(.2,.8,.2,1) forwards}
+#scene.split .orb:nth-child(1){animation-delay:.05s}
+#scene.split .orb:nth-child(2){animation-delay:.25s}
+#scene.split .orb:nth-child(3){animation-delay:.45s}
+#scene.split .orb:nth-child(4){animation-delay:.65s}
+#scene.split .orb.chosen{
+  outline:3px solid var(--g);outline-offset:4px;
+  filter:brightness(1.25);
+  box-shadow:inset -12px -12px 24px #0005,0 0 28px var(--g),0 0 55px var(--g)
+}
+@keyframes arrive{
+  0%{opacity:0;transform:scale(.1) rotate(-45deg)}
+  70%{opacity:1;transform:scale(1.08) rotate(5deg)}
+  100%{opacity:1;transform:scale(1) rotate(0)}
+}
+@keyframes float{
+  0%,100%{margin-top:0}
+  50%{margin-top:-9px}
+}
+#resultText{
+  border:1px solid #ffffff25;border-radius:18px;
+  padding:20px;margin:15px 0;background:#ffffff08;text-align:right
+}
+#resultText h3{text-align:center;font-size:23px;margin:0 0 12px}
+#resultText p{line-height:2;color:#d7e3f1;font-size:14px}
+#match{color:#d6c7ff;font-weight:bold;line-height:1.9}
+footer{padding:22px 10px 30px;text-align:center;color:#7387a2;font-size:12px}
+@media(max-width:380px){
+  #scene{height:340px}
+  #mainOrb{width:160px;height:160px}
+  .orb{width:110px;height:110px}
+  .orb strong{font-size:17px}
+  .orb .emoji{font-size:23px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+
+<style>
+body{padding-bottom:90px}
+.user-bottom-menu{position:fixed;z-index:20;right:12px;bottom:12px;left:12px;display:flex;justify-content:center;gap:8px;padding:8px;border:1px solid #ffffff20;border-radius:18px;background:rgba(7,16,29,.9);box-shadow:0 14px 35px #0008;backdrop-filter:blur(18px)}
+.user-bottom-menu a,.user-bottom-menu button{display:flex;min-width:92px;align-items:center;justify-content:center;gap:6px;padding:10px 12px;border:1px solid transparent;border-radius:11px;background:transparent;color:#9aacc3;cursor:pointer;font:700 12px Tahoma,Arial,sans-serif;text-decoration:none;transition:.2s}
+.user-bottom-menu a:hover,.user-bottom-menu a[aria-current=true],.user-bottom-menu a:focus,.user-bottom-menu button:hover,.user-bottom-menu button:focus{border-color:transparent;background:transparent;color:#9aacc3;transform:none;outline:none}
+.user-bottom-menu .menu-placeholder{color:#d9cfff}
+@media(max-width:520px){.user-bottom-menu{gap:4px;right:8px;bottom:8px;left:8px}.user-bottom-menu a,.user-bottom-menu button{min-width:0;flex:1;padding:10px 6px;font-size:11px}}
+</style>
+</head>
+
+<body>
+<header>
+  <h1>اكتشف عنصر شخصيتك</h1>
+  <p>أجب بصراحة، واكتشف أيّ العناصر الأربعة يعبّر عنك أكثر.</p>
+</header>
+
+<main>
+  <section id="quiz" class="panel">
+    <h2>🌌 رحلة اكتشاف الذات</h2>
+    <p class="note">اختر إجابة واحدة لكل سؤال. لا توجد إجابة صحيحة أو خاطئة.</p>
+    <div class="progress"><div id="progressBar"></div></div>
+    <form id="quizForm">
+      <div id="questions"></div>
+      <button class="btn" type="submit">اكتشف عنصري ✨</button>
+    </form>
+    <p class="note">النتيجة رمزية وتعتمد على اختياراتك في هذا الاختبار.</p>
+  </section>
+
+  <section id="result" class="panel hidden">
+    <h2>لحظة اكتشاف عنصرك ✨</h2>
+    <p class="note" id="resultIntro">تتجمع قوى الطبيعة...</p>
+
+    <div id="scene">
+      <div id="mainOrb"></div>
+      <div id="orbs">
+        <button class="orb fire" data-key="fire" type="button">
+          <span class="emoji">🔥</span><strong>ناري</strong><small>قوة اللهب</small>
+        </button>
+        <button class="orb earth" data-key="earth" type="button">
+          <span class="emoji">🌿</span><strong>ترابي</strong><small>قوة الأرض</small>
+        </button>
+        <button class="orb water" data-key="water" type="button">
+          <span class="emoji">🌊</span><strong>مائي</strong><small>قوة المياه</small>
+        </button>
+        <button class="orb air" data-key="air" type="button">
+          <span class="emoji">🌬️</span><strong>هوائي</strong><small>قوة الهواء</small>
+        </button>
+      </div>
+    </div>
+
+    <p class="note">عنصرك سيضيء بعد انقسام الكرة. اضغط على أي عنصر لاستكشافه.</p>
+
+    <div id="resultText" class="hidden" aria-live="polite">
+      <h3 id="elementTitle"></h3>
+      <p id="elementDescription"></p>
+      <p id="elementStrength"></p>
+      <p id="elementPartner"></p>
+      <p id="elementInterests"></p>
+      <p id="match"></p>
+    </div>
+
+    <button id="again" class="btn secondary" type="button">↻ أعد الاختبار</button>
+  </section>
+</main>
+
+<footer>عناصر الطبيعة الأربعة · اكتشف ذاتك <button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>
+
+<script>
+(function(){
+"use strict";
+
+const elements = {
+ fire:{
+  name:"الناري",emoji:"🔥",color:"#ff713b",
+  description:"تميل إجاباتك إلى المبادرة والحماس والطموح. قد تستمتع بالتحديات والبدء في مشاريع جديدة، وتفضّل الوضوح في التعامل.",
+  strength:"نقاط قوة محتملة: الشجاعة، الحماس، والمبادرة.",
+  partner:"في العلاقة: قد تقدّر الصراحة والطموح والاحترام المتبادل.",
+  interests:"قد تستمتع بالأنشطة الحيوية والتحديات وتحقيق الأهداف."
+ },
+ earth:{
+  name:"الترابي",emoji:"🌿",color:"#a4c66b",
+  description:"تميل إجاباتك إلى الاستقرار والتخطيط والاعتماد المتبادل. قد تفضّل بناء الأمور خطوة بخطوة والوفاء بالالتزامات.",
+  strength:"نقاط قوة محتملة: الصبر، التنظيم، والموثوقية.",
+  partner:"في العلاقة: قد تقدّر الالتزام والصدق والاستقرار.",
+  interests:"قد تستمتع بالأنشطة العملية والطبيعة والتخطيط للمستقبل."
+ },
+ water:{
+  name:"المائي",emoji:"🌊",color:"#4bcaff",
+  description:"تميل إجاباتك إلى فهم المشاعر والتقارب والتعاون. قد تهتم بالاستماع إلى الآخرين وبناء علاقات يشعر فيها الجميع بالأمان.",
+  strength:"نقاط قوة محتملة: التعاطف، الإصغاء، والتواصل العاطفي.",
+  partner:"في العلاقة: قد تقدّر الحنان والثقة والاهتمام المتبادل.",
+  interests:"قد تستمتع بالأنشطة الهادئة واللقاءات القريبة والفنون."
+ },
+ air:{
+  name:"الهوائي",emoji:"🌬️",color:"#c4eaff",
+  description:"تميل إجاباتك إلى الفضول والمرونة واستكشاف الأفكار. قد تحب التجديد والحوار وتعلّم أشياء لم تجربها من قبل.",
+  strength:"نقاط قوة محتملة: الانفتاح، الخيال، والتكيف.",
+  partner:"في العلاقة: قد تقدّر الحوار والحرية الشخصية والتطور المشترك.",
+  interests:"قد تستمتع بالتعلم والسفر والأفكار الجديدة والتجارب المختلفة."
+ }
+};
+
+const questions = [
+ {q:"عندما تواجه مشكلة صعبة، ماذا تفعل؟",a:[
+  ["أواجهها بسرعة وأبدأ بالحل","fire"],
+  ["أضع خطة عملية","earth"],
+  ["أفكر في مشاعري ومشاعر الآخرين","water"],
+  ["أبحث عن حل جديد ومختلف","air"]
+ ]},
+ {q:"كيف يصفك المقربون غالبًا؟",a:[
+  ["متحمس ومبادر","fire"],["مسؤول ويمكن الاعتماد عليه","earth"],
+  ["متفهم وحساس","water"],["فضولي ومبدع","air"]
+ ]},
+ {q:"كيف تفضل قضاء وقت الفراغ؟",a:[
+  ["رياضة أو مغامرة","fire"],["نشاط عملي أو ترتيب مشاريعي","earth"],
+  ["وقت هادئ مع من أحب","water"],["تعلم شيء جديد أو استكشاف مكان","air"]
+ ]},
+ {q:"ما الذي يجعلك تشعر بالإنجاز؟",a:[
+  ["تحقيق هدف صعب","fire"],["بناء شيء مستقر","earth"],
+  ["مساعدة شخص قريب مني","water"],["اكتشاف فكرة جديدة","air"]
+ ]},
+ {q:"عندما يحدث خلاف مع شخص تحبه، ماذا تفضل؟",a:[
+  ["مناقشته مباشرة","fire"],["البحث عن حل واضح وعادل","earth"],
+  ["الاستماع للمشاعر وفهمها","water"],["رؤية المشكلة من زوايا مختلفة","air"]
+ ]},
+ {q:"ما أهم صفة تبحث عنها في شريك الحياة؟",a:[
+  ["الطموح والشجاعة","fire"],["المسؤولية والاستقرار","earth"],
+  ["الحنان والتفهم","water"],["الانفتاح وحب الاستكشاف","air"]
+ ]},
+ {q:"كيف تحب التعبير عن الاهتمام؟",a:[
+  ["بالمبادرة والمفاجآت","fire"],["بالأفعال والالتزام","earth"],
+  ["بالكلام الحنون والإصغاء","water"],["بمشاركة الأفكار والتجارب","air"]
+ ]},
+ {q:"ما شكل الحياة الذي يناسبك؟",a:[
+  ["حياة مليئة بالحركة والأهداف","fire"],["حياة منظمة ومستقرة","earth"],
+  ["حياة دافئة وقريبة من الأسرة","water"],["حياة مرنة ومتجددة","air"]
+ ]},
+ {q:"ما الذي يزعجك أكثر؟",a:[
+  ["الملل وعدم التقدم","fire"],["الفوضى وعدم الالتزام","earth"],
+  ["البرود وسوء الفهم","water"],["القيود وغياب التجديد","air"]
+ ]},
+ {q:"كيف تتخذ القرارات المهمة؟",a:[
+  ["أحسم قراري وأتحمل مسؤوليته","fire"],
+  ["أوازن الخيارات وأخطط","earth"],
+  ["أراعي أثر القرار على الناس","water"],
+  ["أبحث عن احتمالات متعددة","air"]
+ ]},
+ {q:"ما النشاط الذي يجذبك أكثر؟",a:[
+  ["التحدي والمنافسة","fire"],["البناء والعمل العملي","earth"],
+  ["الفن والتواصل مع الآخرين","water"],
+  ["الأفكار والعلوم والاستكشاف","air"]
+ ]},
+ {q:"ما الذي تريده أكثر من علاقة ناجحة؟",a:[
+  ["تشجيع متبادل لتحقيق الطموحات","fire"],
+  ["الثقة والالتزام وبناء المستقبل","earth"],
+  ["الأمان العاطفي والتفاهم","water"],
+  ["الحوار والحرية والتطور المشترك","air"]
+ ]}
+];
+
+const form=document.getElementById("quizForm");
+const questionBox=document.getElementById("questions");
+const progressBar=document.getElementById("progressBar");
+const quiz=document.getElementById("quiz");
+const result=document.getElementById("result");
+const scene=document.getElementById("scene");
+const resultText=document.getElementById("resultText");
+let chosenElement="";
+
+function renderQuestions(){
+ questionBox.innerHTML="";
+ questions.forEach((q,i)=>{
+  const box=document.createElement("div");
+  box.className="question";
+  const title=document.createElement("h3");
+  title.textContent=(i+1)+". "+q.q;
+  box.appendChild(title);
+
+  q.a.forEach((answer,j)=>{
+   const label=document.createElement("label");
+   label.className="option";
+   const input=document.createElement("input");
+   input.type="radio";
+   input.name="q"+i;
+   input.value=answer[1];
+   input.required=true;
+   input.addEventListener("change",updateProgress);
+   label.append(input,document.createTextNode(answer[0]));
+   box.appendChild(label);
+  });
+  questionBox.appendChild(box);
+ });
+}
+
+function updateProgress(){
+ const count=questions.filter((q,i)=>
+  form.querySelector('input[name="q'+i+'"]:checked')
+ ).length;
+ progressBar.style.width=(count/questions.length*100)+"%";
+}
+
+function calculate(){
+ const scores={fire:0,earth:0,water:0,air:0};
+ questions.forEach((q,i)=>{
+  const selected=form.querySelector('input[name="q'+i+'"]:checked');
+  if(selected) scores[selected.value]++;
+ });
+ const max=Math.max(...Object.values(scores));
+ const tied=Object.keys(scores).filter(k=>scores[k]===max);
+ // كسر التعادل بواسطة إجابة المستخدم عن آخر سؤال من بين المتعادلين،
+ // وإذا لم تنطبق، نختار العنصر الأول في ترتيب الأسئلة.
+ if(tied.length===1) return tied[0];
+ for(let i=questions.length-1;i>=0;i--){
+  const selected=form.querySelector('input[name="q'+i+'"]:checked');
+  if(selected && tied.includes(selected.value)) return selected.value;
+ }
+ return tied[0];
+}
+
+function displayElement(key){
+ const item=elements[key];
+ document.getElementById("elementTitle").textContent=
+  item.emoji+" أنت من العنصر "+item.name;
+ document.getElementById("elementDescription").textContent=item.description;
+ document.getElementById("elementStrength").textContent=item.strength;
+ document.getElementById("elementPartner").textContent=item.partner;
+ document.getElementById("elementInterests").textContent=item.interests;
+
+ const scores={fire:0,earth:0,water:0,air:0};
+ questions.forEach((q,i)=>{
+  const selected=form.querySelector('input[name="q'+i+'"]:checked');
+  if(selected) scores[selected.value]++;
+ });
+ const ranked=Object.keys(scores).sort((a,b)=>scores[b]-scores[a]);
+ const other=ranked.find(k=>k!==key);
+ document.getElementById("match").textContent=
+  "العنصر التالي الأقرب لإجاباتك: "+elements[other].emoji+" "+elements[other].name+
+  ". هذا تشابه في إجابات الاختبار، وليس ضمانًا للتوافق.";
+
+ document.querySelectorAll(".orb").forEach(orb=>{
+  orb.classList.toggle("chosen",orb.dataset.key===key);
+ });
+ resultText.classList.remove("hidden");
+}
+
+form.addEventListener("submit",function(event){
+ event.preventDefault();
+ if(!form.reportValidity()) return;
+
+ chosenElement=calculate();
+ quiz.classList.add("hidden");
+ result.classList.remove("hidden");
+ resultText.classList.add("hidden");
+
+ document.querySelectorAll(".orb").forEach(orb=>orb.classList.remove("chosen"));
+ scene.classList.remove("split");
+ document.getElementById("resultIntro").textContent=
+  "استعد... تتحد العناصر ثم تكشف لك عنصرك.";
+
+ window.scrollTo({top:0,behavior:"smooth"});
+
+ setTimeout(()=>{
+  scene.classList.add("split");
+ },900);
+
+ setTimeout(()=>{
+  displayElement(chosenElement);
+  document.getElementById("resultIntro").textContent=
+   "ظهرت العناصر الأربعة! انظر إلى الكرة المضيئة لتكتشف نتيجتك.";
+ },1900);
+});
+
+document.querySelectorAll(".orb").forEach(orb=>{
+ orb.addEventListener("click",()=>{
+  // النتيجة الأساسية تبقى كما حددتها الإجابات،
+  // ويمكن استكشاف أي عنصر آخر بالضغط عليه.
+  displayElement(orb.dataset.key);
+ });
+});
+
+document.getElementById("again").addEventListener("click",()=>{
+ form.reset();
+ progressBar.style.width="0";
+ result.classList.add("hidden");
+ quiz.classList.remove("hidden");
+ scene.classList.remove("split");
+ resultText.classList.add("hidden");
+ document.querySelectorAll(".orb").forEach(orb=>orb.classList.remove("chosen"));
+ window.scrollTo({top:0,behavior:"smooth"});
+});
+
+renderQuestions();
+})();
+</script>
+
+<nav class="site-nav" aria-label="Main navigation">
+  <a href="./home.html"><span class="nav-glyph" aria-hidden="true">⌂</span><span data-menu-key="home">Home</span></a>
+  <a href="./match.html"><span class="nav-glyph" aria-hidden="true">♡</span><span data-menu-key="match">Match</span></a>
+  <a href="./daily.html"><span class="nav-glyph" aria-hidden="true">◌</span><span data-menu-key="daily">Daily</span></a>
+  <a href="./discover.html"><span class="nav-glyph" aria-hidden="true">✦</span><span data-menu-key="discover">Discover</span></a>
+  <a href="./entertainment.html" aria-current="page"><span class="nav-glyph" aria-hidden="true">🎮</span><span data-menu-key="entertainment">Entertainment</span></a>
+  <a href="./rooms.html"><span class="nav-glyph" aria-hidden="true">◉</span><span data-menu-key="rooms">Rooms</span></a>
+  <a href="./profile.html"><span class="nav-glyph" aria-hidden="true">◍</span><span data-menu-key="profile">Profile</span></a>
+</nav>
+<script src="./i18n-data.js?v=20261022-global"></script>
+  <script src="./language.js?v=20261022-global"></script>
+</body>
+</html>
