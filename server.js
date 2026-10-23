@@ -18,6 +18,8 @@ const routeFiles = {
   '/signup': 'signup.html',
   '/discover': 'discover.html',
   '/entertainment': 'entertainment.html',
+  '/city-life': 'city-life/index.html',
+  '/city-life/': 'city-life/index.html',
   '/rooms': 'rooms.html',
   '/messages': 'messages.html',
   '/match': 'match.html',

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 2,
+  "publicationOrigin": "https://citylife-4quk2n5g.manus.game",
+  "title": "City Life — حياة المدينة",
+  "description": "نسخة استكشاف أولية باللغة العربية لمدينة ثلاثية الأبعاد بمنظور isometric، تشمل ساحة ووجهات ومتاجر داخلية وخريطة ومسارات وتحكمًا للهاتف. إنشاء الشخصيات والتخصيص لم يُنفذ بعد.",
+  "defaultCaptions": {},
+  "assets": {
+    "favicon": {
+      "digest": "sha256:40fd1c453a72ac34ef7c27e7dd028db8cdc63329a174e65b276a98e6ab6fe035",
+      "path": "share/40fd1c453a72ac34ef7c27e7dd028db8cdc63329a174e65b276a98e6ab6fe035.png",
+      "mime": "image/png",
+      "width": 128,
+      "height": 128,
+      "sizeBytes": 12712,
+      "sourcePath": "assets/share/favicon.png"
+    }
+  }
+}

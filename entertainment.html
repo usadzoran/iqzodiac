@@ -164,6 +164,17 @@ body{padding-bottom:90px}
 .user-bottom-menu .menu-placeholder{color:#d9cfff}
 @media(max-width:520px){.user-bottom-menu{gap:4px;right:8px;bottom:8px;left:8px}.user-bottom-menu a,.user-bottom-menu button{min-width:0;flex:1;padding:10px 6px;font-size:11px}}
 </style>
+<style>
+.city-life-entry{position:relative;overflow:hidden;border-color:#9bd3c355;background:linear-gradient(130deg,#9bd3c31c,#ffffff08 55%,#cb8e6518)}
+.city-life-entry:before{content:"";position:absolute;left:-40px;top:-80px;width:180px;height:180px;border:1px solid #9bd3c333;border-radius:45%;transform:rotate(35deg);pointer-events:none}
+.city-life-entry-head{display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative}
+.city-life-kicker{font:700 10px/1.4 monospace;letter-spacing:.16em;color:#c8e6d8;direction:ltr}
+.city-life-status{padding:6px 9px;border:1px solid #dfb39150;border-radius:999px;background:#ce9b7612;color:#efd0b4;font-size:10px;white-space:nowrap}
+.city-life-entry h2{position:relative;margin:12px 0 7px;font-size:clamp(20px,5vw,27px);letter-spacing:-.03em}
+.city-life-entry p{position:relative;color:#d0ddd5;font-size:13px;line-height:1.9}
+.city-life-entry .note{color:#aabbb0;font-size:11px}
+.city-life-btn{display:block;position:relative;margin-top:14px;text-align:center;text-decoration:none;background:linear-gradient(120deg,#9bd3c3,#6ea894);color:#142521}
+</style>
 </head>
 
 <body>
@@ -173,6 +184,13 @@ body{padding-bottom:90px}
 </header>
 
 <main>
+  <section class="panel city-life-entry" aria-labelledby="city-life-heading">
+    <div class="city-life-entry-head"><span class="city-life-kicker">CITY LIFE · 01</span><span class="city-life-status">تجربة قيد التطوير</span></div>
+    <h2 id="city-life-heading">City Life · حياة المدينة</h2>
+    <p>ادخل إلى حيّ ثلاثي الأبعاد، واستكشف الساحة والمنازل والمتاجر، واستخدم الخريطة للوصول إلى وجهتك.</p>
+    <p class="note">هذه نسخة استكشاف أولية؛ ستُضاف الشخصيات والتخصيص في المرحلة الأخيرة. لا توجد مشتريات أو مدفوعات مفعّلة.</p>
+    <a class="btn city-life-btn" href="/city-life">افتح تجربة City Life ↗</a>
+  </section>
   <section id="quiz" class="panel">
     <h2>🌌 رحلة اكتشاف الذات</h2>
     <p class="note">اختر إجابة واحدة لكل سؤال. لا توجد إجابة صحيحة أو خاطئة.</p>
