@@ -30,6 +30,20 @@ async function attachDiagnostics(page) {
   await page.goto(url, { waitUntil: 'domcontentloaded' })
   await page.waitForSelector('.city-interface .city-topbar', { timeout: 30000 })
   await page.waitForFunction(() => Boolean(window.__citylife?.game))
+  const characters = await page.evaluate(() => {
+    const found = []
+    window.__citylife.game.world.scene.traverse(object => {
+      const metadata = object.userData ?? {}
+      const labels = [object.name, metadata.role, metadata.kind, metadata.type, metadata.actorRole, metadata.actorType]
+        .filter(value => typeof value === 'string').join(' ')
+      if (object.isSkinnedMesh === true || object.isBone === true || metadata.isCharacter === true || metadata.isAvatar === true || metadata.isNpc === true ||
+          metadata.isNPC === true || metadata.isPlayer === true || /\b(?:avatar|character|npc|pedestrian|citizen)\b/i.test(labels)) {
+        found.push(object.name || object.type)
+      }
+    })
+    return found
+  })
+  if (characters.length) throw new Error(`City Life must run without character/avatar/NPC models: ${characters.join(', ')}`)
   await page.waitForTimeout(1000)
 }
 
@@ -74,6 +88,12 @@ try {
   await page.screenshot({ path: `${out}/02-citylife-interior.png` })
   await page.locator('[data-action="exit"]').click()
   if (await page.evaluate(() => window.__citylife.game.snapshot.mode) !== 'city') throw new Error('exit button did not return to the city')
+  const exitPosition = await page.evaluate(() => ({ x: window.__citylife.game.snapshot.x, z: window.__citylife.game.snapshot.z }))
+  await page.keyboard.down('KeyW')
+  await page.waitForTimeout(650)
+  await page.keyboard.up('KeyW')
+  const afterExitMove = await page.evaluate(() => ({ x: window.__citylife.game.snapshot.x, z: window.__citylife.game.snapshot.z }))
+  if (Math.hypot(afterExitMove.x - exitPosition.x, afterExitMove.z - exitPosition.z) < 2) throw new Error(`city exploration remained blocked after exiting the northern furniture store: ${JSON.stringify({ exitPosition, afterExitMove })}`)
   await desktop.close()
 
   const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, locale: 'ar' })

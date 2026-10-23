@@ -256,7 +256,14 @@ export class CityGame {
     this.world.setInterior(null)
     this.mode = 'city'
     this.interiorLocationId = ''
-    if (location) this.target.set(location.door?.x ?? location.position.x, 0, (location.door?.z ?? location.position.z) - 8)
+    if (location) {
+      const door = location.door ?? location.position
+      const outwardX = door.x - location.position.x
+      const outwardZ = door.z - location.position.z
+      const length = Math.hypot(outwardX, outwardZ) || 1
+      const exitClearance = 12 // Also clear parked-car colliders beside the shop fronts.
+      this.target.set(door.x + outwardX / length * exitClearance, 0, door.z + outwardZ / length * exitClearance)
+    }
     this.cameraDistance = 48
     this.status = 'عدت إلى شوارع المدينة.'
     this.notify()
