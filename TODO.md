@@ -52,6 +52,9 @@
 - [x] Automatically choose Arabic or English from the browser locale on first visit.
 - [x] Provide a manual EN / العربية toggle and persist the selected language between pages.
 
+## Entertainment
+- [x] Add an “Entertainment / ترفيه” menu section that opens the existing personality-elements quiz game.
+
 ## Audio rooms
 - [x] Add a “Audio rooms / غرف صوتية” section to the fixed user menu.
 - [x] Provide the supplied NEBULA room interface with host, speakers, listeners, talk requests, room chat, and room controls.
