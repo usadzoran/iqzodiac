@@ -37,7 +37,7 @@ const zodiac = document.querySelector('#zodiac-sign'); const element = document.
 (async () => {
   if (!adapter) return;
   const profile = await adapter.getCurrentProfile();
-  zodiac.value = profile.zodiac || 'Taurus'; element.value = profile.element || 'Water'; interestsInput.value = (profile.interests || []).join(', ');
+  zodiac.value = profile.zodiac || ''; element.value = profile.element || ''; interestsInput.value = (profile.interests || []).join(', ');
   const access = await adapter.getAccountAccess();
   document.querySelector('#account-role-badge').textContent = access.role.toUpperCase();
   document.querySelector('#vip-access-copy').textContent = access.role === 'vip' ? 'VIP access is active. Priority matching and future private sections are enabled.' : 'VIP will unlock special sections and priority matching after checkout is connected.';

@@ -17,6 +17,7 @@ const routeFiles = {
   '/home': 'home.html',
   '/signup': 'signup.html',
   '/discover': 'discover.html',
+  '/assistant': 'assistant.html',
   '/entertainment': 'entertainment.html',
   '/city-life': 'city-life/index.html',
   '/city-life/': 'city-life/index.html',

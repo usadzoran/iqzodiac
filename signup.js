@@ -45,5 +45,5 @@ form.addEventListener('submit', (event) => {
     createdAt: new Date().toISOString(),
   };
   try { localStorage.setItem('iqzodiac-current-profile', JSON.stringify(profile)); } catch { /* Keep the form usable when storage is unavailable. */ }
-  showToast('Your details are ready. Secure account setup will be connected soon.');
+  window.location.assign('./assistant.html?welcome=1');
 });
