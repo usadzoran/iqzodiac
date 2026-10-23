@@ -44,6 +44,21 @@ async function attachDiagnostics(page) {
     return found
   })
   if (characters.length) throw new Error(`City Life must run without character/avatar/NPC models: ${characters.join(', ')}`)
+  const traffic = await page.evaluate(() => {
+    const vehicles = []
+    window.__citylife.game.world.scene.traverse(object => {
+      if (object.userData?.cityTrafficVehicle === true) vehicles.push(object)
+    })
+    const position = vehicles[0]?.position
+    return { count: vehicles.length, position: position ? { x: position.x, y: position.y, z: position.z } : null }
+  })
+  if (traffic.count !== 6) throw new Error(`expected six moving city vehicles, found ${traffic.count}`)
+  await page.waitForTimeout(500)
+  const trafficMoved = await page.evaluate(before => {
+    const vehicle = window.__citylife.game.world.scene.getObjectByName('city-traffic-vehicle-1')
+    return vehicle && before ? Math.hypot(vehicle.position.x - before.x, vehicle.position.y - before.y, vehicle.position.z - before.z) : 0
+  }, traffic.position)
+  if (trafficMoved < 0.2) throw new Error('ambient traffic vehicles did not move')
   await page.waitForTimeout(1000)
 }
 
@@ -58,12 +73,22 @@ try {
   if (await page.locator('.city-location-row').count() !== 6) throw new Error('expected six city destinations in the directory')
   await page.screenshot({ path: `${out}/01-citylife-desktop.png` })
 
+  await page.locator('.city-immersive-button').click()
+  if (!await page.locator('.city-interface').evaluate(element => element.classList.contains('is-immersive'))) throw new Error('immersive view did not hide the interface')
+  if (await page.locator('.city-directory').isVisible() || await page.locator('.city-map-panel').isVisible()) throw new Error('navigation panels remained visible in immersive view')
+  await page.screenshot({ path: `${out}/04-citylife-immersive.png` })
   const before = await page.evaluate(() => ({ x: window.__citylife.game.snapshot.x, z: window.__citylife.game.snapshot.z }))
   await page.keyboard.down('KeyW')
   await page.waitForTimeout(650)
   await page.keyboard.up('KeyW')
   const after = await page.evaluate(() => ({ x: window.__citylife.game.snapshot.x, z: window.__citylife.game.snapshot.z }))
-  if (Math.hypot(after.x - before.x, after.z - before.z) < 2) throw new Error('WASD movement did not move the city exploration focus')
+  if (Math.hypot(after.x - before.x, after.z - before.z) < 2) throw new Error('WASD movement stopped while the interface was hidden')
+  await page.locator('.city-immersive-restore').click()
+  if (await page.locator('.city-directory').isHidden()) throw new Error('restore button did not show the navigation panels')
+  await page.keyboard.press('h')
+  if (!await page.locator('.city-interface').evaluate(element => element.classList.contains('is-immersive'))) throw new Error('H shortcut did not hide the interface')
+  await page.keyboard.press('h')
+  if (await page.locator('.city-interface').evaluate(element => element.classList.contains('is-immersive'))) throw new Error('H shortcut did not restore the interface')
 
   await page.locator('#city-search').fill('مقهى')
   if (await page.locator('.city-location-row').count() !== 1) throw new Error('Arabic place search did not filter the directory')
@@ -101,6 +126,8 @@ try {
   await attachDiagnostics(phonePage)
   const overflow = await phonePage.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)
   if (overflow) throw new Error('mobile layout has horizontal page overflow')
+  await phonePage.locator('.city-immersive-button').click()
+  if (!await phonePage.locator('.city-interface').evaluate(element => element.classList.contains('is-immersive'))) throw new Error('mobile immersive toggle did not hide the interface')
   const stick = await phonePage.locator('.city-stick').boundingBox()
   if (!stick) throw new Error('mobile movement control is missing')
   const beforeTouch = await phonePage.evaluate(() => ({ x: window.__citylife.game.snapshot.x, z: window.__citylife.game.snapshot.z }))
@@ -111,6 +138,8 @@ try {
   await phonePage.mouse.up()
   const afterTouch = await phonePage.evaluate(() => ({ x: window.__citylife.game.snapshot.x, z: window.__citylife.game.snapshot.z }))
   if (Math.hypot(afterTouch.x - beforeTouch.x, afterTouch.z - beforeTouch.z) < .5) throw new Error('touch joystick did not move the exploration focus')
+  await phonePage.locator('.city-immersive-restore').click()
+  if (await phonePage.locator('.city-directory').isHidden()) throw new Error('mobile restore button did not show the navigation panels')
   await phonePage.screenshot({ path: `${out}/03-citylife-mobile.png` })
   await phone.close()
 

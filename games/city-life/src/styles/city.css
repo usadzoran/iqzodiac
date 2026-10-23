@@ -41,3 +41,13 @@ html, body { font-family: Tahoma, Arial, system-ui, sans-serif; }
 
 /* Location icon accents for the world-data category identifiers. */
 .city-location-icon.icon-home{color:#d4d8c8;background:#e6dec21a}.city-location-icon.icon-clothing{color:#d9c1d5;background:#bb8fb31b}.city-location-icon.icon-grocery{color:#d2d895;background:#b3bd6a1b}
+
+
+/* Focus mode hides navigation chrome but leaves a single restore control and touch movement. */
+.city-immersive-button{font-size:17px;line-height:1}
+.city-immersive-restore{display:none;position:absolute;z-index:10;top:16px;right:18px;width:42px;height:42px;place-items:center;border:1px solid rgba(242,238,221,.38);border-radius:13px;background:rgba(18,31,29,.82);box-shadow:0 8px 28px rgba(5,13,12,.28);backdrop-filter:blur(14px);color:#f7f4ea;font-size:18px;cursor:pointer;pointer-events:auto;transition:transform .18s,border-color .18s,background .18s}
+.city-immersive-restore:hover,.city-immersive-restore:focus-visible{transform:translateY(-1px);border-color:#a6d7c3;background:rgba(35,57,51,.94);outline:none}
+.city-interface.is-immersive::before{display:none}
+.city-interface.is-immersive .city-topbar,.city-interface.is-immersive .city-directory,.city-interface.is-immersive .city-map-panel,.city-interface.is-immersive .city-selected-card,.city-interface.is-immersive .city-control-legend,.city-interface.is-immersive .city-bottom-right,.city-interface.is-immersive .city-help-toast,.city-interface.is-immersive .city-map-backdrop{display:none!important}
+.city-interface.is-immersive .city-immersive-restore{display:grid}
+@media(max-width:760px){.city-immersive-restore{top:10px;right:10px;width:40px;height:40px}.city-interface.is-immersive .city-mobile-stick{left:14px;bottom:calc(14px + env(safe-area-inset-bottom))}}

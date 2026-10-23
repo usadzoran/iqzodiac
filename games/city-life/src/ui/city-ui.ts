@@ -62,6 +62,13 @@ export class CityUI {
     this.renderSelectedCard(state)
   }
 
+  toggleImmersive(): void {
+    const immersive = !this.frame.classList.contains('is-immersive')
+    this.frame.classList.toggle('is-immersive', immersive)
+    this.q<HTMLButtonElement>('.city-immersive-button').setAttribute('aria-pressed', String(immersive))
+    this.q<HTMLButtonElement>('.city-immersive-restore').setAttribute('aria-pressed', String(immersive))
+  }
+
   private onClick(event: Event): void {
     const target = (event.target as HTMLElement).closest<HTMLElement>('[data-action], [data-location], [data-filter]')
     if (!target) return
@@ -90,6 +97,7 @@ export class CityUI {
       case 'plaza': this.actions.returnToPlaza(); break
       case 'map': this.frame.classList.toggle('map-expanded'); break
       case 'help': this.frame.classList.toggle('show-help'); break
+      case 'immersive': this.toggleImmersive(); break
     }
   }
 
@@ -265,8 +273,9 @@ export class CityUI {
       <header class="city-topbar">
         <div class="city-brand"><span class="city-brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span><strong>City Life</strong><small>حياة المدينة · نموذج استكشاف</small></span></div>
         <div class="city-top-meta"><span class="city-live-dot"></span><span class="city-mode">استكشاف المدينة</span><span class="city-divider"></span><span class="city-district">حيّ النور</span></div>
-        <div class="city-top-actions"><button type="button" class="city-icon-button" data-action="plaza" aria-label="العودة إلى الساحة" title="العودة إلى الساحة">⌂</button><button type="button" class="city-icon-button city-map-toggle" data-action="map" aria-label="تبديل الخريطة" title="الخريطة">⌖</button></div>
+        <div class="city-top-actions"><button type="button" class="city-icon-button" data-action="plaza" aria-label="العودة إلى الساحة" title="العودة إلى الساحة">⌂</button><button type="button" class="city-icon-button city-map-toggle" data-action="map" aria-label="تبديل الخريطة" title="الخريطة">⌖</button><button type="button" class="city-icon-button city-immersive-button" data-action="immersive" aria-label="تصغير القوائم وإظهار المدينة" title="تركيز على المدينة · H" aria-pressed="false">⛶</button></div>
       </header>
+      <button type="button" class="city-immersive-restore" data-action="immersive" aria-label="إظهار القوائم" title="إظهار القوائم · H" aria-pressed="true">☰</button>
       <aside class="city-directory panel-glass">
         <div class="city-section-head"><div><span class="city-eyebrow">حيّ النور <b>·</b> 01</span><h1>استكشف المدينة</h1></div><span class="city-progress"><strong class="city-progress-count">0 / 6</strong><small>وجهات زرتها</small></span></div>
         <label class="city-search"><span aria-hidden="true">⌕</span><input id="city-search" type="search" autocomplete="off" placeholder="ابحث عن مكان أو متجر" /><kbd>/</kbd></label>
@@ -285,9 +294,9 @@ export class CityUI {
         <p class="city-status" role="status">اختر وجهة من القائمة أو من الخريطة.</p>
         <div class="city-card-actions"><button type="button" class="city-primary-action" data-action="navigate">ارسم الطريق الأقصر</button><button type="button" class="city-primary-action city-enter-action is-hidden" data-action="enter">ادخل المبنى</button><button type="button" class="city-exit-action is-hidden" data-action="exit">الخروج إلى المدينة</button></div>
       </section>
-      <div class="city-control-legend"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><small>تحرّك</small></span><i></i><span><b class="mouse-icon">↔</b><small>اسحب لتدوير الكاميرا</small></span><i></i><span><b class="wheel-icon">⊙</b><small>عجلة الفأرة للتقريب</small></span></div>
+      <div class="city-control-legend"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><small>تحرّك</small></span><i></i><span><b class="mouse-icon">↔</b><small>اسحب لتدوير الكاميرا</small></span><i></i><span><b class="wheel-icon">⊙</b><small>عجلة الفأرة للتقريب</small></span><i></i><span><kbd>H</kbd><small>تصغير القوائم</small></span></div>
       <div class="city-mobile-stick" aria-label="عصا التحكم باللمس"><div class="city-stick"><span class="city-stick-ring"></span><span class="city-stick-knob"></span></div><small>تحرّك</small></div>
-      <div class="city-help-toast"><b>استكشاف مفتوح</b><span>استخدم القائمة لاختيار متجر، ثم سر عبر الشوارع المضيئة إلى مدخله.</span></div>
+      <div class="city-help-toast"><b>استكشاف مفتوح</b><span>استخدم القائمة لاختيار متجر، أو اضغط H لتصغير القوائم ورؤية المدينة بوضوح.</span></div>
       <div class="city-bottom-right"><span class="city-position-label"><i></i>موقع الاستكشاف</span><b class="city-position">0 / 0</b><span class="city-version">نسخة تجريبية محلية</span></div>
       <div class="city-map-backdrop"></div>
     </div>`

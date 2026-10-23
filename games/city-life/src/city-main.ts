@@ -52,6 +52,11 @@ async function startCityLife(): Promise<void> {
     if (id) { game.selectLocation(id); ui.update(game.snapshot) }
   })
   window.addEventListener('keydown', event => {
+    const typing = (event.target as HTMLElement | null)?.matches?.('input,textarea')
+    if (event.key.toLowerCase() === 'h' && !typing) {
+      event.preventDefault()
+      ui.toggleImmersive()
+    }
     if (event.key === '/' && !(event.target as HTMLElement | null)?.matches?.('input,textarea')) {
       event.preventDefault()
       root.querySelector<HTMLInputElement>('#city-search')?.focus()

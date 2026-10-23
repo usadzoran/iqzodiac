@@ -7,6 +7,8 @@ City Life est actuellement un prototype arabe d’exploration urbaine 3D isomét
 - Place urbaine en 3D et six destinations distinctes, dont un logement, un café, un magasin de meubles, un magasin de vêtements, un magasin d’électroménager et une épicerie.
 - Entrée et sortie d’intérieurs, caméra isométrique, sélection des lieux, recherche arabe, filtres, mini-carte et affichage d’un trajet.
 - Commandes WASD/flèches sur ordinateur et joystick tactile sur téléphone.
+- Six véhicules bas-poly circulent en boucle, avec roues et feux animés; la fontaine et la place ont des effets lumineux discrets.
+- Un mode de vision immersive masque les panneaux pour mieux voir la ville; le bouton de restauration et la touche H restent accessibles.
 - Sauvegarde locale de la position, de la destination et des lieux visités dans le navigateur.
 - Interface arabe RTL et paramètres de vitesse/caméra réellement consommés par le pont Tweak de développement.
 - Icône de ville personnalisée et écran de chargement léger, sans image générée.
@@ -16,7 +18,7 @@ City Life est actuellement un prototype arabe d’exploration urbaine 3D isomét
 - Les trois personnages humains gratuits, leur personnalisation, prévisualisation et animation squelettique sont volontairement différés.
 - Le Character Store, la persistance entre comptes/appareils, l’inventaire et la vérification serveur n’existent pas encore.
 - Aucun paiement, achat réel ni collecte de données de paiement n’est activé.
-- Le mobilier interactif, les véhicules, les passants et les bâtiments plus réalistes restent des étapes futures.
+- Le mobilier interactif, les passants et les bâtiments plus réalistes restent des étapes futures.
 
 Aucun modèle ou achat payant n’est intégré dans cette version. Ne lancez pas de production d’assets payante sans autorisation explicite.
 

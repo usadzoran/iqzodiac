@@ -1,4 +1,6 @@
 import * as THREE from 'three'
+import { CityAtmosphere } from './city-atmosphere'
+import { CityTraffic } from './city-traffic'
 
 /** Stable world-space destination data. Positions identify each building; doors identify its entry. */
 export type CityLocation = {
@@ -106,6 +108,8 @@ export class CityWorld {
   readonly collisionRects: Rect[] = []
   readonly locationObjects = new Map<string, THREE.Object3D>()
   readonly sun: THREE.DirectionalLight
+  readonly traffic = new CityTraffic()
+  readonly atmosphere = new CityAtmosphere()
 
   private readonly outdoorRects: Rect[] = []
   private readonly indoorRects: Rect[] = []
@@ -140,6 +144,7 @@ export class CityWorld {
     this.buildStreetFurniture()
     this.buildParkedCars()
     this.buildInteriors()
+    this.outdoor.add(this.traffic.group, this.atmosphere.group)
     this.collisionRects.push(...this.outdoorRects)
   }
 
@@ -166,8 +171,9 @@ export class CityWorld {
 
   /** Advance lightweight ambient details; geometry is otherwise static. */
   update(dt: number): void {
-    // Kept for the host game's uniform update loop; no expensive per-frame scene work is needed.
-    void dt
+    if (!this.outdoor.visible) return
+    this.traffic.update(dt)
+    this.atmosphere.update(dt)
   }
 
   /** Return a location id when a ray intersects one of the destination buildings. */
