@@ -40,7 +40,7 @@
 - [x] Persist onboarding status, answers, interests, and birth date under the current IQZodiac profile for the rest of the prototype experience.
 
 ## Voice-guided onboarding assistant
-- [x] Read the active onboarding prompt aloud in the selected Arabic or English language through the browser speech API.
+- [x] Automatically read the active onboarding prompt aloud in the selected Arabic or English language at startup and after each answer when browser speech is available.
 - [x] Provide explicit voice enable/mute and repeat controls; use a calm, slightly slower delivery and prefer a matching warm browser voice when available.
 - [x] Keep speech on-device, disclose that the assistant is a local demo, and disable controls gracefully when browser speech is unavailable.
 - [x] Keep the signup welcome message temporary so it does not reappear after reloading saved onboarding progress.

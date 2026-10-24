@@ -142,10 +142,10 @@
     } catch { return emptyState(); }
   };
   let state = loadState();
-  let voiceEnabled = false;
+  const speechAvailable = typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance === 'function';
+  let voiceEnabled = speechAvailable;
   let activeUtterance = null;
   let pendingAvatarTime = null;
-  const speechAvailable = typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance === 'function';
   const setAvatarSpeaking = (speaking) => {
     if (!avatarStage || !avatarVideo) return;
     avatarStage.classList.toggle('is-speaking', speaking);
