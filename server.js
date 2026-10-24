@@ -2,6 +2,7 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const handleYouTubeSearch = require('./lib/youtube-search');
 
 const root = __dirname;
 const port = Number(process.env.PORT || 3000);
@@ -27,6 +28,7 @@ const routeFiles = {
   '/vip': 'vip.html',
   '/gift-store': 'gift-store.html',
   '/wallet': 'wallet.html',
+  '/youtube': 'youtube.html',
 };
 const fetchText = (url) => new Promise((resolve, reject) => {
   https.get(url, { headers: { 'User-Agent': 'IQZodiac Daily/1.0' } }, (res) => {
@@ -58,6 +60,15 @@ const buildDailyFeed = async (url) => {
 
 const server = http.createServer((request, response) => {
   const requestPath = request.url === '/' ? '/index.html' : request.url.split('?')[0];
+  if (requestPath === '/api/youtube/search') {
+    handleYouTubeSearch(request, response).catch(() => {
+      if (!response.headersSent) {
+        response.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+        response.end(JSON.stringify({ error: { code: 'upstream_unavailable', message: 'YouTube search is temporarily unavailable.' } }));
+      }
+    });
+    return;
+  }
   if (requestPath === '/api/daily-feed') {
     buildDailyFeed(request.url).then((payload) => {
       response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });

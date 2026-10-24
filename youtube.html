@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Search YouTube videos and watch them inside IQZodiac." />
+  <title>YouTube — IQZodiac</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css?v=youtube-20261024" />
+  <link rel="stylesheet" href="./youtube.css?v=youtube-20261024-2" />
+</head>
+<body class="has-site-nav youtube-page">
+  <div class="aurora aurora-one" aria-hidden="true"></div>
+  <div class="aurora aurora-two" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <main class="youtube-shell">
+    <header class="topbar youtube-topbar">
+      <a class="mini-mark" href="./home.html" aria-label="IQZodiac home"><span class="mini-mark-orbit" aria-hidden="true"></span><span>IQZ</span></a>
+      <div class="youtube-heading">
+        <p id="youtube-kicker" class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> YOUTUBE · WATCH WITHIN IQZODIAC</p>
+        <h1>YouTube <span id="youtube-title-tail">in your orbit.</span></h1>
+      </div>
+      <a class="back-link" href="./discover.html"><span id="youtube-discover-link">Discover</span> <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <section class="youtube-intro" aria-labelledby="youtube-intro-title">
+      <div>
+        <p id="youtube-intro-kicker" class="card-kicker">YOUR NEXT WATCH, WITHOUT LEAVING</p>
+        <h2 id="youtube-intro-title">Find something worth a pause.</h2>
+        <p id="youtube-intro-copy">Search real YouTube videos, songs, or channel names. Choose a result to watch in the official player right here.</p>
+      </div>
+      <div class="youtube-intro-mark" aria-hidden="true"><span>▶</span><i></i><b></b></div>
+    </section>
+
+    <section id="youtube-search-card" class="youtube-search-card" aria-labelledby="youtube-search-heading">
+      <div class="youtube-search-heading">
+        <div><p id="youtube-search-kicker" class="card-kicker">REAL-TIME VIDEO SEARCH</p><h2 id="youtube-search-heading">Search videos, songs, or channels</h2></div>
+        <span class="youtube-live-badge"><i aria-hidden="true"></i><span id="youtube-live-label">YOUTUBE DATA API</span></span>
+      </div>
+      <form id="youtube-search-form" class="youtube-search-form" role="search">
+        <label id="youtube-query-label" for="youtube-query">What would you like to watch?</label>
+        <div class="youtube-search-row">
+          <span class="youtube-search-icon" aria-hidden="true">⌕</span>
+          <input id="youtube-query" name="q" type="search" maxlength="160" autocomplete="off" placeholder="Enter a video, song, or channel name…" aria-describedby="youtube-search-note" />
+          <button id="youtube-search-button" class="button button-primary youtube-search-button" type="submit"><span id="youtube-search-label">Search</span><span class="button-arrow" aria-hidden="true">↗</span></button>
+        </div>
+      </form>
+      <p id="youtube-search-note" class="youtube-search-note">Search uses YouTube Data API v3. Playback uses the official YouTube player; some videos do not allow embedding.</p>
+    </section>
+
+    <p id="youtube-status" class="youtube-status" role="status" aria-live="polite">Search YouTube for a video, song, or channel name to get started.</p>
+
+    <section id="youtube-results-section" class="youtube-results-section" aria-labelledby="youtube-results-heading" hidden>
+      <div class="youtube-section-heading">
+        <div><p id="youtube-results-kicker" class="card-kicker">FROM YOUTUBE</p><h2 id="youtube-results-heading">Search results</h2></div>
+        <span id="youtube-result-count" class="youtube-result-count"></span>
+      </div>
+      <div id="youtube-skeletons" class="youtube-results-grid youtube-skeletons" aria-hidden="true" hidden>
+        <div class="youtube-skeleton"><i></i><span></span><span></span></div><div class="youtube-skeleton"><i></i><span></span><span></span></div><div class="youtube-skeleton"><i></i><span></span><span></span></div>
+      </div>
+      <div id="youtube-results" class="youtube-results-grid"></div>
+      <p id="youtube-more-status" class="youtube-more-status" role="status" aria-live="polite"></p>
+      <button id="youtube-load-more" class="button button-secondary youtube-load-more" type="button" hidden>Load more</button>
+    </section>
+
+    <section id="youtube-player-panel" class="youtube-player-panel" aria-labelledby="youtube-player-heading" hidden>
+      <div class="youtube-player-toolbar">
+        <button id="youtube-back-button" class="youtube-back-button" type="button"><span aria-hidden="true">←</span> <span id="youtube-back-label">Back to results</span></button>
+        <span id="youtube-player-kicker" class="card-kicker">OFFICIAL YOUTUBE PLAYER</span>
+      </div>
+      <div class="youtube-player-copy"><p id="youtube-now-playing" class="card-kicker">NOW PLAYING</p><h2 id="youtube-player-heading" data-i18n-skip></h2><p id="youtube-player-channel" class="youtube-player-channel" data-i18n-skip></p></div>
+      <div class="youtube-player-frame"><div id="youtube-player"></div></div>
+      <div id="youtube-player-error" class="youtube-player-error" role="status" aria-live="polite" hidden>
+        <p id="youtube-player-error-text"></p>
+        <a id="youtube-open-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Open this video on YouTube <span aria-hidden="true">↗</span></a>
+      </div>
+      <p id="youtube-player-note" class="youtube-player-note">Playback stays on this page when the video owner allows embedding. YouTube’s own controls provide play, pause, volume, and fullscreen.</p>
+    </section>
+
+    <footer class="footer youtube-footer"><span>© 2026 IQZodiac</span><span class="footer-orbit" aria-hidden="true"><i></i><i></i><i></i></span><span>Look inward. Move forward.</span><button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>
+  </main>
+
+  <nav class="site-nav" aria-label="Main navigation">
+    <a href="./home.html"><span class="nav-glyph" aria-hidden="true">⌂</span><span data-menu-key="home">Home</span></a>
+    <a href="./match.html"><span class="nav-glyph" aria-hidden="true">♡</span><span data-menu-key="match">Match</span></a>
+    <a href="./daily.html"><span class="nav-glyph" aria-hidden="true">◌</span><span data-menu-key="daily">Daily</span></a>
+    <a href="./discover.html"><span class="nav-glyph" aria-hidden="true">✦</span><span data-menu-key="discover">Discover</span></a>
+    <a href="./rooms.html"><span class="nav-glyph" aria-hidden="true">◉</span><span data-menu-key="rooms">Rooms</span></a>
+    <a href="./profile.html"><span class="nav-glyph" aria-hidden="true">◍</span><span data-menu-key="profile">Profile</span></a>
+    <a href="./youtube.html" aria-current="page"><span class="nav-glyph" aria-hidden="true">▶</span><span data-menu-key="youtube">YouTube</span></a>
+  </nav>
+
+  <script src="./youtube-config.js?v=youtube-config-20261024-1"></script>
+  <script src="./i18n-data.js?v=20261022-global"></script>
+  <script src="./language.js?v=20261022-global"></script>
+  <script src="./youtube.js?v=youtube-20261024-2"></script>
+</body>
+</html>

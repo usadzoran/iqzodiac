@@ -96,6 +96,16 @@
 - [x] Rank Match candidates by compatibility score using shared interests, zodiac alignment, and personality-element compatibility instead of presenting a fixed random order.
 - [x] Add a VIP-gated orbit page and keep the payment/checkout boundary ready without pretending that billing is connected.
 
+## YouTube search and in-site playback
+- [x] Add a responsive YouTube page and navigation item without removing or rebuilding any existing site section.
+- [x] Accept video, song, and channel-name search terms and request real video results from YouTube Data API v3 through a protected server-side handler; never expose the API key in frontend code.
+- [x] Show actual API thumbnails, titles, channel names, and publication dates where available, with loading, empty, network, API-configuration, and quota states.
+- [x] Load additional results from `nextPageToken` and preserve the query/results when opening a player and returning to search.
+- [x] Use the official YouTube IFrame Player and show an optional external link only when YouTube reports that a video cannot be embedded or is unavailable.
+- [x] Preserve GitHub Pages for the frontend and add a minimal Vercel-compatible backend function plus local Node route.
+- [ ] Configure the server-side `YOUTUBE_API_KEY` and public backend URL, then verify a live search against the user's Google Cloud project.
+- [ ] Configure a shared or platform-level rate limit for the public serverless endpoint before launch; the included in-memory limit is per warm instance only.
+
 ## Match refresh, gift store, and wallet
 - [x] Rebuilt Match layout from the broken compressed stylesheet into a structured responsive discovery experience.
 - [x] Added a gift store with coin-priced gifts, recipient selection, gift ledger entries, and Match-to-gift flow.

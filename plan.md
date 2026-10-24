@@ -21,6 +21,14 @@ Extend `signup.js` to persist account/profile metadata only, including a referen
 - `server.js`, `public/manus-routes.json`: route registration for `/match`.
 - existing `home.html`, `profile.html`, `discover.html`, `rooms.html`: only navigation links are extended; existing sections remain intact.
 
+## YouTube Search and In-Site Playback
+
+Keep GitHub Pages as the existing static site host. Add a bilingual, responsive `youtube.html` experience that queries real video results through a same-origin Node route for local development and a minimal Vercel serverless endpoint for deployment. Both backend entry points share one server-only YouTube Data API v3 handler; the API key comes only from `YOUTUBE_API_KEY`, with origin restrictions, short-lived response caching, best-effort per-instance request limits, safe query validation, and clear quota/configuration errors.
+
+Render YouTube Data API metadata as accessible result cards, paginate with `nextPageToken`, and retain the current query/results while switching to and from the official YouTube IFrame Player. Handle removed/private and embedding-disabled videos honestly; show an external YouTube link only after the player reports that embedding is unavailable. Do not modify authentication, accounts, storage, or existing sections. Because GitHub Pages cannot run the protected API, deployment also requires a public function URL configured in the non-secret `youtube-config.js` file.
+
+Files: `youtube.html`, `youtube.css`, `youtube.js`, `youtube-config.js`, `api/youtube/search.js`, `lib/youtube-search.js`, plus minimal route, shared-menu, translation, and documentation updates.
+
 ## Design direction
 
 Chosen style: **Celestial editorial minimalism**. Probability 0.07.

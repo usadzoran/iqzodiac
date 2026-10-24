@@ -2,8 +2,8 @@
   const STORE_KEY = 'iqzodiac-language';
   const dictionaries = window.IQZodiacTranslations || { enToAr: {}, arToEn: {} };
   const menuLabels = {
-    en: { home: 'Home', match: 'Match', daily: 'Daily', discover: 'Discover', rooms: 'Rooms', profile: 'Profile' },
-    ar: { home: 'الرئيسية', match: 'Match', daily: 'اليومي', discover: 'اكتشاف', rooms: 'الغرف', profile: 'الملف الشخصي' },
+    en: { home: 'Home', match: 'Match', daily: 'Daily', discover: 'Discover', rooms: 'Rooms', profile: 'Profile', youtube: 'YouTube' },
+    ar: { home: 'الرئيسية', match: 'Match', daily: 'اليومي', discover: 'اكتشاف', rooms: 'الغرف', profile: 'الملف الشخصي', youtube: 'يوتيوب' },
   };
   const pageLanguage = /^ar(?:-|$)/i.test(document.documentElement.lang) ? 'ar' : 'en';
   let storedLanguage = null;
@@ -52,7 +52,7 @@
   };
 
   const translateTextNode = (node) => {
-    if (!node.parentElement || node.parentElement.closest('script,style,noscript,[data-language-toggle]')) return;
+    if (!node.parentElement || node.parentElement.closest('script,style,noscript,[data-language-toggle],[data-i18n-skip]')) return;
     const current = node.nodeValue;
     const previous = textRecords.get(node);
     const source = previous && current === previous.applied ? previous.source : current;
@@ -104,6 +104,7 @@
     let node;
     while ((node = walker.nextNode())) translateTextNode(node);
     document.querySelectorAll('[placeholder],[aria-label],[title],[alt]').forEach((element) => {
+      if (element.closest('[data-i18n-skip]')) return;
       ['placeholder', 'aria-label', 'title', 'alt'].forEach((attribute) => translateAttribute(element, attribute));
     });
     document.querySelectorAll('[data-language-toggle]').forEach((button) => {

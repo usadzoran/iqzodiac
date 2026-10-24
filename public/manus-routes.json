@@ -12,6 +12,7 @@
     { "path": "/daily", "title": "Daily — IQZodiac" },
     { "path": "/vip", "title": "VIP Orbit — IQZodiac" },
     { "path": "/gift-store", "title": "Gift Store — IQZodiac" },
-    { "path": "/wallet", "title": "Wallet — IQZodiac" }
+    { "path": "/wallet", "title": "Wallet — IQZodiac" },
+    { "path": "/youtube", "title": "YouTube — IQZodiac" }
   ]
 }
