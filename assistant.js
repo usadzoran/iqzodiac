@@ -120,6 +120,8 @@
   const voiceLabel = document.querySelector('#assistant-voice-label');
   const voiceReplay = document.querySelector('#assistant-voice-replay');
   const voiceStatus = document.querySelector('#assistant-voice-status');
+  const avatarStage = document.querySelector('#assistant-avatar');
+  const avatarVideo = document.querySelector('#assistant-avatar-video');
   const translations = window.IQZodiacTranslations || { arToEn: {} };
   const currentLanguage = () => document.documentElement.lang === 'ar' ? 'ar' : 'en';
   const ui = () => copy[currentLanguage()];
@@ -141,7 +143,19 @@
   };
   let state = loadState();
   let voiceEnabled = false;
+  let activeUtterance = null;
   const speechAvailable = typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance === 'function';
+  const setAvatarSpeaking = (speaking) => {
+    if (!avatarStage || !avatarVideo) return;
+    avatarStage.classList.toggle('is-speaking', speaking);
+    if (speaking) {
+      const playback = avatarVideo.play();
+      if (playback && typeof playback.catch === 'function') playback.catch(() => avatarStage.classList.remove('is-speaking'));
+      return;
+    }
+    avatarVideo.pause();
+    try { avatarVideo.currentTime = 0; } catch { /* The video may not have loaded yet. */ }
+  };
   const currentPrompt = () => {
     if (state.stage === 'questions') return questionText(state.questionIndex);
     if (state.stage === 'interests') return ui().interestsPrompt;
@@ -161,6 +175,8 @@
   const speakCurrentPrompt = () => {
     const prompt = currentPrompt();
     if (!speechAvailable || !voiceEnabled || !prompt) return;
+    activeUtterance = null;
+    setAvatarSpeaking(false);
     window.speechSynthesis.cancel();
     const language = currentLanguage();
     const utterance = new window.SpeechSynthesisUtterance(prompt);
@@ -172,7 +188,15 @@
     const matchingVoices = voices.filter((voice) => voice.lang.toLowerCase().startsWith(language));
     const warmVoice = matchingVoices.find((voice) => /female|samantha|aria|jenny|sara|zira|noura|layla|hoda|fatima|laila/i.test(voice.name));
     if (warmVoice || matchingVoices[0]) utterance.voice = warmVoice || matchingVoices[0];
-    utterance.onerror = () => { voiceStatus.textContent = ui().voiceUnavailable; };
+    activeUtterance = utterance;
+    const finishSpeaking = () => {
+      if (activeUtterance !== utterance) return;
+      activeUtterance = null;
+      setAvatarSpeaking(false);
+    };
+    utterance.onstart = () => { if (activeUtterance === utterance) setAvatarSpeaking(true); };
+    utterance.onend = finishSpeaking;
+    utterance.onerror = () => { finishSpeaking(); voiceStatus.textContent = ui().voiceUnavailable; };
     window.speechSynthesis.speak(utterance);
   };
   const saveState = () => {
@@ -326,7 +350,11 @@
     voiceEnabled = !voiceEnabled;
     updateVoiceControls();
     if (voiceEnabled) speakCurrentPrompt();
-    else window.speechSynthesis.cancel();
+    else {
+      activeUtterance = null;
+      window.speechSynthesis.cancel();
+      setAvatarSpeaking(false);
+    }
   });
   voiceReplay.addEventListener('click', () => {
     if (!voiceEnabled) voiceEnabled = true;

@@ -45,6 +45,11 @@
 - [x] Keep speech on-device, disclose that the assistant is a local demo, and disable controls gracefully when browser speech is unavailable.
 - [x] Keep the signup welcome message temporary so it does not reappear after reloading saved onboarding progress.
 
+## Animated onboarding assistant avatar
+- [x] Create a photorealistic portrait of a fictional adult woman as the IQZodiac assistant avatar.
+- [x] Show a lightweight silent talking loop with visible lip, blink, and subtle head movement only while browser speech is active; stop it when speech ends or is muted.
+- [x] Use an optimized WebP still for idle display and serve WebP/MP4 with the correct MIME types.
+
 ## Account creation and identity check
 - [x] Provide a Create Account page with first name, last name, age, email address, and phone number fields.
 - [x] Require the user to be at least 18 years old.
