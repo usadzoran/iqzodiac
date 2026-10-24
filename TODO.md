@@ -34,6 +34,11 @@
 - [x] Show a small robot icon and an “AI assistant — coming soon” placeholder above the login and account creation actions.
 - [x] Keep the placeholder visual-only with no assistant connection or interaction yet.
 
+## Post-signup AI onboarding assistant
+- [x] Redirect a newly created account directly to the IQZodiac onboarding assistant after successful signup validation.
+- [x] Ask discovery questions one at a time, accept suggested or written answers, and continue through interests and birth date.
+- [x] Persist onboarding status, answers, interests, and birth date under the current IQZodiac profile for the rest of the prototype experience.
+
 ## Account creation and identity check
 - [x] Provide a Create Account page with first name, last name, age, email address, and phone number fields.
 - [x] Require the user to be at least 18 years old.

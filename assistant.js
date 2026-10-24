@@ -103,12 +103,32 @@
   const ui = () => copy[currentLanguage()];
   const fromArabic = (text) => currentLanguage() === 'ar' ? text : (translations.arToEn[text] || text);
   const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
-  const profileId = (() => { try { return JSON.parse(localStorage.getItem('iqzodiac-current-profile') || '{}').id || 'guest'; } catch { return 'guest'; } })();
+  const profileKey = 'iqzodiac-current-profile';
+  const readProfile = () => { try { return JSON.parse(localStorage.getItem(profileKey) || 'null'); } catch { return null; } };
+  const profileId = readProfile()?.id || 'guest';
   const storageKey = `iqzodiac-discovery-demo-v1:${profileId}`;
   const emptyState = () => ({ questionIndex: 0, answers: [], interests: '', birthDate: '', stage: 'questions' });
   const loadState = () => { try { const saved = JSON.parse(localStorage.getItem(storageKey) || 'null'); return saved && Array.isArray(saved.answers) ? { ...emptyState(), ...saved } : emptyState(); } catch { return emptyState(); } };
   let state = loadState();
-  const saveState = () => { try { localStorage.setItem(storageKey, JSON.stringify(state)); } catch { /* The demo remains usable if local storage is unavailable. */ } };
+  const saveState = () => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(state));
+      const profile = readProfile();
+      if (profile?.id) {
+        profile.onboarding = {
+          ...(profile.onboarding || {}),
+          status: state.stage === 'done' ? 'completed' : 'in_progress',
+          assistant: 'iqzodiac-discovery',
+          startedAt: profile.onboarding?.startedAt || new Date().toISOString(),
+          completedAt: state.stage === 'done' ? (profile.onboarding?.completedAt || new Date().toISOString()) : null,
+          answers: state.answers,
+          interests: state.interests,
+          birthDate: state.birthDate,
+        };
+        localStorage.setItem(profileKey, JSON.stringify(profile));
+      }
+    } catch { /* Keep the onboarding usable when local storage is unavailable. */ }
+  };
   if (new URLSearchParams(window.location.search).get('welcome') === '1') {
     state.signupWelcome = true;
     saveState();
