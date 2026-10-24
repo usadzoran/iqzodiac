@@ -144,6 +144,7 @@
   let state = loadState();
   let voiceEnabled = false;
   let activeUtterance = null;
+  let pendingAvatarTime = null;
   const speechAvailable = typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance === 'function';
   const setAvatarSpeaking = (speaking) => {
     if (!avatarStage || !avatarVideo) return;
@@ -153,8 +154,33 @@
       if (playback && typeof playback.catch === 'function') playback.catch(() => avatarStage.classList.remove('is-speaking'));
       return;
     }
+    pendingAvatarTime = null;
     avatarVideo.pause();
     try { avatarVideo.currentTime = 0; } catch { /* The video may not have loaded yet. */ }
+  };
+  avatarVideo?.addEventListener('loadeddata', () => {
+    if (pendingAvatarTime === null || !activeUtterance) return;
+    const target = pendingAvatarTime;
+    pendingAvatarTime = null;
+    try { avatarVideo.currentTime = target; } catch { pendingAvatarTime = target; }
+  });
+  const syncAvatarToSpeech = (utterance, event) => {
+    if (activeUtterance !== utterance || !avatarVideo || avatarVideo.paused) return;
+    const elapsed = Number(event?.elapsedTime);
+    const duration = avatarVideo.duration;
+    if (!Number.isFinite(elapsed) || elapsed < 0 || !Number.isFinite(duration) || duration <= 0 || avatarVideo.readyState < 1) return;
+    const target = elapsed % duration;
+    if (avatarVideo.readyState < 2) {
+      pendingAvatarTime = target;
+      try { avatarVideo.currentTime = target; } catch { /* Apply the latest boundary after media data arrives. */ }
+      return;
+    }
+    const difference = Math.abs(target - avatarVideo.currentTime);
+    const drift = Math.min(difference, duration - difference);
+    if (drift > 0.32) {
+      try { avatarVideo.currentTime = target; } catch { /* Wait for the next browser speech boundary. */ }
+    }
+    pendingAvatarTime = null;
   };
   const currentPrompt = () => {
     if (state.stage === 'questions') return questionText(state.questionIndex);
@@ -192,9 +218,16 @@
     const finishSpeaking = () => {
       if (activeUtterance !== utterance) return;
       activeUtterance = null;
+      pendingAvatarTime = null;
       setAvatarSpeaking(false);
     };
-    utterance.onstart = () => { if (activeUtterance === utterance) setAvatarSpeaking(true); };
+    utterance.onstart = () => {
+      if (activeUtterance !== utterance) return;
+      try { avatarVideo.currentTime = 0; } catch { /* The video may not have loaded yet. */ }
+      avatarVideo.playbackRate = 1;
+      setAvatarSpeaking(true);
+    };
+    utterance.onboundary = (event) => syncAvatarToSpeech(utterance, event);
     utterance.onend = finishSpeaking;
     utterance.onerror = () => { finishSpeaking(); voiceStatus.textContent = ui().voiceUnavailable; };
     window.speechSynthesis.speak(utterance);
@@ -227,6 +260,7 @@
   }
 
   const addBubble = (speaker, text, extraClass = '') => {
+    if (speaker === 'guide') return;
     const bubble = document.createElement('div');
     bubble.className = `assistant-bubble assistant-bubble-${speaker} ${extraClass}`.trim();
     bubble.textContent = text;

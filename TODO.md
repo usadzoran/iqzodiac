@@ -47,8 +47,10 @@
 
 ## Animated onboarding assistant avatar
 - [x] Create a photorealistic portrait of a fictional adult woman as the IQZodiac assistant avatar.
-- [x] Show a lightweight silent talking loop with visible lip, blink, and subtle head movement only while browser speech is active; stop it when speech ends or is muted.
-- [x] Use an optimized WebP still for idle display and serve WebP/MP4 with the correct MIME types.
+- [x] Keep assistant questions spoken rather than shown in chat bubbles; display only the user's chosen or written answers.
+- [x] Align the mouth-motion video timeline with real browser speech boundary elapsed times when supported; stop it when speech ends or is muted.
+- [x] Use a large, unframed seated portrait as the base, with the silent mouth-motion clip overlaid only while speech is active.
+- [x] Use an optimized WebP portrait and serve WebP/MP4 with the correct MIME types.
 
 ## Account creation and identity check
 - [x] Provide a Create Account page with first name, last name, age, email address, and phone number fields.
