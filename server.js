@@ -85,7 +85,41 @@ const server = http.createServer((request, response) => {
       response.end(error.code === 'ENOENT' ? 'Not found' : 'Server error');
       return;
     }
-    response.writeHead(200, { 'Content-Type': types[path.extname(filePath)] || 'application/octet-stream' });
+    const contentType = types[path.extname(filePath)] || 'application/octet-stream';
+    if (path.extname(filePath) === '.mp4') {
+      const range = request.headers.range;
+      if (range) {
+        const match = /^bytes=(\d*)-(\d*)$/.exec(range.trim());
+        const size = data.length;
+        let start; let end;
+        if (match && !match[1] && match[2]) {
+          const suffixLength = Number(match[2]);
+          start = Math.max(size - suffixLength, 0);
+          end = size - 1;
+        } else if (match && match[1]) {
+          start = Number(match[1]);
+          end = match[2] ? Math.min(Number(match[2]), size - 1) : size - 1;
+        }
+        if (!match || !Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || start >= size || end < start) {
+          response.writeHead(416, { 'Accept-Ranges': 'bytes', 'Content-Range': `bytes */${size}` });
+          response.end();
+          return;
+        }
+        const partialData = data.subarray(start, end + 1);
+        response.writeHead(206, {
+          'Content-Type': contentType,
+          'Accept-Ranges': 'bytes',
+          'Content-Range': `bytes ${start}-${end}/${size}`,
+          'Content-Length': partialData.length,
+        });
+        response.end(partialData);
+        return;
+      }
+      response.writeHead(200, { 'Content-Type': contentType, 'Accept-Ranges': 'bytes', 'Content-Length': data.length });
+      response.end(data);
+      return;
+    }
+    response.writeHead(200, { 'Content-Type': contentType });
     response.end(data);
   });
 });
