@@ -62,15 +62,12 @@
 ## Discover and fixed user menu
 - [x] Add a distinct Discover hub for people, rooms, and new paths around IQZodiac.
 - [x] Add a fixed bottom user menu on Home, Profile, and Discover.
-- [x] Keep Home, Discover, Entertainment, Rooms, and Profile reachable from the shared menu.
+- [x] Keep Home, Discover, Rooms, and Profile reachable from the shared menu.
 
 ## Shared menu language
 - [x] Keep the menu language consistent across Home, Profile, and Discover instead of changing with the page.
 - [x] Automatically choose Arabic or English from the browser locale on first visit.
 - [x] Provide a manual EN / العربية toggle and persist the selected language between pages.
-
-## Entertainment
-- [x] Add a distinct “Entertainment / ترفيه” menu section that opens the personality-elements quiz game.
 
 ## Audio rooms
 - [x] Add a “Audio rooms / غرف صوتية” section to the fixed user menu.
