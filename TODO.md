@@ -39,6 +39,12 @@
 - [x] Ask discovery questions one at a time, accept suggested or written answers, and continue through interests and birth date.
 - [x] Persist onboarding status, answers, interests, and birth date under the current IQZodiac profile for the rest of the prototype experience.
 
+## Voice-guided onboarding assistant
+- [x] Read the active onboarding prompt aloud in the selected Arabic or English language through the browser speech API.
+- [x] Provide explicit voice enable/mute and repeat controls; use a calm, slightly slower delivery and prefer a matching warm browser voice when available.
+- [x] Keep speech on-device, disclose that the assistant is a local demo, and disable controls gracefully when browser speech is unavailable.
+- [x] Keep the signup welcome message temporary so it does not reappear after reloading saved onboarding progress.
+
 ## Account creation and identity check
 - [x] Provide a Create Account page with first name, last name, age, email address, and phone number fields.
 - [x] Require the user to be at least 18 years old.

@@ -53,6 +53,15 @@
       saved: 'Progress saved on this device',
       matches: 'Continue to Match',
       noResults: 'Match profiles are not connected in this prototype; this page does not invent people or compatibility scores.',
+      voiceEnable: 'Hear questions',
+      voiceDisable: 'Mute voice',
+      voiceReplay: 'Repeat current question',
+      voiceOn: 'Voice on — prompts use a warm, gently paced browser voice when available.',
+      voiceOff: 'Voice is off.',
+      voiceUnavailable: 'Voice playback is unavailable in this browser.',
+      demoTitle: 'Local demo · not a connected AI',
+      demoNote: 'Replies use simple local rules. Optional voice playback runs in your browser; nothing is sent to an AI provider or database.',
+      deviceOnly: 'SAVED ON THIS DEVICE ONLY',
     },
     ar: {
       welcome: 'مرحبًا! أنا دليل اكتشاف الشخصية في IQZodiac. هذه تجربة محلية؛ سأطرح سؤالًا واحدًا في كل مرة لأريك كيف يمكن أن تسير المحادثة.',
@@ -90,6 +99,15 @@
       saved: 'التقدم محفوظ على هذا الجهاز',
       matches: 'المتابعة إلى Match',
       noResults: 'ملفات Match غير متصلة في هذه النسخة؛ لن نخترع أشخاصًا أو درجات توافق.',
+      voiceEnable: 'استمع إلى الأسئلة',
+      voiceDisable: 'إيقاف الصوت',
+      voiceReplay: 'إعادة السؤال الحالي',
+      voiceOn: 'الصوت يعمل — تُنطق الأسئلة بنبرة دافئة وهادئة قليلًا متى توفرت.',
+      voiceOff: 'الصوت متوقف.',
+      voiceUnavailable: 'ميزة الصوت غير متاحة في هذا المتصفح.',
+      demoTitle: 'نسخة تجريبية محلية · غير متصلة بذكاء اصطناعي',
+      demoNote: 'تُنشأ الردود بقواعد محلية بسيطة. يعمل الصوت الاختياري في متصفحك ولا تُرسل أي بيانات إلى مزوّد ذكاء اصطناعي أو قاعدة بيانات.',
+      deviceOnly: 'محفوظ على هذا الجهاز فقط',
     },
   };
 
@@ -98,6 +116,10 @@
   const resultBox = document.querySelector('#discovery-result');
   const progress = document.querySelector('#chat-progress');
   const resetButton = document.querySelector('#restart-discovery');
+  const voiceToggle = document.querySelector('#assistant-voice-toggle');
+  const voiceLabel = document.querySelector('#assistant-voice-label');
+  const voiceReplay = document.querySelector('#assistant-voice-replay');
+  const voiceStatus = document.querySelector('#assistant-voice-status');
   const translations = window.IQZodiacTranslations || { arToEn: {} };
   const currentLanguage = () => document.documentElement.lang === 'ar' ? 'ar' : 'en';
   const ui = () => copy[currentLanguage()];
@@ -108,11 +130,56 @@
   const profileId = readProfile()?.id || 'guest';
   const storageKey = `iqzodiac-discovery-demo-v1:${profileId}`;
   const emptyState = () => ({ questionIndex: 0, answers: [], interests: '', birthDate: '', stage: 'questions' });
-  const loadState = () => { try { const saved = JSON.parse(localStorage.getItem(storageKey) || 'null'); return saved && Array.isArray(saved.answers) ? { ...emptyState(), ...saved } : emptyState(); } catch { return emptyState(); } };
+  const loadState = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
+      if (!saved || !Array.isArray(saved.answers)) return emptyState();
+      const restored = { ...emptyState(), ...saved };
+      delete restored.signupWelcome;
+      return restored;
+    } catch { return emptyState(); }
+  };
   let state = loadState();
+  let voiceEnabled = false;
+  const speechAvailable = typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance === 'function';
+  const currentPrompt = () => {
+    if (state.stage === 'questions') return questionText(state.questionIndex);
+    if (state.stage === 'interests') return ui().interestsPrompt;
+    if (state.stage === 'birthdate') return ui().birthdayPrompt;
+    return '';
+  };
+  const updateVoiceControls = () => {
+    if (!voiceToggle || !voiceLabel || !voiceReplay || !voiceStatus) return;
+    voiceToggle.disabled = !speechAvailable;
+    voiceToggle.setAttribute('aria-pressed', String(voiceEnabled));
+    voiceLabel.textContent = speechAvailable ? (voiceEnabled ? ui().voiceDisable : ui().voiceEnable) : ui().voiceUnavailable;
+    voiceReplay.disabled = !speechAvailable;
+    voiceReplay.setAttribute('aria-label', ui().voiceReplay);
+    voiceReplay.title = ui().voiceReplay;
+    voiceStatus.textContent = speechAvailable ? (voiceEnabled ? ui().voiceOn : ui().voiceOff) : ui().voiceUnavailable;
+  };
+  const speakCurrentPrompt = () => {
+    const prompt = currentPrompt();
+    if (!speechAvailable || !voiceEnabled || !prompt) return;
+    window.speechSynthesis.cancel();
+    const language = currentLanguage();
+    const utterance = new window.SpeechSynthesisUtterance(prompt);
+    utterance.lang = language === 'ar' ? 'ar' : 'en-US';
+    utterance.rate = 0.9;
+    utterance.pitch = 0.92;
+    utterance.volume = 0.94;
+    const voices = window.speechSynthesis.getVoices();
+    const matchingVoices = voices.filter((voice) => voice.lang.toLowerCase().startsWith(language));
+    const warmVoice = matchingVoices.find((voice) => /female|samantha|aria|jenny|sara|zira|noura|layla|hoda|fatima|laila/i.test(voice.name));
+    if (warmVoice || matchingVoices[0]) utterance.voice = warmVoice || matchingVoices[0];
+    utterance.onerror = () => { voiceStatus.textContent = ui().voiceUnavailable; };
+    window.speechSynthesis.speak(utterance);
+  };
   const saveState = () => {
     try {
-      localStorage.setItem(storageKey, JSON.stringify(state));
+      const persistedState = { ...state };
+      delete persistedState.signupWelcome;
+      localStorage.setItem(storageKey, JSON.stringify(persistedState));
       const profile = readProfile();
       if (profile?.id) {
         profile.onboarding = {
@@ -241,6 +308,11 @@
     log.replaceChildren(); appendQuestionHistory(); renderTurn();
     document.querySelector('.assistant-chat-foot p').textContent = `${ui().saved}. ${currentLanguage() === 'ar' ? 'الإجابات وتاريخ الميلاد لا يغادران هذا المتصفح.' : 'Answers and birth date stay in this browser.'}`;
     document.querySelector('#restart-discovery').textContent = ui().reset;
+    document.querySelector('#assistant-demo-title').textContent = ui().demoTitle;
+    document.querySelector('#assistant-demo-note').textContent = ui().demoNote;
+    document.querySelector('#assistant-device-label').textContent = ui().deviceOnly;
+    updateVoiceControls();
+    if (voiceEnabled) speakCurrentPrompt();
     log.scrollTop = log.scrollHeight;
   };
   const submitQuestion = (answer) => {
@@ -250,6 +322,17 @@
     saveState(); render();
   };
   resetButton.addEventListener('click', () => { state = emptyState(); saveState(); render(); });
+  voiceToggle.addEventListener('click', () => {
+    voiceEnabled = !voiceEnabled;
+    updateVoiceControls();
+    if (voiceEnabled) speakCurrentPrompt();
+    else window.speechSynthesis.cancel();
+  });
+  voiceReplay.addEventListener('click', () => {
+    if (!voiceEnabled) voiceEnabled = true;
+    updateVoiceControls();
+    speakCurrentPrompt();
+  });
   let renderedLanguage = currentLanguage();
   document.addEventListener('iqzodiac:languagechange', () => {
     if (renderedLanguage === currentLanguage()) return;

@@ -10,16 +10,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css?v=assistant-demo-20261023" />
-  <link rel="stylesheet" href="./assistant.css?v=assistant-demo-20261023" />
+  <link rel="stylesheet" href="./assistant.css?v=assistant-voice-20261024" />
 </head>
 <body class="has-site-nav assistant-page">
   <div class="aurora aurora-one" aria-hidden="true"></div><div class="aurora aurora-two" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
   <main class="assistant-shell">
     <header class="topbar assistant-topbar"><a class="mini-mark" href="./home.html" aria-label="IQZodiac home"><span class="mini-mark-orbit" aria-hidden="true"></span><span>IQZ</span></a><div class="assistant-heading"><p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> YOUR DISCOVERY CONVERSATION</p><h1>AI <span>Assistant.</span></h1></div><a class="back-link" href="./discover.html">Discover <span aria-hidden="true">↗</span></a></header>
     <section class="assistant-intro"><div><p class="card-kicker">NEW ACCOUNT · PERSONALITY · ZODIAC</p><h2>Let’s get to know<br /><em>your orbit.</em></h2><p>Your IQZodiac onboarding assistant starts right after account creation. It asks one question at a time, accepts a suggested answer or your own words, and saves your discovery profile for the rest of the experience.</p></div><div class="assistant-orbit" aria-hidden="true"><span>✦</span><i></i><b></b></div></section>
-    <section class="assistant-demo-notice" aria-label="Demo status"><span class="demo-pulse" aria-hidden="true"></span><div><strong>Local demo · not a connected AI</strong><p>Responses use simple browser-side rules. Nothing is sent to an AI provider or database.</p></div><span class="assistant-status-tag"><i aria-hidden="true"></i> SAVED ON THIS DEVICE ONLY</span></section>
+    <section class="assistant-demo-notice" aria-label="Demo status"><span class="demo-pulse" aria-hidden="true"></span><div><strong id="assistant-demo-title">Local demo · not a connected AI</strong><p id="assistant-demo-note">Responses use simple browser-side rules. Optional voice playback runs in your browser; nothing is sent to an AI provider or database.</p></div><span class="assistant-status-tag"><i aria-hidden="true"></i><span id="assistant-device-label">SAVED ON THIS DEVICE ONLY</span></span></section>
     <section class="assistant-chat" aria-label="Discovery conversation">
-      <header class="assistant-chat-head"><div class="assistant-chat-avatar" aria-hidden="true">✦</div><div><strong>IQZodiac Onboarding Assistant</strong><small id="chat-progress">Ready to begin</small></div><span class="assistant-local-badge">ONBOARDING</span></header>
+      <header class="assistant-chat-head"><div class="assistant-chat-avatar" aria-hidden="true">✦</div><div><strong>IQZodiac Onboarding Assistant</strong><small id="chat-progress">Ready to begin</small></div><span class="assistant-local-badge">ONBOARDING</span><div class="assistant-voice-controls"><button id="assistant-voice-toggle" class="assistant-voice-toggle" type="button" aria-pressed="false"><span aria-hidden="true">◖))</span><span id="assistant-voice-label">Hear questions</span></button><button id="assistant-voice-replay" class="assistant-voice-replay" type="button" aria-label="Repeat current question" title="Repeat current question">↻</button><span id="assistant-voice-status" class="assistant-voice-status" aria-live="polite"></span></div></header>
       <div id="chat-log" class="assistant-chat-log" role="log" aria-live="polite" aria-relevant="additions text"></div>
       <section id="chat-turn" class="assistant-turn" aria-live="polite"></section>
       <section id="discovery-result" class="assistant-result" hidden aria-live="polite"></section>
@@ -36,6 +36,6 @@
     <a href="./rooms.html"><span class="nav-glyph" aria-hidden="true">◉</span><span data-menu-key="rooms">Rooms</span></a>
     <a href="./profile.html"><span class="nav-glyph" aria-hidden="true">◍</span><span data-menu-key="profile">Profile</span></a>
   </nav>
-  <script src="./i18n-data.js?v=20261022-global"></script><script src="./language.js?v=20261022-global"></script><script src="./assistant.js?v=assistant-demo-20261023"></script>
+  <script src="./i18n-data.js?v=20261022-global"></script><script src="./language.js?v=20261022-global"></script><script src="./assistant.js?v=assistant-voice-20261024"></script>
 </body>
 </html>
