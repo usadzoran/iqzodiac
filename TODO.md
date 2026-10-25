@@ -91,10 +91,15 @@
 - [x] Mark the daily feed as `no-store`, refresh it on demand, and reload the page when the calendar day changes so the previous day’s items leave the view.
 
 ## User roles, compatibility matching, and VIP access
-- [x] Model regular users and VIP users through a shared account-access layer with extensible entitlements.
+- [x] Keep a shared account-access interface; local browser storage never grants VIP access.
 - [x] Store zodiac sign, personality element, interests, and personality-answer placeholders as Match inputs in the existing profile/account model.
 - [x] Rank Match candidates by compatibility score using shared interests, zodiac alignment, and personality-element compatibility instead of presenting a fixed random order.
-- [x] Add a VIP-gated orbit page and keep the payment/checkout boundary ready without pretending that billing is connected.
+- [x] Add a VIP orbit and VIP Live scaffold; checkout, streaming, chat, and gifting are visibly disabled until real providers are connected.
+- [ ] Connect signup/login to Supabase Auth and grant VIP roles only through an authorized server-side process.
+- [ ] Select and integrate a real WebRTC/HLS provider, signed playback, moderation, and realtime chat.
+- [ ] Connect verified payment webhooks and idempotent server-side coin/gift ledger operations.
+- [ ] Connect a payout provider, financial policy, and server-side withdrawal review.
+- [ ] Set the deployed backend URL in `public/supabase-public-config.json` and configure the exact allowed website origins.
 
 ## YouTube search and in-site playback
 - [x] Add a responsive YouTube page and navigation item without removing or rebuilding any existing site section.
@@ -108,6 +113,15 @@
 
 ## Match refresh, gift store, and wallet
 - [x] Rebuilt Match layout from the broken compressed stylesheet into a structured responsive discovery experience.
-- [x] Added a gift store with coin-priced gifts, recipient selection, gift ledger entries, and Match-to-gift flow.
-- [x] Added user wallet balances, received-gift accounting, coin top-up packages, platform fee, minimum withdrawal, transaction history, and payout provider boundaries.
+- [x] Added the gift-store page scaffold; demo gifts, prices, recipients, and local coin deductions are not shown.
+- [x] Added the wallet status page; no local balance or transaction is presented as real, and purchases/payouts remain disabled.
+
+## Supabase VIP database scaffold
+- [x] Inspect the existing Supabase schema before changes and apply an additive migration only; existing tables were not modified.
+- [x] Create VIP roles, live-session, wallet, ledger, gift, earnings, payout, chat, report, settings, and audit structures with RLS enabled and forced.
+- [x] Add only explicit creator/platform revenue-rule and disabled feature-status rows; wallets, sessions, purchases, gifts, and transactions remain empty.
+- [x] Connect the website to the public feature-status row using only the Supabase publishable key; never place the management token or service-role key in frontend code.
+- [x] Make the live API fail closed: Supabase Auth and a server-verified VIP role are required; no local role can unlock it.
+- [ ] Deploy the Vercel backend endpoint and connect Supabase Auth; the current signup remains local-only.
+- [ ] Integrate real streaming, realtime chat, payments, and payouts before enabling any feature flags.
 - [x] Kept PayPal/Visa/Mastercard actions as server-side integration contracts only; no card data or real money is collected in the prototype.

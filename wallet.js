@@ -1,11 +1,46 @@
 (() => {
-  const adapter = window.IQZodiacData.adapter; let selectedPackage = 'plus'; let provider = 'paypal'; const status = document.querySelector('#checkout-status'); const withdrawStatus = document.querySelector('#withdraw-status');
-  const money = (value) => `$${Number(value || 0).toFixed(2)}`;
-  const render = async () => { const wallet = await adapter.getWallet(); document.querySelector('#wallet-coins').textContent = wallet.coins.toLocaleString(); document.querySelector('#wallet-cash').textContent = money(wallet.cashBalance); document.querySelector('#received-coins').textContent = wallet.receivedCoins.toLocaleString(); document.querySelector('#minimum-withdrawal').textContent = wallet.minimumWithdrawalCoins.toLocaleString(); document.querySelector('#platform-fee').textContent = `${wallet.platformFeePercent}%`; const list = document.querySelector('#transaction-list'); const transactions = await adapter.getWalletTransactions(); list.innerHTML = transactions.length ? transactions.slice(0, 8).map((item) => `<div class="transaction-row"><span><strong>${item.type === 'gift_sent' ? 'Gift sent' : item.type === 'gift_received' ? 'Gift received' : item.type}</strong><small>${new Date(item.createdAt).toLocaleString()}</small></span><span class="transaction-amount">${item.coins > 0 ? '+' : ''}${item.coins} ◎</span></div>`).join('') : '<p class="wallet-status">No activity yet. Your wallet history will appear here.</p>'; };
-  document.querySelectorAll('.coin-package').forEach((button) => button.addEventListener('click', () => { selectedPackage = button.dataset.package; document.querySelectorAll('.coin-package').forEach((item) => item.classList.toggle('selected', item === button)); }));
-  document.querySelectorAll('[data-provider]').forEach((button) => button.addEventListener('click', () => { provider = button.dataset.provider; document.querySelectorAll('[data-provider]').forEach((item) => item.classList.toggle('selected', item === button)); }));
-  document.querySelector('[data-provider="paypal"]').classList.add('selected'); document.querySelector('[data-package="plus"]').classList.add('selected');
-  document.querySelectorAll('[data-provider],.coin-package').forEach((item) => item.addEventListener('click', async () => { const result = await adapter.createCoinCheckout(selectedPackage, provider); status.textContent = result.message; }));
-  document.querySelector('#withdraw-button').addEventListener('click', async () => { try { const result = await adapter.requestWithdrawal({ coins: document.querySelector('#withdraw-coins').value, method: document.querySelector('#withdraw-method').value }); withdrawStatus.textContent = `${result.message} Estimated platform fee: ${result.feeCoins.toLocaleString()} coins.`; } catch (error) { withdrawStatus.textContent = error.message; } });
-  render();
+  'use strict';
+
+  const language = window.IQZodiacLanguage?.language === 'ar' ? 'ar' : 'en';
+  const text = {
+    en: {
+      checking: 'Checking secure wallet status…',
+      connected: (version) => `Supabase connected · schema ${version}. No authenticated wallet is linked to this local signup.`,
+      unavailable: 'Could not verify Supabase. Wallet balances and actions remain unavailable.',
+      noPackages: 'No coin packages are configured. Purchases are disabled; no payment was created.',
+      noPayouts: 'Payouts are disabled; no withdrawal request has been submitted.',
+      noTransactions: 'No verified transaction rows are available.',
+    },
+    ar: {
+      checking: 'جارٍ التحقق من حالة المحفظة الآمنة…',
+      connected: (version) => `قاعدة Supabase متصلة · إصدار المخطط ${version}. لا توجد محفظة موثقة مرتبطة بهذا التسجيل المحلي.`,
+      unavailable: 'تعذّر التحقق من Supabase. الأرصدة والعمليات غير متاحة.',
+      noPackages: 'لا توجد باقات عملات مضبوطة. الشراء معطّل ولم تُنشأ أي عملية دفع.',
+      noPayouts: 'السحب معطّل ولم يُرسل أي طلب سحب.',
+      noTransactions: 'لا توجد قيود معاملات موثّقة لعرضها.',
+    },
+  }[language];
+
+  const byId = (id) => document.getElementById(id);
+  const set = (id, value, state) => {
+    const element = byId(id);
+    if (!element) return;
+    element.textContent = value;
+    if (state) element.dataset.state = state;
+  };
+
+  byId('wallet-coins').textContent = '—';
+  byId('wallet-cash').textContent = '—';
+  set('wallet-db-status', text.checking, 'pending');
+  set('transaction-list', text.noTransactions);
+
+  window.IQZodiacVipData.getFeatureStatus().then((features) => {
+    set('wallet-db-status', text.connected(features.schema_version), 'ok');
+    set('checkout-status', features.coin_purchases_enabled ? text.noPackages : text.noPackages, 'pending');
+    set('withdraw-status', features.payouts_enabled ? text.noPayouts : text.noPayouts, 'pending');
+  }).catch(() => {
+    set('wallet-db-status', text.unavailable, 'error');
+    set('checkout-status', text.unavailable, 'error');
+    set('withdraw-status', text.unavailable, 'error');
+  });
 })();

@@ -441,14 +441,14 @@ body.directory-only .app{display:none}
   </header>
   <div class="room-cards">
     <article class="room-card" data-room-card="stars">
-      <div class="room-card-top"><span>غرفة عامة</span><span class="room-status">مباشرة</span></div>
+      <div class="room-card-top"><span>غرفة عامة</span><span class="room-status">معاينة</span></div>
       <div><div class="room-art">🌙</div><h2>ما وراء النجوم</h2><p>تحدث بقلبك... واستمع بروحك في مساحة هادئة للتأمل والحوار.</p></div>
-      <div><div class="room-card-meta"><span>👥 128 زائرًا</span><span>🎙️ 3 متحدثين</span></div><button class="join-room" type="button" data-room-title="ما وراء النجوم" data-room-subtitle="تحدث بقلبك... واستمع بروحك" data-room-listeners="128">دخول تجريبي ↗</button></div>
+      <div><div class="room-card-meta"><span>لا يوجد عدّاد حضور مباشر</span><span>بلا بث صوتي حقيقي</span></div><button class="join-room" type="button" data-room-title="ما وراء النجوم" data-room-subtitle="تحدث بقلبك... واستمع بروحك">دخول تجريبي ↗</button></div>
     </article>
     <article class="room-card experimental" data-room-card="city">
-      <div class="room-card-top"><span>غرفة تجريبية</span><span class="room-status">مفتوحة</span></div>
+      <div class="room-card-top"><span>غرفة تجريبية</span><span class="room-status">معاينة</span></div>
       <div><div class="room-art">🌆</div><h2>نبض المدينة</h2><p>جلسة خفيفة للحديث عن الأفكار الجديدة، الموسيقى، وتفاصيل اليوم.</p></div>
-      <div><div class="room-card-meta"><span>👥 42 زائرًا</span><span>🎙️ 2 متحدثين</span></div><button class="join-room" type="button" data-room-title="نبض المدينة" data-room-subtitle="أفكار جديدة من قلب المدينة" data-room-listeners="42">دخول تجريبي ↗</button></div>
+      <div><div class="room-card-meta"><span>لا يوجد عدّاد حضور مباشر</span><span>بلا بث صوتي حقيقي</span></div><button class="join-room" type="button" data-room-title="نبض المدينة" data-room-subtitle="أفكار جديدة من قلب المدينة">دخول تجريبي ↗</button></div>
     </article>
   </div>
   <p class="directory-note">الغرف مغلقة افتراضيًا. اضغط على بطاقة للانضمام إلى تجربة الغرفة.</p>
@@ -457,7 +457,7 @@ body.directory-only .app{display:none}
 
 <header>
   <div class="logo">NEBULA ✦</div>
-  <div class="live">● غرفة مباشرة</div>
+  <div class="live">● معاينة تجريبية</div>
 </header>
 
 <main class="room">
@@ -467,7 +467,7 @@ body.directory-only .app{display:none}
 
   <div class="stats">
     <div class="stat">🎙️ جلسة صوتية</div>
-    <div class="stat">👥 <span id="listenerCount">128</span> مستمعًا</div>
+    <div class="stat">👥 لا يوجد عدّاد حضور مباشر</div>
     <div class="stat">✦ نقاش مفتوح</div>
   </div>
 
@@ -497,18 +497,11 @@ body.directory-only .app{display:none}
 
 <section class="section">
   <div class="section-title">
-    <span>✨ المستمعون</span>
-    <span class="small">أصدقاء داخل الغرفة</span>
+    <span>✨ معاينة الحضور</span>
+    <span class="small">لا يوجد اتصال فعلي</span>
   </div>
 
-  <div class="listeners">
-    <div class="listener"><span class="mini-avatar">🌸</span> ياسمين</div>
-    <div class="listener"><span class="mini-avatar">🪐</span> آدم</div>
-    <div class="listener"><span class="mini-avatar">🌷</span> سارة</div>
-    <div class="listener"><span class="mini-avatar">🦊</span> أمين</div>
-    <div class="listener"><span class="mini-avatar">🌿</span> ليلى</div>
-    <div class="listener"><span class="mini-avatar">⭐</span> أنت</div>
-  </div>
+  <div class="listeners"><div class="empty">لا يوجد مستخدمون متصلون؛ هذه واجهة محلية تجريبية فقط.</div></div>
 </section>
 
 <section class="section">
@@ -547,7 +540,7 @@ body.directory-only .app{display:none}
 </div>
 
 <div class="notice">
-  NEBULA · تحدث باحترام، واستمع باهتمام ✦
+  NEBULA · هذه معاينة محلية فقط؛ لا يوجد بث أو حضور أو دردشة حقيقية ✦
 </div>
 
 </div>
@@ -572,7 +565,6 @@ document.querySelectorAll(".join-room").forEach(button => {
     soundOn = true;
     $("roomTitle").textContent = button.dataset.roomTitle;
     $("roomSubtitle").textContent = button.dataset.roomSubtitle;
-    $("listenerCount").textContent = button.dataset.roomListeners;
     $("roomDirectory").hidden = true;
     document.body.classList.remove("directory-only");
     updateHandButton();

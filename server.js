@@ -3,6 +3,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const handleYouTubeSearch = require('./lib/youtube-search');
+const handleVipLive = require('./api/vip/live');
 
 const root = __dirname;
 const port = Number(process.env.PORT || 3000);
@@ -26,6 +27,7 @@ const routeFiles = {
   '/match': 'match.html',
   '/daily': 'daily.html',
   '/vip': 'vip.html',
+  '/vip-live': 'vip-live.html',
   '/gift-store': 'gift-store.html',
   '/wallet': 'wallet.html',
   '/youtube': 'youtube.html',
@@ -65,6 +67,15 @@ const server = http.createServer((request, response) => {
       if (!response.headersSent) {
         response.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
         response.end(JSON.stringify({ error: { code: 'upstream_unavailable', message: 'YouTube search is temporarily unavailable.' } }));
+      }
+    });
+    return;
+  }
+  if (requestPath === '/api/vip/live') {
+    handleVipLive(request, response).catch(() => {
+      if (!response.headersSent) {
+        response.writeHead(503, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+        response.end(JSON.stringify({ error: { code: 'vip_service_unavailable', message: 'VIP access verification is temporarily unavailable.' } }));
       }
     });
     return;

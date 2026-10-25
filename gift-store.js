@@ -1,7 +1,41 @@
 (() => {
-  const adapter = window.IQZodiacData.adapter; const grid = document.querySelector('#gift-grid'); const toast = document.querySelector('.toast'); const toastMessage = document.querySelector('.toast-message'); const recipient = document.querySelector('#recipient-select'); let coins = 0; let timer;
-  const toastIt = (message) => { toastMessage.textContent = message; toast.classList.add('is-visible'); clearTimeout(timer); timer = setTimeout(() => toast.classList.remove('is-visible'), 3000); };
-  const updateCoins = () => { document.querySelector('#gift-coins').textContent = coins.toLocaleString(); };
-  const render = (gifts) => { grid.innerHTML = gifts.map((gift) => `<article class="gift-card"><div class="gift-art">${gift.icon}</div><h3>${gift.name}</h3><p>${gift.note}</p><div class="gift-buy"><span class="gift-price">◎ ${gift.price}</span><button type="button" data-gift-id="${gift.id}">Send gift ↗</button></div></article>`).join(''); grid.querySelectorAll('[data-gift-id]').forEach((button) => button.addEventListener('click', async () => { try { const result = await adapter.sendGift({ giftId: button.dataset.giftId, recipientId: recipient.value }); coins = result.wallet.coins; updateCoins(); toastIt(`${result.gift.name} is ready for ${recipient.options[recipient.selectedIndex].text.split(' · ')[0]}.`); } catch (error) { toastIt(error.message === 'Not enough coins' ? 'Not enough coins. Top up your wallet to send this gift.' : error.message); } })); };
-  (async () => { const wallet = await adapter.getWallet(); coins = wallet.coins; updateCoins(); render(await adapter.listGifts()); const params = new URLSearchParams(location.search); if (params.get('to')) recipient.value = params.get('to'); })();
+  'use strict';
+
+  const language = window.IQZodiacLanguage?.language === 'ar' ? 'ar' : 'en';
+  const labels = {
+    en: {
+      checking: 'Checking the Supabase database…',
+      connected: (version) => `Supabase connected · schema ${version}. No authenticated VIP catalog is available to this local account.`,
+      unavailable: 'Could not verify Supabase. The gift catalog remains unavailable.',
+      empty: 'No gift catalog is configured. No gift can be sent and no coins will be deducted.',
+    },
+    ar: {
+      checking: 'جارٍ التحقق من قاعدة بيانات Supabase…',
+      connected: (version) => `قاعدة Supabase متصلة · إصدار المخطط ${version}. لا يوجد كتالوج VIP موثّق متاح لهذا الحساب المحلي.`,
+      unavailable: 'تعذّر التحقق من Supabase. كتالوج الهدايا غير متاح.',
+      empty: 'لم يُضبط كتالوج للهدايا. لا يمكن إرسال هدية ولن تُخصم أي عملات.',
+    },
+  }[language];
+
+  const status = document.getElementById('gift-status');
+  const grid = document.getElementById('gift-grid');
+  document.getElementById('gift-coins').textContent = '—';
+  status.textContent = labels.checking;
+
+  function showEmptyCatalog() {
+    const empty = document.createElement('p');
+    empty.className = 'gift-status-empty';
+    empty.textContent = labels.empty;
+    grid.replaceChildren(empty);
+  }
+
+  window.IQZodiacVipData.getFeatureStatus().then((features) => {
+    status.textContent = labels.connected(features.schema_version);
+    status.dataset.state = 'ok';
+    showEmptyCatalog();
+  }).catch(() => {
+    status.textContent = labels.unavailable;
+    status.dataset.state = 'error';
+    showEmptyCatalog();
+  });
 })();

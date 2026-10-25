@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="IQZodiac VIP live area — secure scaffold, streaming not yet connected." />
+  <title>VIP Live — IQZodiac</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css?v=vip-live-20261025" />
+  <link rel="stylesheet" href="./vip.css?v=vip-live-20261025" />
+  <link rel="stylesheet" href="./vip-live.css?v=vip-live-20261025" />
+</head>
+<body class="vip-page has-site-nav">
+  <div class="aurora aurora-one" aria-hidden="true"></div>
+  <div class="aurora aurora-two" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <main class="vip-shell vip-live-shell">
+    <header class="topbar vip-topbar">
+      <a class="mini-mark" href="./home.html" aria-label="IQZodiac home"><span class="mini-mark-orbit" aria-hidden="true"></span><span>IQZ</span></a>
+      <div class="vip-heading"><p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> VIP · LIVE</p><h1>Private <span>live room.</span></h1></div>
+      <a class="back-link" href="./vip.html">Back to VIP <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <section class="vip-card vip-live-card" aria-labelledby="vip-live-title">
+      <div class="vip-ring" aria-hidden="true">◉</div>
+      <p class="card-kicker">SECURE VIP AREA</p>
+      <h2 id="vip-live-title">The live room is not connected yet.</h2>
+      <p id="vip-live-copy">This page is the secure foundation only. It will not show a recording as live, invent viewer counts, or accept chat or gifts before the real providers and verified account flow are connected.</p>
+      <div class="vip-live-status-list" aria-live="polite">
+        <p id="vip-db-status" class="vip-status">Checking the Supabase database…</p>
+        <p id="vip-access-status" class="vip-status">VIP access requires verified Supabase Auth.</p>
+        <p id="vip-stream-status" class="vip-status">No live video provider is configured.</p>
+      </div>
+      <div id="vip-live-sessions" class="vip-live-sessions" aria-live="polite"></div>
+      <div class="vip-live-actions">
+        <button id="vip-start-broadcast" class="button button-primary" type="button" disabled aria-disabled="true">Start broadcast · unavailable</button>
+        <a class="vip-secondary-link" href="./wallet.html">Wallet status</a>
+        <a class="vip-secondary-link" href="./gift-store.html">Gift store status</a>
+      </div>
+      <p class="vip-live-note">No stream, viewer count, chat message, gift, balance, or payment is being simulated.</p>
+    </section>
+  </main>
+
+  <nav class="site-nav" aria-label="Main navigation">
+    <a href="./home.html"><span class="nav-glyph" aria-hidden="true">⌂</span><span data-menu-key="home">Home</span></a>
+    <a href="./match.html"><span class="nav-glyph" aria-hidden="true">♡</span><span data-menu-key="match">Match</span></a>
+    <a href="./daily.html"><span class="nav-glyph" aria-hidden="true">◌</span><span data-menu-key="daily">Daily</span></a>
+    <a href="./discover.html"><span class="nav-glyph" aria-hidden="true">✦</span><span data-menu-key="discover">Discover</span></a>
+    <a href="./youtube.html"><span class="nav-glyph" aria-hidden="true">▶</span><span data-menu-key="youtube">YouTube</span></a>
+    <a href="./rooms.html"><span class="nav-glyph" aria-hidden="true">◉</span><span data-menu-key="rooms">Rooms</span></a>
+    <a href="./profile.html"><span class="nav-glyph" aria-hidden="true">◍</span><span data-menu-key="profile">Profile</span></a>
+  </nav>
+  <script src="./i18n-data.js?v=20261022-global"></script>
+  <script src="./language.js?v=20261022-global"></script>
+  <script src="./vip-data.js?v=vip-live-20261025"></script>
+  <script src="./vip-live.js?v=vip-live-20261025"></script>
+</body>
+</html>
