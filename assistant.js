@@ -148,6 +148,7 @@
   let voiceEnabled = speechAvailable;
   let activeUtterance = null;
   let pendingAvatarTime = null;
+  let lastAvatarBoundary = null;
   const avatarExpressionClasses = ['is-speaking', 'is-smiling', 'is-thinking', 'is-welcoming'];
   const setAvatarExpression = (expression) => {
     if (!avatarStage) return;
@@ -158,7 +159,10 @@
   const showAvatarSmile = () => {
     if (!avatarStage) return;
     setAvatarExpression('smiling');
+    lastAvatarBoundary = null;
     if (!avatarVideo) return;
+    avatarVideo.loop = true;
+    avatarVideo.playbackRate = 1;
     avatarVideo.pause();
     if (avatarVideo.readyState >= 1 && Math.abs(avatarVideo.currentTime - smileFrameTime()) > 0.06) {
       try { avatarVideo.currentTime = smileFrameTime(); } catch { /* Keep the matching portrait visible if seeking is unavailable. */ }
@@ -166,7 +170,10 @@
   };
   const showAvatarWelcome = () => {
     setAvatarExpression('welcoming');
+    lastAvatarBoundary = null;
     if (!avatarVideo) return;
+    avatarVideo.loop = true;
+    avatarVideo.playbackRate = 1;
     avatarVideo.pause();
     if (avatarVideo.readyState >= 1 && avatarVideo.currentTime > 0.06) {
       try { avatarVideo.currentTime = smileFrameTime(); } catch { /* Keep the matching portrait visible if seeking is unavailable. */ }
@@ -175,9 +182,12 @@
   const showAvatarThinking = () => {
     activeUtterance = null;
     pendingAvatarTime = null;
+    lastAvatarBoundary = null;
     if (speechAvailable) window.speechSynthesis.cancel();
     setAvatarExpression('thinking');
     if (!avatarVideo) return;
+    avatarVideo.loop = true;
+    avatarVideo.playbackRate = 1;
     avatarVideo.pause();
     try { avatarVideo.currentTime = smileFrameTime(); } catch { /* The generated thinking portrait remains visible. */ }
   };
@@ -185,6 +195,7 @@
     if (!avatarStage || !avatarVideo) return;
     setAvatarExpression(speaking ? 'speaking' : 'smiling');
     if (speaking) {
+      avatarVideo.loop = false;
       const playback = avatarVideo.play();
       if (playback && typeof playback.then === 'function') {
         playback.then(() => avatarStage.classList.remove('is-video-unavailable'))
@@ -195,6 +206,9 @@
       return;
     }
     pendingAvatarTime = null;
+    lastAvatarBoundary = null;
+    avatarVideo.loop = true;
+    avatarVideo.playbackRate = 1;
     avatarVideo.pause();
     if (avatarVideo.readyState >= 1) {
       try { avatarVideo.currentTime = smileFrameTime(); } catch { /* Keep the matching portrait visible if seeking is unavailable. */ }
@@ -210,23 +224,62 @@
     if (!activeUtterance && avatarStage?.classList.contains('is-smiling')) showAvatarSmile();
   });
   avatarVideo?.addEventListener('error', () => avatarStage?.classList.add('is-video-unavailable'));
+  // Map each sentence's word progress to one pass of the short clip instead of looping on elapsed time.
   const syncAvatarToSpeech = (utterance, event) => {
-    if (activeUtterance !== utterance || !avatarVideo || avatarVideo.paused) return;
+    if (activeUtterance !== utterance || !avatarVideo) return;
     const elapsed = Number(event?.elapsedTime);
     const duration = avatarVideo.duration;
-    if (!Number.isFinite(elapsed) || elapsed < 0 || !Number.isFinite(duration) || duration <= 0 || avatarVideo.readyState < 1) return;
-    const target = elapsed % duration;
+    const text = String(utterance.text || '');
+    const textLength = text.length;
+    if (!Number.isFinite(duration) || duration <= 0 || avatarVideo.readyState < 1 || !textLength) return;
+    const charIndex = Number(event?.charIndex);
+    const hasNewWordIndex = Number.isFinite(charIndex) && charIndex >= 0 && (!lastAvatarBoundary || charIndex > lastAvatarBoundary.charIndex);
+    let sentenceStart = lastAvatarBoundary?.sentenceStart ?? 0;
+    let sentenceEnd = textLength;
+    if (Number.isFinite(charIndex)) {
+      sentenceStart = 0;
+      const sentenceBreaks = /[.!?؟]/g;
+      let punctuation;
+      while ((punctuation = sentenceBreaks.exec(text))) {
+        if (punctuation.index < charIndex) sentenceStart = punctuation.index + 1;
+        else { sentenceEnd = punctuation.index; break; }
+      }
+    }
+    const sentenceLength = Math.max(1, sentenceEnd - sentenceStart);
+    const sentenceChanged = !lastAvatarBoundary || lastAvatarBoundary.sentenceStart !== sentenceStart;
+    const sentenceElapsedStart = sentenceChanged
+      ? (Number.isFinite(elapsed) ? elapsed : 0)
+      : lastAvatarBoundary.sentenceElapsedStart;
+    const estimatedSpeechDuration = Math.max(1, sentenceLength / 14);
+    const progress = hasNewWordIndex
+      ? Math.min(1, Math.max(0, (charIndex - sentenceStart) / sentenceLength))
+      : Math.min(1, Math.max(0, Number.isFinite(elapsed) ? (elapsed - sentenceElapsedStart) / estimatedSpeechDuration : 0));
+    const target = Math.min(Math.max(0, duration - 0.04), progress * duration);
+    if (sentenceChanged) avatarVideo.playbackRate = 1;
+    else if (lastAvatarBoundary && Number.isFinite(elapsed) && elapsed > lastAvatarBoundary.elapsed && target > lastAvatarBoundary.target) {
+      const rate = (target - lastAvatarBoundary.target) / (elapsed - lastAvatarBoundary.elapsed);
+      avatarVideo.playbackRate = Math.max(0.25, Math.min(1.35, rate));
+    }
+    lastAvatarBoundary = {
+      charIndex: Number.isFinite(charIndex) ? charIndex : (lastAvatarBoundary?.charIndex ?? -1),
+      elapsed: Number.isFinite(elapsed) ? elapsed : (lastAvatarBoundary?.elapsed ?? 0),
+      target,
+      sentenceStart,
+      sentenceElapsedStart,
+    };
     if (avatarVideo.readyState < 2) {
       pendingAvatarTime = target;
-      try { avatarVideo.currentTime = target; } catch { /* Apply the latest boundary after media data arrives. */ }
+      try { avatarVideo.currentTime = target; } catch { /* Apply the latest word position after media data arrives. */ }
       return;
     }
-    const difference = Math.abs(target - avatarVideo.currentTime);
-    const drift = Math.min(difference, duration - difference);
-    if (drift > 0.32) {
-      try { avatarVideo.currentTime = target; } catch { /* Wait for the next browser speech boundary. */ }
+    if (Math.abs(target - avatarVideo.currentTime) > 0.16) {
+      try { avatarVideo.currentTime = target; } catch { /* Wait for the next spoken-word boundary. */ }
     }
     pendingAvatarTime = null;
+    if (avatarVideo.paused) {
+      const playback = avatarVideo.play();
+      if (playback && typeof playback.catch === 'function') playback.catch(() => avatarStage?.classList.add('is-video-unavailable'));
+    }
   };
   const currentPrompt = () => {
     if (state.stage === 'questions') return questionText(state.questionIndex);
@@ -270,6 +323,7 @@
     };
     utterance.onstart = () => {
       if (activeUtterance !== utterance) return;
+      lastAvatarBoundary = null;
       try { avatarVideo.currentTime = 0; } catch { /* The video may not have loaded yet. */ }
       avatarVideo.playbackRate = 1;
       setAvatarSpeaking(true);
