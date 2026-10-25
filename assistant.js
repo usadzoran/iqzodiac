@@ -18,7 +18,7 @@
 
   const copy = {
     en: {
-      welcome: 'Welcome to IQZodiac! Your answers help us understand your interests and the way you think, so we can guide you toward a group of people who share them. I’ll be with you at every step. This local demo is not connected to real member groups yet.',
+      welcome: 'Welcome to IQZodiac! Your answers help us understand your interests and the way you think, so we can guide you toward real members who share them. I’ll be with you at every step.',
       signupWelcome: 'Plot twist: you survived the signup form! Welcome to IQZodiac. Answer a few questions so we can explore the community you may feel at home in—and the kind of person you’re hoping to meet.',
       greeting: 'Let’s start with how you tend to approach things.',
       typed: 'Your answer',
@@ -35,7 +35,7 @@
       required: 'Please answer this question before continuing.',
       progress: (n, total) => `Step ${n} of ${total}`,
       resultTitle: 'Your discovery snapshot',
-      resultNote: 'A playful, rule-based demo—not an AI analysis, psychological assessment, or guarantee of compatibility.',
+      resultNote: 'Your answers are saved to your account. This guided interpretation is not a psychological assessment or guarantee of compatibility.',
       element: 'Personality pattern',
       zodiac: 'Zodiac sign from your birth date',
       interests: 'Interests you shared',
@@ -48,23 +48,23 @@
         air: 'Your selected answers lean toward curiosity, flexibility, and exploring ideas.',
       },
       names: { fire: 'Fire', earth: 'Earth', water: 'Water', air: 'Air' },
-      completed: 'You’ve completed this local discovery demo.',
+      completed: 'Your discovery profile is ready. Real member matches are next.',
       reset: 'Start over',
-      saved: 'Progress saved on this device',
+      saved: 'Progress saved securely to your account',
       matches: 'Continue to Match',
-      noResults: 'Match profiles are not connected in this prototype; this page does not invent people or compatibility scores.',
+      noResults: 'No completed member profiles match yet. We will not invent people or compatibility scores.',
       voiceEnable: 'Hear questions',
       voiceDisable: 'Mute voice',
       voiceReplay: 'Repeat current question',
       voiceOn: 'Voice on — prompts use a warm, gently paced browser voice when available.',
       voiceOff: 'Voice is off.',
       voiceUnavailable: 'Voice playback is unavailable in this browser.',
-      demoTitle: 'Local demo · not a connected AI',
-      demoNote: 'Replies use simple local rules. Optional voice playback runs in your browser; nothing is sent to an AI provider or database.',
-      deviceOnly: 'SAVED ON THIS DEVICE ONLY',
+      demoTitle: 'Guided discovery · account connected',
+      demoNote: 'Your answers are stored in your private Supabase discovery profile. No external AI provider is connected; this assistant uses the site’s guided questionnaire.',
+      deviceOnly: 'SAVED TO YOUR ACCOUNT',
     },
     ar: {
-      welcome: 'أهلًا بك في IQZodiac! ستساعدنا إجاباتك على فهم اهتماماتك وطريقة تفكيرك، لنرشدك إلى مجموعة أشخاص يشاركونك الاهتمامات وطريقة التفكير. سأرافقك خطوة بخطوة. تنبيه: هذه نسخة تجريبية محلية لا تربطك حاليًا بأعضاء أو مجموعات حقيقية.',
+      welcome: 'أهلًا بك في IQZodiac! ستساعدنا إجاباتك على فهم اهتماماتك وطريقة تفكيرك، لنرشدك إلى أعضاء حقيقيين يشاركونك الاهتمامات وطريقة التفكير. سأرافقك خطوة بخطوة.',
       signupWelcome: 'مفاجأة: نجوت من استمارة التسجيل! أهلًا بك في IQZodiac. أجب عن بضعة أسئلة لنكتشف المجتمع الذي قد تشعر أنك تنتمي إليه، ونقترب من الشخص الذي تبحث عنه.',
       greeting: 'لنبدأ بطريقة تعاملك عادةً مع الأمور.',
       typed: 'إجابتك',
@@ -81,7 +81,7 @@
       required: 'أجب عن هذا السؤال قبل المتابعة.',
       progress: (n, total) => `الخطوة ${n} من ${total}`,
       resultTitle: 'ملخص اكتشافك',
-      resultNote: 'نتيجة مرحة بقواعد بسيطة، وليست تحليلًا بالذكاء الاصطناعي أو تقييمًا نفسيًا أو ضمانًا للتوافق.',
+      resultNote: 'حُفظت إجاباتك في حسابك. هذا تفسير إرشادي وليس تقييماً نفسياً أو ضماناً للتوافق.',
       element: 'النمط الشخصي',
       zodiac: 'البرج وفق تاريخ الميلاد',
       interests: 'الاهتمامات التي ذكرتها',
@@ -94,20 +94,20 @@
         air: 'تميل اختياراتك إلى الفضول والمرونة واستكشاف الأفكار.',
       },
       names: { fire: 'ناري', earth: 'ترابي', water: 'مائي', air: 'هوائي' },
-      completed: 'أكملت تجربة اكتشاف الشخصية المحلية.',
+      completed: 'اكتمل ملف اكتشافك. سنعرض الآن الأعضاء الحقيقيين المناسبين.',
       reset: 'ابدأ من جديد',
-      saved: 'التقدم محفوظ على هذا الجهاز',
+      saved: 'حُفظ التقدم بأمان في حسابك',
       matches: 'المتابعة إلى Match',
-      noResults: 'ملفات Match غير متصلة في هذه النسخة؛ لن نخترع أشخاصًا أو درجات توافق.',
+      noResults: 'لا توجد ملفات أعضاء مكتملة مناسبة بعد. لن نخترع أشخاصاً أو درجات توافق.',
       voiceEnable: 'استمع إلى الأسئلة',
       voiceDisable: 'إيقاف الصوت',
       voiceReplay: 'إعادة السؤال الحالي',
       voiceOn: 'الصوت يعمل — تُنطق الأسئلة بنبرة دافئة وهادئة قليلًا متى توفرت.',
       voiceOff: 'الصوت متوقف.',
       voiceUnavailable: 'ميزة الصوت غير متاحة في هذا المتصفح.',
-      demoTitle: 'نسخة تجريبية محلية · غير متصلة بذكاء اصطناعي',
-      demoNote: 'تُنشأ الردود بقواعد محلية بسيطة. يعمل الصوت الاختياري في متصفحك ولا تُرسل أي بيانات إلى مزوّد ذكاء اصطناعي أو قاعدة بيانات.',
-      deviceOnly: 'محفوظ على هذا الجهاز فقط',
+      demoTitle: 'اكتشاف إرشادي · الحساب متصل',
+      demoNote: 'تُحفظ إجاباتك في ملف اكتشافك الخاص داخل Supabase. لا يوجد مزوّد ذكاء اصطناعي خارجي متصل؛ يعمل المساعد عبر أسئلة الموقع الإرشادية.',
+      deviceOnly: 'محفوظ في حسابك',
     },
   };
 
@@ -142,7 +142,63 @@
     } catch { return emptyState(); }
   };
   let state = loadState();
+  const questionnaireVersion = 'discover-v2';
+  const database = () => window.IQZodiacSupabase?.ready;
   let advanceTimer = null;
+  const persistToDatabase = async () => {
+    try {
+      const client = await database();
+      const { data: sessionData } = await client.auth.getSession();
+      const userId = sessionData.session?.user?.id;
+      if (!userId) return;
+      const element = tally().element;
+      const zodiac = state.birthDate ? zodiacForDate(state.birthDate)?.[0] : null;
+      const interests = state.interests.split(/[,،;؛\n]+/).map((item) => item.trim()).filter(Boolean);
+      await client.from('discovery_profiles').upsert({
+        user_id: userId, birth_date: state.birthDate || null, zodiac_sign: zodiac,
+        personality_element: element, personality_summary: element ? ui().resultSummary[element] : null,
+        interests, discoverable: state.stage === 'done',
+        discovery_status: state.stage === 'done' ? 'completed' : 'in_progress',
+        questionnaire_version: questionnaireVersion, completed_at: state.stage === 'done' ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString(),
+      });
+      const answerRows = state.answers.map((answer, index) => answer && ({
+        user_id: userId, questionnaire_version: questionnaireVersion, question_id: `q${index + 1}`,
+        answer_choice: answer.choice || null, answer_text: answer.text || null, answered_at: new Date().toISOString(),
+      })).filter(Boolean);
+      if (state.interests) answerRows.push({ user_id: userId, questionnaire_version: questionnaireVersion, question_id: 'interests', answer_choice: null, answer_text: state.interests, answered_at: new Date().toISOString() });
+      if (answerRows.length) await client.from('discovery_answers').upsert(answerRows, { onConflict: 'user_id,questionnaire_version,question_id' });
+    } catch (error) {
+      console.warn('Discovery progress could not be synced to Supabase.', error);
+    }
+  };
+  const hydrateFromDatabase = async () => {
+    try {
+      const client = await database();
+      const { data: sessionData } = await client.auth.getSession();
+      const userId = sessionData.session?.user?.id;
+      if (!userId) return;
+      const [{ data: profile }, { data: answers }] = await Promise.all([
+        client.from('discovery_profiles').select('birth_date,discovery_status,interests').eq('user_id', userId).maybeSingle(),
+        client.from('discovery_answers').select('question_id,answer_choice,answer_text').eq('user_id', userId).eq('questionnaire_version', questionnaireVersion).order('answered_at', { ascending: true }),
+      ]);
+      if (!profile && !answers?.length) return;
+      const answerMap = new Map((answers || []).map((answer) => [answer.question_id, answer]));
+      state = emptyState();
+      state.answers = questions.map((_, index) => { const answer = answerMap.get(`q${index + 1}`); return answer ? { choice: answer.answer_choice || undefined, text: answer.answer_text || undefined } : undefined; });
+      const firstMissing = state.answers.findIndex((answer) => !answer);
+      state.questionIndex = firstMissing === -1 ? questions.length : firstMissing;
+      state.interests = answerMap.get('interests')?.answer_text || (profile?.interests || []).join(', ');
+      state.birthDate = profile?.birth_date || '';
+      if (profile?.discovery_status === 'completed' && state.birthDate) state.stage = 'done';
+      else if (state.questionIndex >= questions.length && state.interests) state.stage = 'birthdate';
+      else if (state.questionIndex >= questions.length) state.stage = 'interests';
+      else state.stage = 'questions';
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    } catch (error) {
+      console.warn('Discovery progress could not be loaded from Supabase.', error);
+    }
+  };
   const isNewConversation = () => state.stage === 'questions' && state.questionIndex === 0 && state.answers.length === 0;
   const speechAvailable = typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance === 'function';
   let voiceEnabled = speechAvailable;
@@ -352,6 +408,7 @@
         };
         localStorage.setItem(profileKey, JSON.stringify(profile));
       }
+      void persistToDatabase();
     } catch { /* Keep the onboarding usable when local storage is unavailable. */ }
   };
   if (new URLSearchParams(window.location.search).get('welcome') === '1') {
@@ -429,8 +486,12 @@
     const language = currentLanguage(); const text = ui(); const { element } = tally(); const zodiac = zodiacForDate(state.birthDate);
     const savedInterests = state.interests.split(/[,،;؛\n]+/).map((item) => item.trim()).filter(Boolean);
     const elementText = element ? `${text.names[element]} — ${text.resultSummary[element]}` : text.noScore;
-    resultBox.innerHTML = `<p class="card-kicker">${language === 'ar' ? 'النتيجة التجريبية' : 'LOCAL DEMO RESULT'}</p><h2>${escapeHTML(text.resultTitle)}</h2><p class="assistant-result-note">${escapeHTML(text.resultNote)}</p><div class="assistant-result-grid"><article><small>${escapeHTML(text.element)}</small><strong>${escapeHTML(element ? text.names[element] : (language === 'ar' ? 'غير محدد' : 'Undetermined'))}</strong><p>${escapeHTML(elementText)}</p></article><article><small>${escapeHTML(text.zodiac)}</small><strong>${escapeHTML(zodiac ? zodiac[language === 'ar' ? 1 : 0] : '')}</strong><p>${escapeHTML(state.birthDate)}</p></article><article class="assistant-result-interests"><small>${escapeHTML(text.interests)}</small><strong>${escapeHTML(savedInterests.length ? savedInterests.join(' · ') : text.noInterests)}</strong></article></div><p class="assistant-match-note">${escapeHTML(text.noResults)}</p><a class="button button-secondary" href="./match.html">${escapeHTML(text.matches)} <span class="button-arrow">↗</span></a>`;
+    resultBox.innerHTML = `<p class="card-kicker">${language === 'ar' ? 'نتيجة اكتشافك' : 'YOUR DISCOVERY RESULT'}</p><h2>${escapeHTML(text.resultTitle)}</h2><p class="assistant-result-note">${escapeHTML(text.resultNote)}</p><div class="assistant-result-grid"><article><small>${escapeHTML(text.element)}</small><strong>${escapeHTML(element ? text.names[element] : (language === 'ar' ? 'غير محدد' : 'Undetermined'))}</strong><p>${escapeHTML(elementText)}</p></article><article><small>${escapeHTML(text.zodiac)}</small><strong>${escapeHTML(zodiac ? zodiac[language === 'ar' ? 1 : 0] : '')}</strong><p>${escapeHTML(state.birthDate)}</p></article><article class="assistant-result-interests"><small>${escapeHTML(text.interests)}</small><strong>${escapeHTML(savedInterests.length ? savedInterests.join(' · ') : text.noInterests)}</strong></article></div><p class="assistant-match-note">${escapeHTML(text.noResults)}</p><a class="button button-secondary" href="./match.html">${escapeHTML(text.matches)} <span class="button-arrow">↗</span></a>`;
     resultBox.hidden = false;
+    if (!resultBox.dataset.redirectScheduled) {
+      resultBox.dataset.redirectScheduled = 'true';
+      window.setTimeout(() => window.location.assign('./match.html?from=discovery'), 4200);
+    }
   };
   const renderTurn = () => {
     const text = ui(); const total = questions.length + 2;
@@ -479,7 +540,7 @@
     turn.inert = false;
     turn.removeAttribute('aria-busy');
     log.replaceChildren(); appendQuestionHistory(); renderTurn();
-    document.querySelector('.assistant-chat-foot p').textContent = `${ui().saved}. ${currentLanguage() === 'ar' ? 'الإجابات وتاريخ الميلاد لا يغادران هذا المتصفح.' : 'Answers and birth date stay in this browser.'}`;
+    document.querySelector('.assistant-chat-foot p').textContent = `${ui().saved}. ${currentLanguage() === 'ar' ? 'يمكنك متابعة المحادثة من أي جهاز بعد تسجيل الدخول.' : 'You can continue from any device after signing in.'}`;
     document.querySelector('#restart-discovery').textContent = ui().reset;
     document.querySelector('#assistant-demo-title').textContent = ui().demoTitle;
     document.querySelector('#assistant-demo-note').textContent = ui().demoNote;
@@ -527,4 +588,5 @@
   });
   showAvatarSmile();
   render();
+  hydrateFromDatabase().then(() => render());
 })();

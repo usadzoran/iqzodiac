@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="IQZodiac local personality discovery conversation demo." />
+  <meta name="description" content="IQZodiac guided personality discovery conversation." />
   <title>AI Assistant — IQZodiac</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -17,7 +17,7 @@
   <main class="assistant-shell">
     <header class="topbar assistant-topbar"><a class="mini-mark" href="./home.html" aria-label="IQZodiac home"><span class="mini-mark-orbit" aria-hidden="true"></span><span>IQZ</span></a><div class="assistant-heading"><p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> YOUR DISCOVERY CONVERSATION</p><h1>AI <span>Assistant.</span></h1></div><a class="back-link" href="./discover.html">Discover <span aria-hidden="true">↗</span></a></header>
     <section class="assistant-intro"><div><p class="card-kicker">NEW ACCOUNT · PERSONALITY · ZODIAC</p><h2>Let’s get to know<br /><em>your orbit.</em></h2><p>Your IQZodiac onboarding assistant starts right after account creation. It asks one question at a time, accepts a suggested answer or your own words, and saves your discovery profile for the rest of the experience.</p></div><div class="assistant-orbit" aria-hidden="true"><span>✦</span><i></i><b></b></div></section>
-    <section class="assistant-demo-notice" aria-label="Demo status"><span class="demo-pulse" aria-hidden="true"></span><div><strong id="assistant-demo-title">Local demo · not a connected AI</strong><p id="assistant-demo-note">Responses use simple browser-side rules. Optional voice playback runs in your browser; nothing is sent to an AI provider or database.</p></div><span class="assistant-status-tag"><i aria-hidden="true"></i><span id="assistant-device-label">SAVED ON THIS DEVICE ONLY</span></span></section>
+    <section class="assistant-demo-notice" aria-label="Demo status"><span class="demo-pulse" aria-hidden="true"></span><div><strong id="assistant-demo-title">Guided discovery · account connected</strong><p id="assistant-demo-note">Your answers are saved to your private Supabase discovery profile. No external AI provider is connected; this assistant uses the site’s guided questionnaire.</p></div><span class="assistant-status-tag"><i aria-hidden="true"></i><span id="assistant-device-label">SAVED TO YOUR ACCOUNT</span></span></section>
     <section class="assistant-chat" aria-label="Discovery conversation">
       <header class="assistant-chat-head">
         <div id="assistant-avatar" class="assistant-chat-avatar">
@@ -34,7 +34,7 @@
       <div id="chat-log" class="assistant-chat-log" role="log" aria-live="polite" aria-relevant="additions text"></div>
       <section id="chat-turn" class="assistant-turn" aria-live="polite"></section>
       <section id="discovery-result" class="assistant-result" hidden aria-live="polite"></section>
-      <div class="assistant-chat-foot"><p>Prototype only: answers and birth date stay in this browser’s local storage. Please do not enter sensitive personal information.</p><button id="restart-discovery" class="assistant-reset" type="button">Start over</button></div>
+      <div class="assistant-chat-foot"><p>Your progress is saved to your account and can continue on another device. Identity photos are not uploaded by this flow.</p><button id="restart-discovery" class="assistant-reset" type="button">Start over</button></div>
     </section>
     <footer class="footer assistant-footer"><span>© 2026 IQZodiac</span><span class="footer-orbit" aria-hidden="true"><i></i><i></i><i></i></span><span>Look inward. Move forward.</span><button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>
   </main>

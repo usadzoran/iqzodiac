@@ -64,6 +64,7 @@
   const compatibilityDefaults = { zodiac: '', element: '', interests: [], personalityAnswers: [] };
   const roleDefaults = { role: 'user', entitlements: { match: true, daily: true, vipHub: false, priorityMatching: false } };
   const walletDefaults = { status: 'not_connected', coins: null, receivedCoins: null, cashBalance: null, pendingCash: null, currency: null };
+  const database = () => window.IQZodiacSupabase?.ready;
   const toPublicProfile = (profile = {}) => {
     const displayName = String(profile.pseudonym || profile.publicName || (profile.privacyProfileVersion === 2 ? profile.displayName : '') || 'Orbit Member').trim().slice(0, 32) || 'Orbit Member';
     const requestedHandle = profile.pseudonymousHandle || profile.publicHandle || (profile.privacyProfileVersion === 2 ? profile.handle : '@orbit-member');
@@ -98,7 +99,27 @@
       return next;
     },
     async updateCompatibilityProfile(patch) { const current = await this.getCurrentProfile(); const next = { ...current, ...patch, interests: Array.isArray(patch.interests) ? patch.interests : current.interests }; write(keys.profile, next); return next; },
-    async listCandidates() { return []; },
+    async listCandidates() {
+      try {
+        const client = await database();
+        if (!client) return [];
+        const { data, error } = await client.rpc('list_compatible_profiles');
+        if (error) throw error;
+        return Array.isArray(data) ? data.map((profile) => ({
+          id: profile.user_id,
+          displayName: profile.display_name,
+          pseudonym: profile.display_name,
+          handle: profile.handle,
+          publicHandle: profile.handle,
+          interests: Array.isArray(profile.interests) ? profile.interests : [],
+          compatibilityScore: profile.compatibility_score,
+          privacy: { ...privacyDefaults },
+        })) : [];
+      } catch (error) {
+        console.warn('Unable to load real compatibility profiles.', error);
+        return [];
+      }
+    },
     async getAccountAccess() { return { role: 'user', entitlements: { ...roleDefaults.entitlements } }; },
     async requestVipCheckout() { return { status: 'checkout_not_connected', message: 'VIP checkout is disabled; no payment was initiated.' }; },
     async getWallet() { return { ...walletDefaults }; },
