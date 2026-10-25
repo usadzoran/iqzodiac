@@ -146,10 +146,7 @@
   let voiceEnabled = speechAvailable;
   let activeUtterance = null;
   let pendingAvatarTime = null;
-  const smileFrameTime = () => {
-    const duration = avatarVideo?.duration;
-    return Number.isFinite(duration) && duration > 0 ? Math.max(0, Math.min(4.1, duration - 0.12)) : 4.1;
-  };
+  const smileFrameTime = () => 0;
   const showAvatarSmile = () => {
     if (!avatarStage) return;
     avatarStage.classList.remove('is-speaking');
@@ -157,7 +154,7 @@
     if (!avatarVideo) return;
     avatarVideo.pause();
     if (avatarVideo.readyState >= 1 && Math.abs(avatarVideo.currentTime - smileFrameTime()) > 0.06) {
-      try { avatarVideo.currentTime = smileFrameTime(); } catch { /* Keep the seated portrait visible if seeking is unavailable. */ }
+      try { avatarVideo.currentTime = smileFrameTime(); } catch { /* Keep the matching portrait visible if seeking is unavailable. */ }
     }
   };
   const setAvatarSpeaking = (speaking) => {
@@ -177,7 +174,7 @@
     pendingAvatarTime = null;
     avatarVideo.pause();
     if (avatarVideo.readyState >= 1) {
-      try { avatarVideo.currentTime = smileFrameTime(); } catch { /* Keep the seated portrait visible if seeking is unavailable. */ }
+      try { avatarVideo.currentTime = smileFrameTime(); } catch { /* Keep the matching portrait visible if seeking is unavailable. */ }
     }
   };
   avatarVideo?.addEventListener('loadeddata', () => {
