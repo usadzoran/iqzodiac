@@ -12,14 +12,15 @@ const saveChoice = (key, value) => window.localStorage.setItem(`iqzodiac:${key}`
 const readChoice = (key) => window.localStorage.getItem(`iqzodiac:${key}`) === 'true';
 const readNumber = (key, fallback) => Number(window.localStorage.getItem(`iqzodiac:${key}`) || fallback);
 const formatFileSize = (bytes) => bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-const phoneVisibility = document.querySelector('#phone-visibility');
+const displayNameInput = document.querySelector('#display-name');
+const usernameInput = document.querySelector('#username');
 const galleryVisibility = document.querySelector('#gallery-visibility');
-const phonePrivacyStatus = document.querySelector('#phone-privacy-status');
 const galleryPrivacyStatus = document.querySelector('#gallery-privacy-status');
-phoneVisibility.checked = readChoice('phone-visible'); galleryVisibility.checked = readChoice('gallery-visible');
-const updatePrivacyPreview = () => { phonePrivacyStatus.textContent = phoneVisibility.checked ? 'Visible to other people on your profile.' : 'Hidden from other people.'; galleryPrivacyStatus.textContent = galleryVisibility.checked ? 'Public — people can view your photos and videos.' : 'Hidden — only you can view your gallery.'; document.querySelector('.gallery-card').classList.toggle('gallery-is-public', galleryVisibility.checked); };
-phoneVisibility.addEventListener('change', () => { saveChoice('phone-visible', phoneVisibility.checked); updatePrivacyPreview(); });
-galleryVisibility.addEventListener('change', () => { saveChoice('gallery-visible', galleryVisibility.checked); updatePrivacyPreview(); });
+let profilePhotoPreference;
+try { profilePhotoPreference = JSON.parse(window.localStorage.getItem('iqzodiac-current-profile') || '{}')?.privacy?.photosPublic; } catch { profilePhotoPreference = undefined; }
+galleryVisibility.checked = typeof profilePhotoPreference === 'boolean' ? profilePhotoPreference : readChoice('gallery-visible');
+const updatePrivacyPreview = () => { galleryPrivacyStatus.textContent = galleryVisibility.checked ? 'Public choice saved. Actual sharing starts after a secure account service is connected.' : 'Private — profile photos stay hidden from other members.'; document.querySelector('.gallery-card').classList.toggle('gallery-is-public', galleryVisibility.checked); };
+galleryVisibility.addEventListener('change', async () => { saveChoice('gallery-visible', galleryVisibility.checked); updatePrivacyPreview(); const dataAdapter = window.IQZodiacData?.adapter; if (dataAdapter) await dataAdapter.updatePrivacyPreferences({ photosPublic: galleryVisibility.checked }); });
 updatePrivacyPreview();
 const followersCount = document.querySelector('#followers-count'); const likesCount = document.querySelector('#likes-count'); const followButton = document.querySelector('#follow-button'); const followLabel = document.querySelector('#follow-label'); const likeProfile = document.querySelector('#like-profile'); const likeLabel = document.querySelector('#like-label'); const heartIcon = document.querySelector('.heart-icon'); const notificationItems = [...document.querySelectorAll('.notification-item')]; const notificationCount = document.querySelector('#notification-count');
 let isFollowing = readChoice('following'); let hasLiked = readChoice('profile-liked'); let followers = readNumber('followers-count', 1284); let likes = readNumber('likes-count', 8642);
@@ -37,6 +38,9 @@ const zodiac = document.querySelector('#zodiac-sign'); const element = document.
 (async () => {
   if (!adapter) return;
   const profile = await adapter.getCurrentProfile();
+  displayNameInput.value = profile.displayName || profile.pseudonym || profile.name || 'Orbit Member';
+  usernameInput.value = String(profile.handle || '@orbit-member').replace(/^@/, '');
+  document.querySelector('#avatar-preview .avatar-initials').textContent = profile.initials || 'OM';
   zodiac.value = profile.zodiac || ''; element.value = profile.element || ''; interestsInput.value = (profile.interests || []).join(', ');
   const access = await adapter.getAccountAccess();
   document.querySelector('#account-role-badge').textContent = access.role.toUpperCase();
@@ -44,13 +48,17 @@ const zodiac = document.querySelector('#zodiac-sign'); const element = document.
 })();
 
 document.querySelector('#save-profile').addEventListener('click', async () => {
-  saveChoice('phone-visible', phoneVisibility.checked); saveChoice('gallery-visible', galleryVisibility.checked);
-  if (adapter) await adapter.updateCompatibilityProfile({ zodiac: zodiac.value, element: element.value, interests: interestsInput.value.split(',').map((item) => item.trim()).filter(Boolean) });
+  saveChoice('gallery-visible', galleryVisibility.checked);
+  if (adapter) {
+    await adapter.updatePublicIdentity({ displayName: displayNameInput.value.trim(), handle: `@${usernameInput.value.trim().replace(/^@/, '')}` });
+    await adapter.updatePrivacyPreferences({ photosPublic: galleryVisibility.checked });
+    await adapter.updateCompatibilityProfile({ zodiac: zodiac.value, element: element.value, interests: interestsInput.value.split(',').map((item) => item.trim()).filter(Boolean) });
+  }
   showToast('Your privacy and Match preferences are saved.');
 });
 
 const addUploadedMedia = (file) => { const isVideo = file.type.startsWith('video/'); const tile = document.createElement('button'); const preview = isVideo ? document.createElement('video') : document.createElement('img'); const shade = document.createElement('span'); const type = document.createElement('span'); const caption = document.createElement('span'); const meta = document.createElement('span'); tile.className = 'media-tile uploaded-media'; tile.type = 'button'; tile.setAttribute('aria-label', `Preview uploaded ${isVideo ? 'video' : 'photo'} ${file.name}`); preview.className = 'uploaded-preview'; preview.src = URL.createObjectURL(file); if (isVideo) { preview.muted = true; preview.loop = true; preview.autoplay = true; preview.playsInline = true; } shade.className = 'uploaded-shade'; type.className = 'media-type'; type.textContent = isVideo ? 'Video' : 'Photo'; caption.className = 'media-caption'; caption.textContent = file.name; meta.className = 'media-meta'; meta.textContent = formatFileSize(file.size); tile.append(preview, shade, type, caption, meta); tile.addEventListener('click', () => showToast(`${file.name} is ready to preview.`)); mediaGrid.insertBefore(tile, addMediaButton); uploadedMediaCount += 1; mediaCount.textContent = `${5 + uploadedMediaCount} items`; };
 addMediaButton.addEventListener('click', () => mediaInput.click());
 mediaInput.addEventListener('change', (event) => { const files = Array.from(event.target.files || []); if (!files.length) return; files.forEach(addUploadedMedia); showToast(`${files.length} ${files.length === 1 ? 'file' : 'files'} added to your gallery preview.`); mediaInput.value = ''; });
-document.querySelector('#avatar-input').addEventListener('change', (event) => { const [file] = event.target.files; if (!file) return; const reader = new FileReader(); reader.addEventListener('load', () => { const avatar = document.querySelector('#avatar-preview'); avatar.style.backgroundImage = `url(${reader.result})`; avatar.classList.add('has-photo'); avatar.querySelector('.avatar-initials').hidden = true; }); reader.readAsDataURL(file); showToast('Profile photo preview updated.'); });
+document.querySelector('#avatar-input').addEventListener('change', (event) => { const [file] = event.target.files; if (!file) return; const reader = new FileReader(); reader.addEventListener('load', () => { const avatar = document.querySelector('#avatar-preview'); avatar.style.backgroundImage = `url(${reader.result})`; avatar.classList.add('has-photo'); avatar.querySelector('.avatar-initials').hidden = true; }); reader.readAsDataURL(file); showToast('Photo preview only; it is not uploaded or saved in this demo.'); });
 document.querySelectorAll('.media-tile:not(.add-media)').forEach((tile) => tile.addEventListener('click', () => showToast(`${tile.querySelector('.media-caption').textContent} is ready to preview.`)));

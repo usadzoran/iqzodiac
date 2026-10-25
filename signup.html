@@ -25,8 +25,8 @@
         <section class="signup-intro">
           <div class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> Begin your orbit</div>
           <h1>Create your <span>account.</span></h1>
-          <p>Tell us a little about yourself. Your identity documents are used only for verification and stay on this device until a secure account flow is connected.</p>
-          <div class="signup-step-list"><div><b>01</b><span>Your details</span></div><div><b>02</b><span>Identity check</span></div><div><b>03</b><span>Ready to explore</span></div></div>
+          <p>This local prototype does not create a real account. Use test details only; no form data or identity photos are sent to a server.</p>
+          <div class="signup-step-list"><div><b>01</b><span>Your details</span></div><div><b>02</b><span>Optional photo preview</span></div><div><b>03</b><span>Ready to explore</span></div></div>
         </section>
 
         <form class="signup-form" id="signup-form">
@@ -41,17 +41,19 @@
             </div>
           </section>
 
+          <div class="signup-privacy-note" role="note"><span aria-hidden="true">◉</span><p><strong>Privacy by default.</strong> Other members see a generated pseudonym. Your real name, age, email, and phone stay private. Verification photos are never public; profile photos start private and can be changed later in Profile.</p></div>
+
           <section class="signup-card" aria-labelledby="verification-title">
-            <div class="signup-card-heading"><div><p class="card-kicker">02 / Identity check</p><h2 id="verification-title">Verify who you are</h2></div><span class="privacy-badge"><span class="privacy-dot" aria-hidden="true"></span> Private</span></div>
-            <p class="verification-intro">Add clear photos for the verification step. On this prototype, previews remain local and are not uploaded or stored.</p>
+            <div class="signup-card-heading"><div><p class="card-kicker">02 / Optional photo preview</p><h2 id="verification-title">Identity photo preview</h2></div><span class="privacy-badge"><span class="privacy-dot" aria-hidden="true"></span> Local only</span></div>
+            <p class="verification-intro">Optional demo previews only. This prototype cannot verify identity; do not select real ID documents or face photos. Files are not sent or saved.</p>
             <div class="verification-grid">
-              <label class="upload-card" for="id-photo"><input id="id-photo" type="file" accept="image/*" capture="environment" required /><span class="upload-icon" aria-hidden="true">▣</span><strong>Government ID</strong><small>Take or upload a clear photo of your ID card.</small><span class="upload-preview" id="id-preview"></span><span class="upload-action">Add ID photo ↗</span></label>
-              <label class="upload-card" for="face-photo"><input id="face-photo" type="file" accept="image/*" capture="user" required /><span class="upload-icon" aria-hidden="true">◉</span><strong>Face photo</strong><small>Take a clear, well-lit photo of your face.</small><span class="upload-preview" id="face-preview"></span><span class="upload-action">Add face photo ↗</span></label>
+              <label class="upload-card" for="id-photo"><input id="id-photo" type="file" accept="image/*" capture="environment" /><span class="upload-icon" aria-hidden="true">▣</span><strong>Optional ID preview</strong><small>Use a sample image only; no identity check is performed.</small><span class="upload-preview" id="id-preview"></span><span class="upload-action">Add sample image ↗</span></label>
+              <label class="upload-card" for="face-photo"><input id="face-photo" type="file" accept="image/*" capture="user" /><span class="upload-icon" aria-hidden="true">◉</span><strong>Optional face preview</strong><small>Use a sample image only; it is not uploaded or stored.</small><span class="upload-preview" id="face-preview"></span><span class="upload-action">Add sample image ↗</span></label>
             </div>
-            <label class="consent-row"><input id="verification-consent" type="checkbox" required /><span class="custom-check" aria-hidden="true"></span><span>I confirm these photos belong to me and I agree to identity verification.</span></label>
+            <label class="consent-row"><input id="verification-consent" type="checkbox" /><span class="custom-check" aria-hidden="true"></span><span>I understand these previews are not verified, uploaded, or saved.</span></label>
           </section>
 
-          <div class="signup-actions"><p><span class="status-dot" aria-hidden="true"></span> Prototype only — no data is sent yet.</p><button class="button button-primary" type="submit"><span>Create account</span><span class="button-arrow" aria-hidden="true">↗</span></button></div>
+          <div class="signup-actions"><p><span class="status-dot" aria-hidden="true"></span> Prototype only — no personal details are sent; your pseudonym and privacy choice are saved here.</p><button class="button button-primary" type="submit"><span>Create account</span><span class="button-arrow" aria-hidden="true">↗</span></button></div>
         </form>
       </div>
       <footer class="footer signup-footer"><span>© 2026 IQZodiac</span><span class="footer-orbit" aria-hidden="true"><i></i><i></i><i></i></span><span>Look inward. Move forward.</span><button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>

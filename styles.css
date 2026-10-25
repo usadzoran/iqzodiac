@@ -362,6 +362,7 @@ h1 {
 .uploaded-media .media-type, .uploaded-media .media-caption, .uploaded-media .media-meta { position: relative; z-index: 2; }
 .uploaded-media .media-caption { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .media-meta { position: relative; z-index: 2; margin-top: 4px; color: var(--muted); font: 8px "DM Mono", monospace; letter-spacing: 0.05em; }
+.public-profile-photo { width: 92px; height: 92px; border: 1px solid rgba(131,229,232,0.24); border-radius: 3px; object-fit: cover; }
 .gallery-is-public { border-color: rgba(131,229,232,0.35); }
 .gallery-is-public .privacy-icon { color: var(--cyan); }
 
@@ -643,6 +644,10 @@ h1 {
 .signup-field small { display: block; margin-top: 7px; color: var(--dim); font-size: 9px; }
 .signup-field-wide { grid-column: 1 / -1; }
 .verification-intro { max-width: 500px; margin: 14px 0 23px; color: var(--muted); font-size: 10px; line-height: 1.6; }
+.signup-privacy-note { display: flex; align-items: flex-start; gap: 11px; padding: 14px 16px; border: 1px solid rgba(131,229,232,0.18); border-radius: 3px; background: rgba(131,229,232,0.04); color: var(--muted); font-size: 10px; line-height: 1.65; }
+.signup-privacy-note > span { flex: none; color: var(--cyan); font-size: 15px; }
+.signup-privacy-note p { margin: 0; }
+.signup-privacy-note strong { color: var(--ink); font-weight: 700; }
 .verification-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
 .upload-card { position: relative; display: flex; min-height: 190px; overflow: hidden; flex-direction: column; align-items: flex-start; justify-content: flex-end; padding: 16px; border: 1px dashed rgba(131,229,232,0.35); border-radius: 3px; background: rgba(131,229,232,0.035); cursor: pointer; transition: border-color 180ms ease, background 180ms ease, transform 180ms ease; }
 .upload-card:hover, .upload-card.is-ready { border-color: var(--cyan); background: rgba(131,229,232,0.09); transform: translateY(-2px); }

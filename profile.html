@@ -44,27 +44,27 @@
           <div class="identity-content">
             <div class="avatar-column">
               <div class="avatar" id="avatar-preview" aria-label="Profile photo preview">
-                <span class="avatar-initials">AS</span>
+                <span class="avatar-initials">OM</span>
                 <span class="avatar-orbit" aria-hidden="true"></span>
               </div>
-              <label class="change-photo" for="avatar-input">Change photo <span aria-hidden="true">↗</span></label>
+              <label class="change-photo" for="avatar-input">Change profile photo <span aria-hidden="true">↗</span></label>
               <input id="avatar-input" type="file" accept="image/*" hidden />
             </div>
 
             <div class="identity-fields">
-              <label class="field-label" for="username">Username</label>
-              <div class="input-wrap"><span class="input-prefix" aria-hidden="true">@</span><input id="username" type="text" value="alex.stone" autocomplete="username" /></div>
-              <p class="field-help">This is how people will find you.</p>
+              <label class="field-label" for="display-name">Public display name (pseudonym)</label>
+              <div class="input-wrap"><input id="display-name" type="text" value="Orbit Member" maxlength="32" autocomplete="nickname" /></div>
+              <p class="field-help">This alias is what other members see. Your legal name, age, email, and phone remain private.</p>
 
-              <label class="field-label" for="phone">Phone number</label>
-              <div class="input-wrap"><span class="input-prefix" aria-hidden="true">+</span><input id="phone" type="tel" value="1 555 019 2488" autocomplete="tel" /></div>
-              <p class="field-help">Your number stays hidden unless you choose to show it.</p>
+              <label class="field-label" for="username">Public username</label>
+              <div class="input-wrap"><span class="input-prefix" aria-hidden="true">@</span><input id="username" type="text" value="orbit-member" maxlength="24" autocomplete="username" /></div>
+              <p class="field-help">Use a pseudonymous handle, not your real name.</p>
             </div>
           </div>
 
           <div class="privacy-row">
-            <div class="privacy-copy"><span class="privacy-icon" aria-hidden="true">◉</span><div><strong>Show my phone number</strong><small id="phone-privacy-status">Hidden from other people.</small></div></div>
-            <label class="toggle"><input type="checkbox" id="phone-visibility" /><span class="toggle-track" aria-hidden="true"><span></span></span><span class="sr-only">Show my phone number to others</span></label>
+            <div class="privacy-copy"><span class="privacy-icon" aria-hidden="true">◉</span><div><strong>Real identity &amp; personal details</strong><small>Legal name, age, email, phone, and verification photos are always private.</small></div></div>
+            <span class="privacy-badge">PRIVATE</span>
           </div>
         </section>
 
@@ -76,7 +76,7 @@
             </div>
             <span class="media-count" id="media-count">5 items</span>
           </div>
-          <p class="section-intro">A personal collection for the moments that say more than words.</p>
+          <p class="section-intro">These are sample previews. New media stays on this device; your sharing choice is saved, but public sharing needs a secure account service.</p>
 
           <div class="media-grid" aria-label="Your media gallery">
             <button class="media-tile media-one" type="button" aria-label="Open mountain photo"><span class="media-type">Photo</span><span class="media-caption">Quiet places</span></button>
@@ -89,7 +89,7 @@
           </div>
 
           <div class="privacy-row gallery-privacy-row">
-            <div class="privacy-copy"><span class="privacy-icon" aria-hidden="true">✦</span><div><strong>Make my gallery public</strong><small id="gallery-privacy-status">Hidden — only you can view your gallery.</small></div></div>
+            <div class="privacy-copy"><span class="privacy-icon" aria-hidden="true">✦</span><div><strong>Share my profile photos publicly</strong><small id="gallery-privacy-status">Private — profile photos stay hidden from other members.</small></div></div>
             <label class="toggle"><input type="checkbox" id="gallery-visibility" /><span class="toggle-track" aria-hidden="true"><span></span></span><span class="sr-only">Make my gallery visible to others</span></label>
           </div>
         </section>
@@ -144,7 +144,7 @@
       </div>
 
       <div class="profile-actions">
-        <p class="save-note"><span class="status-dot" aria-hidden="true"></span> Your privacy choices are saved on this device.</p>
+        <p class="save-note"><span class="status-dot" aria-hidden="true"></span> Profile and privacy preferences are saved on this device; photos are not uploaded.</p>
         <button class="button button-primary save-button" type="button" id="save-profile"><span>Save changes</span><span class="button-arrow" aria-hidden="true">↗</span></button>
       </div>
 

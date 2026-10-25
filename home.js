@@ -12,6 +12,20 @@ const showToast = (message) => {
 
 const formatCount = (value) => new Intl.NumberFormat('en-US').format(value);
 const escapeText = (value) => value.trim().slice(0, 500);
+const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+let savedProfile = {};
+try { savedProfile = JSON.parse(window.localStorage.getItem('iqzodiac-current-profile') || '{}'); } catch { savedProfile = {}; }
+const hasPseudonymousProfile = savedProfile.privacyProfileVersion === 2;
+const currentPublicIdentity = {
+  displayName: String(hasPseudonymousProfile ? (savedProfile.displayName || savedProfile.pseudonym || 'Orbit Member') : 'Orbit Member').slice(0, 32),
+  handle: hasPseudonymousProfile && /^@[a-z0-9._-]{1,24}$/i.test(savedProfile.handle || '') ? savedProfile.handle : '@orbit-member',
+  initials: String(hasPseudonymousProfile ? (savedProfile.initials || 'OM') : 'OM').slice(0, 2).toUpperCase(),
+};
+document.querySelectorAll('[data-current-user-name]').forEach((node) => { node.textContent = currentPublicIdentity.displayName; });
+document.querySelectorAll('[data-current-user-handle]').forEach((node) => { node.textContent = currentPublicIdentity.handle; });
+document.querySelectorAll('[data-current-user-short]').forEach((node) => { node.textContent = currentPublicIdentity.displayName.split(/[\s-]+/)[0] || 'Orbit'; });
+document.querySelectorAll('[data-current-user-initials]').forEach((node) => { node.textContent = currentPublicIdentity.initials; });
+document.querySelectorAll('.nav-avatar[data-current-user-initials]').forEach((node) => { node.setAttribute('aria-label', `Signed in as ${currentPublicIdentity.displayName}`); });
 
 const createMediaPreview = (file, target, className = 'composer-preview-media') => {
   const isVideo = file.type.startsWith('video/');
@@ -63,10 +77,10 @@ const bindPost = (post) => {
     comment.className = 'comment';
     const avatar = document.createElement('span');
     avatar.className = 'comment-avatar home-avatar-small';
-    avatar.textContent = 'AS';
+    avatar.textContent = currentPublicIdentity.initials;
     const copy = document.createElement('p');
     const author = document.createElement('strong');
-    author.textContent = 'alex.stone';
+    author.textContent = currentPublicIdentity.handle.slice(1);
     copy.append(author, document.createTextNode(` ${value}`));
     comment.append(avatar, copy);
     commentList.append(comment);
@@ -186,11 +200,11 @@ document.querySelector('#publish-post').addEventListener('click', () => {
   const post = document.createElement('article');
   post.className = 'post-card post-card-new';
   post.dataset.postId = `new-${Date.now()}`;
-  post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">AS</div><div class="post-author"><strong>alex.stone</strong><span>@alex.stone · just now</span></div><button class="post-more" type="button" aria-label="More options">···</button></header><p class="post-body"></p><div class="post-media-slot"></div><div class="post-meta"><span class="like-count">0 likes</span><span class="comment-count">0 comments</span></div><div class="post-actions"><button class="post-action like-button" type="button" data-like="false"><span class="action-icon">♡</span><span>Like</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment on your post" /><button type="submit" aria-label="Post comment">↗</button></form>`;
+  post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">${escapeHTML(currentPublicIdentity.initials)}</div><div class="post-author"><strong>${escapeHTML(currentPublicIdentity.displayName)}</strong><span>${escapeHTML(currentPublicIdentity.handle)} · just now</span></div><button class="post-more" type="button" aria-label="More options">···</button></header><p class="post-body"></p><div class="post-media-slot"></div><div class="post-meta"><span class="like-count">0 likes</span><span class="comment-count">0 comments</span></div><div class="post-actions"><button class="post-action like-button" type="button" data-like="false"><span class="action-icon">♡</span><span>Like</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment on your post" /><button type="submit" aria-label="Post comment">↗</button></form>`;
   post.querySelector('.post-body').textContent = text;
   if (!text) post.querySelector('.post-body').remove();
   if (composerMedia) createMediaPreview(composerMedia, post.querySelector('.post-media-slot'), 'post-uploaded-media');
-  post.dataset.author = 'alex.stone';
+  post.dataset.author = currentPublicIdentity.handle.slice(1);
   document.querySelector('#feed-list').prepend(post);
   bindPost(post);
   if (filters.find((item) => item.classList.contains('is-active'))?.dataset.filter === 'following') post.hidden = true;
