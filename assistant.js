@@ -146,17 +146,39 @@
   let voiceEnabled = speechAvailable;
   let activeUtterance = null;
   let pendingAvatarTime = null;
+  const smileFrameTime = () => {
+    const duration = avatarVideo?.duration;
+    return Number.isFinite(duration) && duration > 0 ? Math.max(0, Math.min(4.1, duration - 0.12)) : 4.1;
+  };
+  const showAvatarSmile = () => {
+    if (!avatarStage) return;
+    avatarStage.classList.remove('is-speaking');
+    avatarStage.classList.add('is-smiling');
+    if (!avatarVideo) return;
+    avatarVideo.pause();
+    if (avatarVideo.readyState >= 1 && Math.abs(avatarVideo.currentTime - smileFrameTime()) > 0.06) {
+      try { avatarVideo.currentTime = smileFrameTime(); } catch { /* Keep the seated portrait visible if seeking is unavailable. */ }
+    }
+  };
   const setAvatarSpeaking = (speaking) => {
     if (!avatarStage || !avatarVideo) return;
     avatarStage.classList.toggle('is-speaking', speaking);
+    avatarStage.classList.toggle('is-smiling', !speaking);
     if (speaking) {
       const playback = avatarVideo.play();
-      if (playback && typeof playback.catch === 'function') playback.catch(() => avatarStage.classList.remove('is-speaking'));
+      if (playback && typeof playback.then === 'function') {
+        playback.then(() => avatarStage.classList.remove('is-video-unavailable'))
+          .catch(() => avatarStage.classList.add('is-video-unavailable'));
+      } else {
+        avatarStage.classList.remove('is-video-unavailable');
+      }
       return;
     }
     pendingAvatarTime = null;
     avatarVideo.pause();
-    try { avatarVideo.currentTime = 0; } catch { /* The video may not have loaded yet. */ }
+    if (avatarVideo.readyState >= 1) {
+      try { avatarVideo.currentTime = smileFrameTime(); } catch { /* Keep the seated portrait visible if seeking is unavailable. */ }
+    }
   };
   avatarVideo?.addEventListener('loadeddata', () => {
     if (pendingAvatarTime === null || !activeUtterance) return;
@@ -164,6 +186,10 @@
     pendingAvatarTime = null;
     try { avatarVideo.currentTime = target; } catch { pendingAvatarTime = target; }
   });
+  avatarVideo?.addEventListener('loadedmetadata', () => {
+    if (!activeUtterance && avatarStage?.classList.contains('is-smiling')) showAvatarSmile();
+  });
+  avatarVideo?.addEventListener('error', () => avatarStage?.classList.add('is-video-unavailable'));
   const syncAvatarToSpeech = (utterance, event) => {
     if (activeUtterance !== utterance || !avatarVideo || avatarVideo.paused) return;
     const elapsed = Number(event?.elapsedTime);
@@ -401,5 +427,6 @@
     renderedLanguage = currentLanguage();
     render();
   });
+  showAvatarSmile();
   render();
 })();
