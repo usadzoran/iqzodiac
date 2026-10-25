@@ -18,7 +18,7 @@
 
   const copy = {
     en: {
-      welcome: 'Hi! I’m your IQZodiac discovery guide. This is a local demo, so I’ll ask one question at a time and show how a discovery conversation could work.',
+      welcome: 'Welcome to IQZodiac! Your answers help us understand your interests and the way you think, so we can guide you toward a group of people who share them. I’ll be with you at every step. This local demo is not connected to real member groups yet.',
       signupWelcome: 'Plot twist: you survived the signup form! Welcome to IQZodiac. Answer a few questions so we can explore the community you may feel at home in—and the kind of person you’re hoping to meet.',
       greeting: 'Let’s start with how you tend to approach things.',
       typed: 'Your answer',
@@ -64,7 +64,7 @@
       deviceOnly: 'SAVED ON THIS DEVICE ONLY',
     },
     ar: {
-      welcome: 'مرحبًا! أنا دليل اكتشاف الشخصية في IQZodiac. هذه تجربة محلية؛ سأطرح سؤالًا واحدًا في كل مرة لأريك كيف يمكن أن تسير المحادثة.',
+      welcome: 'أهلًا بك في IQZodiac! ستساعدنا إجاباتك على فهم اهتماماتك وطريقة تفكيرك، لنرشدك إلى مجموعة أشخاص يشاركونك الاهتمامات وطريقة التفكير. سأرافقك خطوة بخطوة. تنبيه: هذه نسخة تجريبية محلية لا تربطك حاليًا بأعضاء أو مجموعات حقيقية.',
       signupWelcome: 'مفاجأة: نجوت من استمارة التسجيل! أهلًا بك في IQZodiac. أجب عن بضعة أسئلة لنكتشف المجتمع الذي قد تشعر أنك تنتمي إليه، ونقترب من الشخص الذي تبحث عنه.',
       greeting: 'لنبدأ بطريقة تعاملك عادةً مع الأمور.',
       typed: 'إجابتك',
@@ -142,25 +142,48 @@
     } catch { return emptyState(); }
   };
   let state = loadState();
+  let advanceTimer = null;
+  const isNewConversation = () => state.stage === 'questions' && state.questionIndex === 0 && state.answers.length === 0;
   const speechAvailable = typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance === 'function';
   let voiceEnabled = speechAvailable;
   let activeUtterance = null;
   let pendingAvatarTime = null;
+  const avatarExpressionClasses = ['is-speaking', 'is-smiling', 'is-thinking', 'is-welcoming'];
+  const setAvatarExpression = (expression) => {
+    if (!avatarStage) return;
+    avatarStage.classList.remove(...avatarExpressionClasses);
+    avatarStage.classList.add(`is-${expression}`);
+  };
   const smileFrameTime = () => 0;
   const showAvatarSmile = () => {
     if (!avatarStage) return;
-    avatarStage.classList.remove('is-speaking');
-    avatarStage.classList.add('is-smiling');
+    setAvatarExpression('smiling');
     if (!avatarVideo) return;
     avatarVideo.pause();
     if (avatarVideo.readyState >= 1 && Math.abs(avatarVideo.currentTime - smileFrameTime()) > 0.06) {
       try { avatarVideo.currentTime = smileFrameTime(); } catch { /* Keep the matching portrait visible if seeking is unavailable. */ }
     }
   };
+  const showAvatarWelcome = () => {
+    setAvatarExpression('welcoming');
+    if (!avatarVideo) return;
+    avatarVideo.pause();
+    if (avatarVideo.readyState >= 1 && avatarVideo.currentTime > 0.06) {
+      try { avatarVideo.currentTime = smileFrameTime(); } catch { /* Keep the matching portrait visible if seeking is unavailable. */ }
+    }
+  };
+  const showAvatarThinking = () => {
+    activeUtterance = null;
+    pendingAvatarTime = null;
+    if (speechAvailable) window.speechSynthesis.cancel();
+    setAvatarExpression('thinking');
+    if (!avatarVideo) return;
+    avatarVideo.pause();
+    try { avatarVideo.currentTime = smileFrameTime(); } catch { /* The generated thinking portrait remains visible. */ }
+  };
   const setAvatarSpeaking = (speaking) => {
     if (!avatarStage || !avatarVideo) return;
-    avatarStage.classList.toggle('is-speaking', speaking);
-    avatarStage.classList.toggle('is-smiling', !speaking);
+    setAvatarExpression(speaking ? 'speaking' : 'smiling');
     if (speaking) {
       const playback = avatarVideo.play();
       if (playback && typeof playback.then === 'function') {
@@ -222,11 +245,12 @@
     voiceStatus.textContent = speechAvailable ? (voiceEnabled ? ui().voiceOn : ui().voiceOff) : ui().voiceUnavailable;
   };
   const speakCurrentPrompt = () => {
-    const prompt = currentPrompt();
+    const firstTurn = isNewConversation();
+    const prompt = firstTurn ? `${ui().welcome} ${ui().greeting} ${currentPrompt()}` : currentPrompt();
     if (!speechAvailable || !voiceEnabled || !prompt) return;
     activeUtterance = null;
-    setAvatarSpeaking(false);
     window.speechSynthesis.cancel();
+    if (firstTurn) showAvatarWelcome(); else showAvatarSmile();
     const language = currentLanguage();
     const utterance = new window.SpeechSynthesisUtterance(prompt);
     utterance.lang = language === 'ar' ? 'ar' : 'en-US';
@@ -376,16 +400,30 @@
     } else if (state.stage === 'interests') {
       const form = document.createElement('form'); form.className = 'assistant-answer-form';
       form.innerHTML = `<label for="interest-answer">${escapeHTML(text.interestsLabel)}</label><textarea id="interest-answer" rows="2" maxlength="500" required placeholder="${escapeHTML(text.interestsPlaceholder)}">${escapeHTML(state.interests)}</textarea><button class="button button-primary" type="submit">${escapeHTML(text.send)} <span class="button-arrow">↗</span></button><p class="assistant-validation" aria-live="polite"></p>`;
-      form.addEventListener('submit', (event) => { event.preventDefault(); const value = form.querySelector('textarea').value.trim(); if (!value) { form.querySelector('.assistant-validation').textContent = text.required; return; } state.interests = value; state.stage = 'birthdate'; saveState(); render(); });
+      form.addEventListener('submit', (event) => { event.preventDefault(); if (advanceTimer !== null) return; const value = form.querySelector('textarea').value.trim(); if (!value) { form.querySelector('.assistant-validation').textContent = text.required; return; } state.interests = value; state.stage = 'birthdate'; saveState(); advanceWithThinking(); });
       turn.append(form);
     } else {
       const form = document.createElement('form'); form.className = 'assistant-answer-form assistant-birth-form';
       form.innerHTML = `<label for="birth-date">${escapeHTML(text.birthdayLabel)}</label><input id="birth-date" type="date" required max="${new Date().toISOString().slice(0, 10)}" value="${escapeHTML(state.birthDate)}" /><button class="button button-primary" type="submit">${escapeHTML(text.continue)} <span class="button-arrow">↗</span></button><p class="assistant-validation" aria-live="polite"></p>`;
-      form.addEventListener('submit', (event) => { event.preventDefault(); const value = form.querySelector('input').value; if (!value || value > new Date().toISOString().slice(0, 10)) { form.querySelector('.assistant-validation').textContent = text.required; return; } state.birthDate = value; state.stage = 'done'; saveState(); render(); });
+      form.addEventListener('submit', (event) => { event.preventDefault(); if (advanceTimer !== null) return; const value = form.querySelector('input').value; if (!value || value > new Date().toISOString().slice(0, 10)) { form.querySelector('.assistant-validation').textContent = text.required; return; } state.birthDate = value; state.stage = 'done'; saveState(); advanceWithThinking(); });
       turn.append(form);
     }
   };
+  const advanceWithThinking = () => {
+    if (advanceTimer !== null) return;
+    turn.inert = true;
+    turn.setAttribute('aria-busy', 'true');
+    showAvatarThinking();
+    advanceTimer = window.setTimeout(() => {
+      advanceTimer = null;
+      turn.inert = false;
+      turn.removeAttribute('aria-busy');
+      render();
+    }, 820);
+  };
   const render = () => {
+    turn.inert = false;
+    turn.removeAttribute('aria-busy');
     log.replaceChildren(); appendQuestionHistory(); renderTurn();
     document.querySelector('.assistant-chat-foot p').textContent = `${ui().saved}. ${currentLanguage() === 'ar' ? 'الإجابات وتاريخ الميلاد لا يغادران هذا المتصفح.' : 'Answers and birth date stay in this browser.'}`;
     document.querySelector('#restart-discovery').textContent = ui().reset;
@@ -393,17 +431,25 @@
     document.querySelector('#assistant-demo-note').textContent = ui().demoNote;
     document.querySelector('#assistant-device-label').textContent = ui().deviceOnly;
     updateVoiceControls();
+    if (isNewConversation()) showAvatarWelcome(); else showAvatarSmile();
     if (voiceEnabled) speakCurrentPrompt();
     log.scrollTop = log.scrollHeight;
   };
   const submitQuestion = (answer) => {
+    if (advanceTimer !== null) return;
     state.answers[state.questionIndex] = answer;
     state.questionIndex += 1;
     if (state.questionIndex >= questions.length) state.stage = 'interests';
-    saveState(); render();
+    saveState(); advanceWithThinking();
   };
-  resetButton.addEventListener('click', () => { state = emptyState(); saveState(); render(); });
+  resetButton.addEventListener('click', () => {
+    if (advanceTimer !== null) { window.clearTimeout(advanceTimer); advanceTimer = null; }
+    turn.inert = false;
+    turn.removeAttribute('aria-busy');
+    state = emptyState(); saveState(); render();
+  });
   voiceToggle.addEventListener('click', () => {
+    if (advanceTimer !== null) return;
     voiceEnabled = !voiceEnabled;
     updateVoiceControls();
     if (voiceEnabled) speakCurrentPrompt();
@@ -414,6 +460,7 @@
     }
   });
   voiceReplay.addEventListener('click', () => {
+    if (advanceTimer !== null) return;
     if (!voiceEnabled) voiceEnabled = true;
     updateVoiceControls();
     speakCurrentPrompt();
