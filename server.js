@@ -20,6 +20,7 @@ const routeFiles = {
   '/profile': 'profile.html',
   '/home': 'home.html',
   '/signup': 'signup.html',
+  '/login': 'login.html',
   '/discover': 'discover.html',
   '/assistant': 'assistant.html',
   '/rooms': 'rooms.html',

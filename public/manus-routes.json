@@ -1,18 +1,64 @@
 {
   "routes": [
-    { "path": "/", "title": "IQZodiac" },
-    { "path": "/profile", "title": "Your Profile — IQZodiac" },
-    { "path": "/home", "title": "Home — IQZodiac" },
-    { "path": "/signup", "title": "Create Account — IQZodiac" },
-    { "path": "/discover", "title": "Discover — IQZodiac" },
-    { "path": "/assistant", "title": "AI Assistant — IQZodiac" },
-    { "path": "/rooms", "title": "Audio Rooms — IQZodiac" },
-    { "path": "/messages", "title": "Messages — IQZodiac" },
-    { "path": "/match", "title": "Match — IQZodiac" },
-    { "path": "/daily", "title": "Daily — IQZodiac" },
-    { "path": "/vip", "title": "VIP Orbit — IQZodiac" },
-    { "path": "/gift-store", "title": "Gift Store — IQZodiac" },
-    { "path": "/wallet", "title": "Wallet — IQZodiac" },
-    { "path": "/youtube", "title": "YouTube — IQZodiac" }
+    {
+      "path": "/",
+      "title": "IQZodiac"
+    },
+    {
+      "path": "/profile",
+      "title": "Your Profile — IQZodiac"
+    },
+    {
+      "path": "/home",
+      "title": "Home — IQZodiac"
+    },
+    {
+      "path": "/login",
+      "title": "Log In — IQZodiac"
+    },
+    {
+      "path": "/signup",
+      "title": "Create Account — IQZodiac"
+    },
+    {
+      "path": "/discover",
+      "title": "Discover — IQZodiac"
+    },
+    {
+      "path": "/assistant",
+      "title": "AI Assistant — IQZodiac"
+    },
+    {
+      "path": "/rooms",
+      "title": "Audio Rooms — IQZodiac"
+    },
+    {
+      "path": "/messages",
+      "title": "Messages — IQZodiac"
+    },
+    {
+      "path": "/match",
+      "title": "Match — IQZodiac"
+    },
+    {
+      "path": "/daily",
+      "title": "Daily — IQZodiac"
+    },
+    {
+      "path": "/vip",
+      "title": "VIP Orbit — IQZodiac"
+    },
+    {
+      "path": "/gift-store",
+      "title": "Gift Store — IQZodiac"
+    },
+    {
+      "path": "/wallet",
+      "title": "Wallet — IQZodiac"
+    },
+    {
+      "path": "/youtube",
+      "title": "YouTube — IQZodiac"
+    }
   ]
 }

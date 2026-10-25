@@ -40,41 +40,34 @@ const bindPreview = (inputId, previewId, label) => {
 bindPreview('id-photo', 'id-preview', 'ID');
 bindPreview('face-photo', 'face-preview', 'Face');
 
-form.addEventListener('submit', (event) => {
+form.addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (!form.checkValidity()) {
-    form.reportValidity();
-    return;
-  }
-
-  const pseudonym = createPseudonym();
-  const profile = {
-    id: `user-${Date.now()}-${pseudonym.handle.slice(-4)}`,
-    name: pseudonym.displayName,
-    displayName: pseudonym.displayName,
-    pseudonym: pseudonym.displayName,
-    handle: pseudonym.handle,
-    initials: pseudonym.initials,
-    role: 'user',
-    privacyProfileVersion: 2,
-    privacy: {
-      publicIdentity: 'pseudonym',
-      realNameVisibility: 'private',
-      personalInfoVisibility: 'private',
-      ageVisibility: false,
-      phoneVisibility: false,
-      photosPublic: false,
-      revealRequiresMutualConsent: true,
-    },
-    facePhoto: { originalAssetRef: null, protectedPreviewRef: null, faceHidden: true, visibility: 'private' },
-    onboarding: { status: 'pending', assistant: 'iqzodiac-discovery', startedAt: null, completedAt: null },
-    createdAt: new Date().toISOString(),
-  };
-
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+  const password = document.querySelector('#password').value;
+  const confirmation = document.querySelector('#password-confirm').value;
+  if (password !== confirmation) { showToast('Passwords do not match.'); return; }
+  const button = form.querySelector('button[type="submit"]');
+  button.disabled = true;
+  button.querySelector('span').textContent = 'Creating…';
   try {
-    localStorage.setItem('iqzodiac-current-profile', JSON.stringify(profile));
-    localStorage.setItem('iqzodiac:gallery-visible', 'false');
-    localStorage.removeItem('iqzodiac:phone-visible');
-  } catch { /* Keep the form usable when storage is unavailable. */ }
-  window.location.assign('./assistant.html?welcome=1');
+    const client = await window.IQZodiacSupabase.ready;
+    const firstName = document.querySelector('#first-name').value.trim();
+    const lastName = document.querySelector('#last-name').value.trim();
+    const email = document.querySelector('#email').value.trim().toLowerCase();
+    const { data, error } = await client.auth.signUp({
+      email,
+      password,
+      options: { data: { first_name: firstName, last_name: lastName, age: document.querySelector('#age').value, phone: document.querySelector('#phone-number').value.trim() } },
+    });
+    if (error) throw error;
+    if (!data.session) {
+      window.location.assign('./login.html?confirmed=1');
+      return;
+    }
+    window.location.assign('./assistant.html?welcome=1');
+  } catch (error) {
+    showToast(error?.message || 'Account creation failed.');
+    button.disabled = false;
+    button.querySelector('span').textContent = 'Create account';
+  }
 });
