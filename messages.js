@@ -1,22 +1,6 @@
 (() => {
-  const contacts = [
-    { id: 'maya', name: 'Maya Chen', handle: '@mayachen', initials: 'M', avatar: 'avatar-maya', preview: 'That sounds like a lovely plan.', time: '12m' },
-    { id: 'noah', name: 'Noah Williams', handle: '@noahw', initials: 'N', avatar: 'avatar-noah', preview: 'Found a little more light today.', time: '1h' },
-    { id: 'lina', name: 'Lina Ortiz', handle: '@linaortiz', initials: 'L', avatar: 'avatar-lina', preview: 'Sending a little sunshine your way ☀', time: '3h' },
-  ];
-  const storageKey = 'iqzodiac-demo-messages';
-  const starter = {
-    maya: [{ from: 'them', text: 'Hey Alex! How has your week been treating you?', time: '10:42' }, { from: 'me', text: 'A little busy, but I found a quiet moment this morning.', time: '10:45' }, { from: 'them', text: 'That sounds like a lovely plan. We all need those little pauses ✨', time: '10:47' }],
-    noah: [{ from: 'them', text: 'Found a little more light on the way home.', time: 'Yesterday' }],
-    lina: [{ from: 'them', text: 'Sending a little sunshine your way ☀', time: 'Monday' }],
-  };
-  let saved = {};
-  try { saved = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch { saved = {}; }
-  const conversations = Object.fromEntries(contacts.map((person) => [person.id, Array.isArray(saved[person.id]) ? saved[person.id] : starter[person.id]]));
-  let activeId = 'maya';
-  let timerInterval = null;
-  let elapsedSeconds = 0;
-
+  'use strict';
+  const database = () => window.IQZodiacSupabase?.ready;
   const contactList = document.querySelector('#contact-list');
   const messageList = document.querySelector('#message-list');
   const messageInput = document.querySelector('#message-input');
@@ -24,142 +8,46 @@
   const callButton = document.querySelector('#call-button');
   const callStatus = document.querySelector('#call-status');
   const callTimer = document.querySelector('#call-timer');
-  const dataAdapter = window.IQZodiacData?.adapter;
-  const escapeHTML = (value) => value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
-
+  const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+  let client; let user; let contacts = []; let activeId = new URLSearchParams(window.location.search).get('match'); let activeConversation = null; let timerInterval; let elapsedSeconds = 0;
+  const toast = (message) => { const node = document.querySelector('.toast-message'); if (node) { node.textContent = message; document.querySelector('.toast')?.classList.add('is-visible'); } };
   const renderContacts = (filter = '') => {
     contactList.replaceChildren();
     const matched = contacts.filter((person) => `${person.name} ${person.handle}`.toLowerCase().includes(filter.toLowerCase()));
-    matched.forEach((person) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = `contact-item${person.id === activeId ? ' is-active' : ''}`;
-      button.dataset.contact = person.id;
-      button.innerHTML = `<span class="contact-avatar ${person.avatar}">${person.initials}</span><span class="contact-copy"><strong>${escapeHTML(person.name)}</strong><small>${escapeHTML(person.preview)}</small></span><span class="contact-time">${person.time}</span>`;
-      button.addEventListener('click', () => selectContact(person.id));
-      contactList.append(button);
-    });
-    if (!matched.length) contactList.innerHTML = '<p class="sidebar-note">No sample profiles match that search.</p>';
+    matched.forEach((person) => { const button = document.createElement('button'); button.type = 'button'; button.className = `contact-item${person.id === activeId ? ' is-active' : ''}`; button.innerHTML = `<span class="contact-avatar">${escapeHTML((person.name || 'M').slice(0, 1))}</span><span class="contact-copy"><strong>${escapeHTML(person.name)}</strong><small>${escapeHTML(person.preview || 'Start a private conversation')}</small></span><span class="contact-time">${escapeHTML(person.time || '')}</span>`; button.addEventListener('click', () => { activeId = person.id; loadConversation(); }); contactList.append(button); });
+    if (!matched.length) contactList.innerHTML = '<p class="sidebar-note">No real conversations are available yet.</p>';
   };
-
-  const renderMessages = () => {
+  const renderMessages = async () => {
     const person = contacts.find((item) => item.id === activeId);
-    document.querySelector('#active-name').textContent = person.name;
-    document.querySelector('#active-handle').textContent = `${person.handle} · Sample profile`;
-    const avatar = document.querySelector('#active-avatar');
-    avatar.className = `contact-avatar ${person.avatar}`;
-    avatar.textContent = person.initials;
-    document.querySelector('#call-title').textContent = person.name;
-    const callAvatar = document.querySelector('#call-avatar');
-    callAvatar.className = `call-avatar ${person.avatar}`;
-    callAvatar.textContent = person.initials;
-    messageList.replaceChildren();
-    const divider = document.createElement('div');
-    divider.className = 'message-day-divider';
-    divider.textContent = 'SAMPLE CONVERSATION · LOCAL DEMO';
-    messageList.append(divider);
-    conversations[activeId].forEach((message) => {
-      const bubble = document.createElement('div');
-      bubble.className = `message-bubble${message.from === 'me' ? ' is-mine' : ''}`;
-      const body = document.createElement('span');
-      body.textContent = message.text;
-      const meta = document.createElement('small');
-      meta.className = 'message-meta';
-      meta.textContent = `${message.from === 'me' ? 'You' : person.name.split(' ')[0]} · ${message.time}`;
-      bubble.append(body, meta);
-      messageList.append(bubble);
-    });
-    messageList.scrollTop = messageList.scrollHeight;
-    renderContacts(document.querySelector('#contact-search').value);
-    renderRevealState();
+    if (!person || !activeConversation) { messageList.innerHTML = '<div class="message-day-divider">REAL MEMBER CONVERSATIONS ONLY</div><p class="sidebar-note">Open a real match to start a private conversation.</p>'; return; }
+    document.querySelector('#active-name').textContent = person.name; document.querySelector('#active-handle').textContent = `${person.handle} · Private member conversation`; document.querySelector('#call-title').textContent = person.name;
+    const { data: rows, error } = await client.from('messages').select('sender_id,body,created_at').eq('conversation_id', activeConversation).order('created_at', { ascending: true }).limit(200);
+    if (error) { toast('Messages could not be loaded.'); return; }
+    messageList.replaceChildren(); const divider = document.createElement('div'); divider.className = 'message-day-divider'; divider.textContent = 'PRIVATE CONVERSATION'; messageList.append(divider);
+    (rows || []).forEach((message) => { const bubble = document.createElement('div'); bubble.className = `message-bubble${message.sender_id === user.id ? ' is-mine' : ''}`; const body = document.createElement('span'); body.textContent = message.body; const meta = document.createElement('small'); meta.className = 'message-meta'; meta.textContent = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(message.created_at)); bubble.append(body, meta); messageList.append(bubble); });
+    messageList.scrollTop = messageList.scrollHeight; renderContacts(document.querySelector('#contact-search').value); await renderRevealState();
   };
-
   const renderRevealState = async () => {
-    if (!dataAdapter) return;
-    const state = await dataAdapter.getRevealState(activeId);
-    const status = document.querySelector('#face-consent-status');
-    const request = document.querySelector('#request-reveal');
-    if (dataAdapter.canRevealFace(state)) {
-      status.textContent = 'Both people agreed. The face may now be revealed inside this private match.';
-      request.textContent = 'Face reveal approved'; request.disabled = true;
-    } else if (state.mine && !state.partner) {
-      status.textContent = 'Your request is recorded. The face stays hidden until the other person agrees too.';
-      request.textContent = 'Request sent'; request.disabled = true;
-    } else if (!state.mine && state.partner) {
-      status.textContent = 'They agreed first. You must also give explicit consent before the face can appear.';
-      request.textContent = 'I agree to reveal'; request.disabled = false;
-    } else {
-      status.textContent = 'A reveal requires two explicit yeses.';
-      request.textContent = 'Request reveal'; request.disabled = false;
-    }
-    document.querySelector('#partner-consent').textContent = state.partner ? 'Partner consent recorded · DEMO' : 'Simulate partner consent · DEMO';
+    const status = document.querySelector('#face-consent-status'); const request = document.querySelector('#request-reveal'); const partnerButton = document.querySelector('#partner-consent');
+    if (!activeConversation) { status.textContent = 'A reveal is available only inside a real conversation.'; request.disabled = true; partnerButton.hidden = true; return; }
+    partnerButton.hidden = true;
+    const { data } = await client.from('face_reveal_consents').select('user_id').eq('conversation_id', activeConversation);
+    const mine = (data || []).some((row) => row.user_id === user.id); const both = (data || []).length >= 2;
+    status.textContent = both ? 'Both people agreed. The face may now be revealed inside this private match.' : mine ? 'Your request is recorded. The face stays hidden until the other person agrees too.' : 'A reveal requires two explicit yeses.';
+    request.disabled = both || mine; request.textContent = both ? 'Face reveal approved' : mine ? 'Request sent' : 'Request reveal';
   };
-
-  const selectContact = (id) => {
-    activeId = id;
-    renderMessages();
+  const loadConversation = async () => {
+    if (!activeId) { renderContacts(); await renderMessages(); return; }
+    const { data: conversationId, error } = await client.rpc('get_or_create_conversation', { p_other_user: activeId });
+    if (error) { toast('This member cannot receive messages yet.'); await renderMessages(); return; }
+    activeConversation = conversationId; await renderMessages();
   };
-
   document.querySelector('#contact-search').addEventListener('input', (event) => renderContacts(event.target.value));
-  messageInput.addEventListener('input', () => {
-    document.querySelector('#message-counter').textContent = `${messageInput.value.length} / 600`;
-  });
-  document.querySelector('#request-reveal')?.addEventListener('click', async () => {
-    await dataAdapter?.requestReveal(activeId);
-    renderRevealState();
-  });
-  document.querySelector('#partner-consent')?.addEventListener('click', async () => {
-    const state = await dataAdapter?.getRevealState(activeId);
-    await dataAdapter?.setPartnerRevealConsent(activeId, !state.partner);
-    renderRevealState();
-  });
-
-  document.querySelector('#message-form').addEventListener('submit', (event) => {
-    event.preventDefault();
-    const text = messageInput.value.trim();
-    if (!text) return;
-    const time = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date());
-    conversations[activeId].push({ from: 'me', text, time });
-    localStorage.setItem(storageKey, JSON.stringify(conversations));
-    messageInput.value = '';
-    document.querySelector('#message-counter').textContent = '0 / 600';
-    renderMessages();
-    messageInput.focus();
-  });
-
-  const stopDemoCall = () => {
-    window.clearInterval(timerInterval);
-    timerInterval = null;
-    elapsedSeconds = 0;
-    callModal.hidden = true;
-    document.querySelector('#mute-call').classList.remove('is-muted');
-    document.querySelector('#mute-call small').textContent = 'Mute demo';
-    document.querySelector('#call-button').focus();
-  };
-  callButton.addEventListener('click', () => {
-    const person = contacts.find((item) => item.id === activeId);
-    document.querySelector('#call-title').textContent = person.name;
-    const avatar = document.querySelector('#call-avatar');
-    avatar.className = `call-avatar ${person.avatar}`;
-    avatar.textContent = person.initials;
-    callStatus.textContent = 'Demo call · no one is being contacted';
-    callTimer.textContent = '00:00';
-    callModal.hidden = false;
-    document.querySelector('#close-call').focus();
-    timerInterval = window.setInterval(() => {
-      elapsedSeconds += 1;
-      callTimer.textContent = `${String(Math.floor(elapsedSeconds / 60)).padStart(2, '0')}:${String(elapsedSeconds % 60).padStart(2, '0')}`;
-    }, 1000);
-  });
-  document.querySelector('#close-call').addEventListener('click', stopDemoCall);
-  document.querySelector('#end-call').addEventListener('click', stopDemoCall);
-  document.querySelector('#mute-call').addEventListener('click', (event) => {
-    const button = event.currentTarget;
-    const muted = button.classList.toggle('is-muted');
-    button.querySelector('small').textContent = muted ? 'Muted (demo)' : 'Mute demo';
-  });
-  callModal.addEventListener('click', (event) => { if (event.target === callModal) stopDemoCall(); });
-  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !callModal.hidden) stopDemoCall(); });
-
-  renderMessages();
+  messageInput.addEventListener('input', () => { document.querySelector('#message-counter').textContent = `${messageInput.value.length} / 600`; });
+  document.querySelector('#message-form').addEventListener('submit', async (event) => { event.preventDefault(); const body = messageInput.value.trim(); if (!body || !activeConversation) return; const { error } = await client.from('messages').insert({ conversation_id: activeConversation, sender_id: user.id, body }); if (error) { toast('Message could not be sent.'); return; } messageInput.value = ''; document.querySelector('#message-counter').textContent = '0 / 600'; await renderMessages(); messageInput.focus(); });
+  document.querySelector('#request-reveal')?.addEventListener('click', async () => { if (!activeConversation) return; const { error } = await client.from('face_reveal_consents').upsert({ conversation_id: activeConversation, user_id: user.id }); if (error) toast('Consent could not be saved.'); else await renderRevealState(); });
+  const stopCall = () => { clearInterval(timerInterval); timerInterval = null; elapsedSeconds = 0; callModal.hidden = true; };
+  callButton.addEventListener('click', () => { if (!activeConversation) { toast('Open a real conversation before starting a call.'); return; } callStatus.textContent = 'Audio calling is not connected yet.'; callTimer.textContent = '00:00'; callModal.hidden = false; timerInterval = setInterval(() => { elapsedSeconds += 1; callTimer.textContent = `${String(Math.floor(elapsedSeconds / 60)).padStart(2, '0')}:${String(elapsedSeconds % 60).padStart(2, '0')}`; }, 1000); });
+  document.querySelector('#close-call').addEventListener('click', stopCall); document.querySelector('#end-call').addEventListener('click', stopCall); callModal.addEventListener('click', (event) => { if (event.target === callModal) stopCall(); });
+  (async () => { try { client = await database(); const { data: session } = await client.auth.getSession(); user = session.session?.user; if (!user) return; const { data, error } = await client.rpc('list_my_conversations'); if (error) throw error; contacts = (data || []).map((row) => ({ id: row.other_user_id, name: row.display_name || 'Orbit Member', handle: row.handle || '@member', preview: row.last_message || 'Start a private conversation', time: row.last_message_at ? new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(row.last_message_at)) : '' })); if (activeId && !contacts.some((person) => person.id === activeId)) { const { data: matches } = await client.rpc('list_compatible_profiles'); const match = (matches || []).find((row) => row.user_id === activeId); if (match) contacts.unshift({ id: match.user_id, name: match.display_name, handle: match.handle, preview: 'Matched member' }); } if (!activeId) activeId = contacts[0]?.id || null; renderContacts(); await loadConversation(); } catch (error) { console.warn('Conversation data could not be loaded.', error); contactList.innerHTML = '<p class="sidebar-note">The shared messaging service is temporarily unavailable. No sample conversations are shown.</p>'; } })();
 })();

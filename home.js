@@ -13,6 +13,8 @@ const showToast = (message) => {
 const formatCount = (value) => new Intl.NumberFormat('en-US').format(value);
 const escapeText = (value) => value.trim().slice(0, 500);
 const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+const database = () => window.IQZodiacSupabase?.ready;
+let authenticatedUserId = null;
 let savedProfile = {};
 try { savedProfile = JSON.parse(window.localStorage.getItem('iqzodiac-current-profile') || '{}'); } catch { savedProfile = {}; }
 const hasPseudonymousProfile = savedProfile.privacyProfileVersion === 2;
@@ -51,8 +53,17 @@ const bindPost = (post) => {
   const commentInput = commentForm.querySelector('input');
   const commentList = post.querySelector('.comment-list');
 
-  likeButton.addEventListener('click', () => {
+  likeButton.addEventListener('click', async () => {
     const liked = likeButton.dataset.like === 'true';
+    const client = await database();
+    if (client && /^[0-9a-f-]{36}$/i.test(post.dataset.postId || '')) {
+      const { data, error } = await client.rpc('toggle_post_like', { p_post_id: post.dataset.postId });
+      if (error) { showToast('Like could not be saved.'); return; }
+      likeButton.dataset.like = String(Boolean(data)); likeButton.classList.toggle('is-liked', Boolean(data));
+      likeButton.querySelector('.action-icon').textContent = data ? '♥' : '♡'; likeButton.querySelector('span:last-child').textContent = data ? 'Liked' : 'Like';
+      likeCount.textContent = `${formatCount(Math.max(0, Number(likeCount.textContent.replace(/[^0-9]/g, '')) + (data ? 1 : -1)))} likes`;
+      return;
+    }
     const number = Number(likeCount.textContent.replace(/[^0-9]/g, '')) + (liked ? -1 : 1);
     likeButton.dataset.like = String(!liked);
     likeButton.classList.toggle('is-liked', !liked);
@@ -67,12 +78,19 @@ const bindPost = (post) => {
     commentInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 
-  shareButton.addEventListener('click', () => showToast('Post link copied to your orbit.'));
+  shareButton.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#post-${post.dataset.postId}`); showToast('Post link copied to your orbit.'); } catch { showToast('Copy is unavailable in this browser.'); }
+  });
 
-  commentForm.addEventListener('submit', (event) => {
+  commentForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const value = escapeText(commentInput.value);
     if (!value) return;
+    const client = await database();
+    if (client && /^[0-9a-f-]{36}$/i.test(post.dataset.postId || '')) {
+      const { error } = await client.from('comments').insert({ post_id: post.dataset.postId, author_id: authenticatedUserId, body: value });
+      if (error) { showToast('Comment could not be saved.'); return; }
+    }
     const comment = document.createElement('div');
     comment.className = 'comment';
     const avatar = document.createElement('span');
@@ -92,6 +110,7 @@ const bindPost = (post) => {
 };
 
 document.querySelectorAll('.post-card').forEach(bindPost);
+document.querySelector('#feed-list').innerHTML = '<p class="match-empty">Loading the shared feed…</p>';
 
 document.querySelectorAll('[data-flow]').forEach((button) => {
   button.addEventListener('click', () => showToast(`${button.dataset.flow} is coming soon.`));
@@ -244,3 +263,45 @@ if ('IntersectionObserver' in window && !reduceMotion) {
     revealObserver.observe(target);
   });
 }
+
+
+// The feed is sourced from Supabase; the static HTML cards are never treated as real members.
+(async () => {
+  try {
+    const client = await database();
+    if (!client) return;
+    const { data: sessionData } = await client.auth.getSession();
+    if (!sessionData.session?.user?.id) return;
+    authenticatedUserId = sessionData.session.user.id;
+    const { data: feed, error } = await client.rpc('get_home_feed', { p_limit: 30 });
+    if (error) throw error;
+    const feedList = document.querySelector('#feed-list');
+    feedList.replaceChildren();
+    if (!Array.isArray(feed) || !feed.length) {
+      feedList.innerHTML = '<p class="match-empty">No real posts have been published yet.</p>';
+    } else {
+      feed.forEach((item) => {
+        const post = document.createElement('article');
+        post.className = 'post-card'; post.dataset.postId = item.post_id; post.dataset.author = String(item.handle || '').replace(/^@/, '');
+        const liked = Boolean(item.liked_by_me);
+        post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">${escapeHTML(String(item.display_name || 'OM').slice(0, 1))}</div><div class="post-author"><strong>${escapeHTML(item.display_name || 'Orbit Member')}</strong><span>${escapeHTML(item.handle || '@member')} · ${escapeHTML(new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(item.created_at)))}</span></div></header><p class="post-body">${escapeHTML(item.body)}</p><div class="post-meta"><span class="like-count">${formatCount(Number(item.like_count || 0))} likes</span><span class="comment-count">${formatCount(Number(item.comment_count || 0))} comments</span></div><div class="post-actions"><button class="post-action like-button ${liked ? 'is-liked' : ''}" type="button" data-like="${liked}"><span class="action-icon">${liked ? '♥' : '♡'}</span><span>${liked ? 'Liked' : 'Like'}</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment" /><button type="submit" aria-label="Post comment">↗</button></form>`;
+        feedList.append(post); bindPost(post);
+      });
+    }
+    const today = new Date().toLocaleDateString('en-CA');
+    const { data: mood } = await client.from('daily_moods').select('mood').eq('mood_date', today).maybeSingle();
+    if (mood?.mood && moodCopy[mood.mood]) selectMood(mood.mood);
+    const publishButton = document.querySelector('#publish-post');
+    const cleanButton = publishButton.cloneNode(true); publishButton.replaceWith(cleanButton);
+    cleanButton.addEventListener('click', async () => {
+      const body = escapeText(document.querySelector('#post-text').value);
+      if (!body) { showToast('Write something before publishing.'); return; }
+      const { error: insertError } = await client.from('posts').insert({ author_id: authenticatedUserId, body });
+      if (insertError) { showToast('Your post could not be saved.'); return; }
+      document.querySelector('#post-text').value = ''; showToast('Your post is saved to the shared feed.'); window.setTimeout(() => window.location.reload(), 400);
+    });
+  } catch (error) {
+    console.warn('Home feed could not be loaded from Supabase.', error);
+    document.querySelector('#feed-list').innerHTML = '<p class="match-empty">The shared feed is temporarily unavailable. No sample posts are shown.</p>';
+  }
+})();

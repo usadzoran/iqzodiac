@@ -76,7 +76,7 @@
             </div>
             <span class="media-count" id="media-count">5 items</span>
           </div>
-          <p class="section-intro">These are sample previews. New media stays on this device; your sharing choice is saved, but public sharing needs a secure account service.</p>
+          <p class="section-intro">Existing gallery tiles are visual placeholders. Profile identity and privacy preferences are saved to your Supabase account; media upload remains disabled until secure Storage policies are enabled.</p>
 
           <div class="media-grid" aria-label="Your media gallery">
             <button class="media-tile media-one" type="button" aria-label="Open mountain photo"><span class="media-type">Photo</span><span class="media-caption">Quiet places</span></button>
@@ -116,9 +116,9 @@
             <span class="privacy-badge"><span class="privacy-dot" aria-hidden="true"></span> Live activity</span>
           </div>
           <div class="community-stats" aria-label="Community statistics">
-            <div class="community-stat"><strong id="followers-count">1,284</strong><span>Followers</span></div>
-            <div class="community-stat"><strong id="following-count">286</strong><span>Following</span></div>
-            <div class="community-stat"><strong id="likes-count">8,642</strong><span>Likes</span></div>
+            <div class="community-stat"><strong id="followers-count">0</strong><span>Followers</span></div>
+            <div class="community-stat"><strong id="following-count">0</strong><span>Following</span></div>
+            <div class="community-stat"><strong id="likes-count">0</strong><span>Likes</span></div>
           </div>
           <div class="community-actions">
             <button class="button button-secondary follow-button" id="follow-button" type="button"><span id="follow-label">Follow back</span><span class="button-arrow" aria-hidden="true">↗</span></button>
@@ -135,16 +135,12 @@
             <span class="notification-count" id="notification-count">3 new</span>
           </div>
           <div class="notification-toolbar"><span>Recent activity</span><button id="mark-all-read" type="button">Mark all as read</button></div>
-          <div class="notification-list" id="notification-list">
-            <button class="notification-item is-unread" type="button" data-notification="Maya liked your profile."><span class="notification-avatar avatar-maya">M</span><span class="notification-copy"><strong>Maya liked your profile</strong><small>2 minutes ago</small></span><span class="notification-dot" aria-hidden="true"></span></button>
-            <button class="notification-item is-unread" type="button" data-notification="Noah started following you."><span class="notification-avatar avatar-noah">N</span><span class="notification-copy"><strong>Noah started following you</strong><small>18 minutes ago</small></span><span class="notification-dot" aria-hidden="true"></span></button>
-            <button class="notification-item is-unread" type="button" data-notification="Your gallery received 12 new likes."><span class="notification-avatar avatar-lina">L</span><span class="notification-copy"><strong>Your gallery received 12 new likes</strong><small>1 hour ago</small></span><span class="notification-dot" aria-hidden="true"></span></button>
-          </div>
+            <div class="notification-list" id="notification-list"><p class="sidebar-note">No account notifications are available yet.</p></div>
         </section>
       </div>
 
       <div class="profile-actions">
-        <p class="save-note"><span class="status-dot" aria-hidden="true"></span> Profile and privacy preferences are saved on this device; photos are not uploaded.</p>
+        <p class="save-note"><span class="status-dot" aria-hidden="true"></span> Profile, privacy, and compatibility preferences are saved to your Supabase account. Photos are not uploaded yet.</p>
         <button class="button button-primary save-button" type="button" id="save-profile"><span>Save changes</span><span class="button-arrow" aria-hidden="true">↗</span></button>
       </div>
 

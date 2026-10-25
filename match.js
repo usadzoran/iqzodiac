@@ -17,7 +17,7 @@
     const person = candidates[index];
     document.querySelector('#queue-count').textContent = person ? `${String(index + 1).padStart(2, '0')} / ${String(candidates.length).padStart(2, '0')}` : 'NOT CONNECTED';
     if (!person) {
-      card.innerHTML = '<div class="match-card-content"><p class="card-kicker">REAL MEMBER MATCHES ONLY</p><h2>Matching is not connected yet.</h2><p>This prototype has no shared member database. No sample profiles or invented compatibility results are shown here.</p><a class="button button-secondary" href="./assistant.html">Open Assistant setup <span class="button-arrow">↗</span></a></div>';
+      card.innerHTML = '<div class="match-card-content"><p class="card-kicker">REAL MEMBER MATCHES ONLY</p><h2>No completed matches yet.</h2><p>Matching is connected to the shared database, but no other eligible member profile is available yet. No sample profiles or invented compatibility results are shown here.</p><a class="button button-secondary" href="./assistant.html">Open Assistant setup <span class="button-arrow">↗</span></a></div>';
       document.querySelector('#skip-button').disabled = true;
       document.querySelector('#like-button').disabled = true;
       return;

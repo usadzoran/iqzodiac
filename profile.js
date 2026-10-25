@@ -23,7 +23,7 @@ const updatePrivacyPreview = () => { galleryPrivacyStatus.textContent = galleryV
 galleryVisibility.addEventListener('change', async () => { saveChoice('gallery-visible', galleryVisibility.checked); updatePrivacyPreview(); const dataAdapter = window.IQZodiacData?.adapter; if (dataAdapter) await dataAdapter.updatePrivacyPreferences({ photosPublic: galleryVisibility.checked }); });
 updatePrivacyPreview();
 const followersCount = document.querySelector('#followers-count'); const likesCount = document.querySelector('#likes-count'); const followButton = document.querySelector('#follow-button'); const followLabel = document.querySelector('#follow-label'); const likeProfile = document.querySelector('#like-profile'); const likeLabel = document.querySelector('#like-label'); const heartIcon = document.querySelector('.heart-icon'); const notificationItems = [...document.querySelectorAll('.notification-item')]; const notificationCount = document.querySelector('#notification-count');
-let isFollowing = readChoice('following'); let hasLiked = readChoice('profile-liked'); let followers = readNumber('followers-count', 1284); let likes = readNumber('likes-count', 8642);
+let isFollowing = false; let hasLiked = false; let followers = readNumber('followers-count', 0); let likes = readNumber('likes-count', 0);
 const formatCount = (value) => new Intl.NumberFormat('en-US').format(value);
 const updateSocialPreview = () => { followersCount.textContent = formatCount(followers); likesCount.textContent = formatCount(likes); followLabel.textContent = isFollowing ? 'Following' : 'Follow back'; followButton.classList.toggle('is-following', isFollowing); likeProfile.setAttribute('aria-pressed', String(hasLiked)); likeProfile.classList.toggle('is-liked', hasLiked); heartIcon.textContent = hasLiked ? '♥' : '♡'; likeLabel.textContent = hasLiked ? 'Liked' : 'Like profile'; };
 const updateNotificationCount = () => { const unread = notificationItems.filter((item) => item.classList.contains('is-unread')).length; notificationCount.textContent = unread ? `${unread} new` : 'All caught up'; notificationCount.classList.toggle('is-clear', unread === 0); };
@@ -32,6 +32,10 @@ likeProfile.addEventListener('click', () => { hasLiked = !hasLiked; likes += has
 notificationItems.forEach((item) => item.addEventListener('click', () => { item.classList.remove('is-unread'); updateNotificationCount(); showToast(item.dataset.notification); }));
 document.querySelector('#mark-all-read').addEventListener('click', () => { notificationItems.forEach((item) => item.classList.remove('is-unread')); updateNotificationCount(); showToast('All notifications marked as read.'); });
 updateSocialPreview(); updateNotificationCount();
+followButton.disabled = true;
+likeProfile.disabled = true;
+followLabel.textContent = 'Use Match to connect';
+likeLabel.textContent = 'Member interactions appear in Match';
 
 const adapter = window.IQZodiacData?.adapter;
 const zodiac = document.querySelector('#zodiac-sign'); const element = document.querySelector('#personality-element'); const interestsInput = document.querySelector('#match-interests');
