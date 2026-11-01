@@ -39,6 +39,17 @@ const bindPreview = (inputId, previewId, label) => {
 
 bindPreview('id-photo', 'id-preview', 'ID');
 bindPreview('face-photo', 'face-preview', 'Face');
+bindPreview('profile-photo', 'profile-preview', 'Profile');
+
+const saveProfilePhoto = async (client, user, file) => {
+  if (!client || !user || !file || !file.type.startsWith('image/') || file.size > 5 * 1024 * 1024) return;
+  const extension = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8) || 'jpg';
+  const path = `${user.id}/avatar/${crypto.randomUUID()}.${extension}`;
+  const upload = await client.storage.from('iqzodiac-media').upload(path, file, { contentType: file.type, upsert: false, cacheControl: '3600' });
+  if (upload.error) throw upload.error;
+  const row = await client.from('profile_media').insert({ user_id: user.id, storage_path: path, media_type: 'avatar', mime_type: file.type, size_bytes: file.size, is_public: false });
+  if (row.error) { await client.storage.from('iqzodiac-media').remove([path]); throw row.error; }
+};
 
 const birthDateInput = document.querySelector('#birth-date');
 const today = new Date();
@@ -77,13 +88,19 @@ form.addEventListener('submit', async (event) => {
     const client = await window.IQZodiacSupabase.ready;
     const firstName = document.querySelector('#first-name').value.trim();
     const lastName = document.querySelector('#last-name').value.trim();
+    const country = document.querySelector('#country').value.trim();
+    const city = document.querySelector('#city').value.trim();
+    const preferredLanguage = document.querySelector('#preferred-language').value;
     const email = document.querySelector('#email').value.trim().toLowerCase();
     const { data, error } = await client.auth.signUp({
       email,
       password,
-      options: { data: { first_name: firstName, last_name: lastName, age, birth_date: birthDate, phone: document.querySelector('#phone-number').value.trim() } },
+      options: { data: { first_name: firstName, last_name: lastName, age, birth_date: birthDate, phone: document.querySelector('#phone-number').value.trim(), country, city, preferred_language: preferredLanguage } },
     });
     if (error) throw error;
+    try { window.localStorage.setItem('iqzodiac-language', preferredLanguage); } catch { /* Keep account creation working if storage is unavailable. */ }
+    const profilePhoto = document.querySelector('#profile-photo').files?.[0];
+    if (data.session && data.user && profilePhoto) { try { await saveProfilePhoto(client, data.user, profilePhoto); } catch (photoError) { console.warn('Profile photo upload deferred.', photoError); } }
     if (!data.session) {
       window.location.assign('./login.html?confirmed=1');
       return;

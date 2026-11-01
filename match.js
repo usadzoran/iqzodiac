@@ -12,6 +12,8 @@
   const publicInitials = (profile) => publicName(profile).split(/[\s-]+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'IQ';
   const showToast = (message) => { toastMessage.textContent = message; toast.classList.add('is-visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2800); };
   const getPublicProfile = (person) => adapter.toPublicProfile ? adapter.toPublicProfile(person) : { id: person.id, displayName: publicName(person), pseudonym: publicName(person), handle: person.publicHandle || '@member' };
+  const searchForm = document.querySelector('#match-search-form');
+  const loadCandidates = async (filters = {}) => { candidates = await adapter.listCandidates(filters); index = 0; renderCard(); };
 
   const renderCard = () => {
     const person = candidates[index];
@@ -89,11 +91,11 @@
   });
   document.querySelector('#close-match').addEventListener('click', () => { document.querySelector('#match-modal').hidden = true; });
   document.querySelector('#match-modal').addEventListener('click', (event) => { if (event.target.id === 'match-modal') event.currentTarget.hidden = true; });
+  searchForm?.addEventListener('submit', async (event) => { event.preventDefault(); const minAge = Number(document.querySelector('#search-min-age').value || 0); const maxAge = Number(document.querySelector('#search-max-age').value || 0); if ((minAge && minAge < 18) || (maxAge && maxAge > 120) || (minAge && maxAge && minAge > maxAge)) { showToast('Choose a valid age range from 18 to 120.'); return; } const button = searchForm.querySelector('button'); button.disabled = true; try { await loadCandidates({ country: document.querySelector('#search-country').value, city: document.querySelector('#search-city').value, minAge, maxAge, interest: document.querySelector('#search-interest').value }); showToast(`${candidates.length} compatible profiles found.`); } catch { showToast('Search is temporarily unavailable.'); } finally { button.disabled = false; } });
   (async () => {
     const wallet = await adapter.getWallet();
-    document.querySelector('#quick-coins').textContent = wallet.coins.toLocaleString();
-    candidates = await adapter.listCandidates();
-    renderCard();
+    document.querySelector('#quick-coins').textContent = Number(wallet.coins || 0).toLocaleString();
+    await loadCandidates();
     await renderMatches();
   })();
 })();

@@ -59,6 +59,15 @@
               <label class="field-label" for="username">Public username</label>
               <div class="input-wrap"><span class="input-prefix" aria-hidden="true">@</span><input id="username" type="text" value="orbit-member" maxlength="24" autocomplete="username" /></div>
               <p class="field-help">Use a pseudonymous handle, not your real name.</p>
+
+              <div class="profile-details-grid">
+                <label class="profile-detail-field"><span>First name</span><input id="first-name" type="text" autocomplete="given-name" /></label>
+                <label class="profile-detail-field"><span>Last name</span><input id="last-name" type="text" autocomplete="family-name" /></label>
+                <label class="profile-detail-field"><span>Country</span><input id="country" type="text" autocomplete="country-name" /></label>
+                <label class="profile-detail-field"><span>City</span><input id="city" type="text" autocomplete="address-level2" /></label>
+                <label class="profile-detail-field"><span>Preferred language</span><select id="preferred-language" autocomplete="language"><option value="en">English</option><option value="ar">العربية</option></select></label>
+              </div>
+              <p class="field-help">Your location and language help personalize discovery. They remain private unless you choose otherwise.</p>
             </div>
           </div>
 
@@ -74,16 +83,12 @@
               <p class="card-kicker">02 / Gallery</p>
               <h2 id="gallery-title">Photos &amp; videos</h2>
             </div>
-            <span class="media-count" id="media-count">5 items</span>
+            <span class="media-count" id="media-count">0 items</span>
           </div>
-          <p class="section-intro">Existing gallery tiles are visual placeholders. Profile identity and privacy preferences are saved securely; media upload remains disabled until safe storage policies are enabled.</p>
+          <p class="section-intro">Upload photos and videos to your private gallery. Items stay private until you enable public profile sharing.</p>
 
-          <div class="media-grid" aria-label="Your media gallery">
-            <button class="media-tile media-one" type="button" aria-label="Open mountain photo"><span class="media-type">Photo</span><span class="media-caption">Quiet places</span></button>
-            <button class="media-tile media-two" type="button" aria-label="Open city photo"><span class="media-type">Photo</span><span class="media-caption">After hours</span></button>
-            <button class="media-tile media-three" type="button" aria-label="Open ocean video"><span class="play-icon" aria-hidden="true">▶</span><span class="media-type">Video</span><span class="media-caption">Open water</span></button>
-            <button class="media-tile media-four" type="button" aria-label="Open sky photo"><span class="media-type">Photo</span><span class="media-caption">New light</span></button>
-            <button class="media-tile media-five" type="button" aria-label="Open forest video"><span class="play-icon" aria-hidden="true">▶</span><span class="media-type">Video</span><span class="media-caption">Slow morning</span></button>
+          <div class="media-grid" id="media-grid" aria-label="Your media gallery">
+            <p id="media-empty" class="sidebar-note">Your private gallery is empty.</p>
             <button class="media-tile add-media" id="add-media" type="button"><span class="add-icon" aria-hidden="true">+</span><span>Add media</span><small>Photos or videos</small></button>
             <input id="media-input" type="file" accept="image/*,video/*" multiple hidden />
           </div>

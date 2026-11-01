@@ -92,10 +92,10 @@
       try {
         const { client, user } = await sessionUser();
         if (!client || !user) return base;
-        const { data: profile } = await client.from('profiles').select('user_id,first_name,last_name,age,phone,display_name,handle,privacy').eq('user_id', user.id).maybeSingle();
+        const { data: profile } = await client.from('profiles').select('user_id,first_name,last_name,age,phone,country,city,preferred_language,display_name,handle,privacy').eq('user_id', user.id).maybeSingle();
         const { data: discovery } = await client.from('discovery_profiles').select('zodiac_sign,personality_element,interests').eq('user_id', user.id).maybeSingle();
-        if (!profile) return { ...base, id: user.id };
-        const merged = { ...base, id: user.id, displayName: profile.display_name, pseudonym: profile.display_name, handle: profile.handle, firstName: profile.first_name, lastName: profile.last_name, age: profile.age, phone: profile.phone, privacy: { ...base.privacy, ...(profile.privacy || {}) }, zodiac: discovery?.zodiac_sign || base.zodiac, element: discovery?.personality_element || base.element, interests: discovery?.interests || base.interests };
+        const metadata = user.user_metadata || {};
+        const merged = { ...base, id: user.id, displayName: profile?.display_name || base.displayName, pseudonym: profile?.display_name || base.pseudonym, handle: profile?.handle || base.handle, firstName: profile?.first_name || metadata.first_name || base.firstName || '', lastName: profile?.last_name || metadata.last_name || base.lastName || '', age: profile?.age || metadata.age || base.age || null, phone: profile?.phone || metadata.phone || base.phone || '', country: profile?.country || metadata.country || base.country || '', city: profile?.city || metadata.city || base.city || '', preferredLanguage: profile?.preferred_language || metadata.preferred_language || base.preferredLanguage || 'en', privacy: { ...base.privacy, ...(profile?.privacy || {}) }, zodiac: discovery?.zodiac_sign || base.zodiac, element: discovery?.personality_element || base.element, interests: discovery?.interests || base.interests };
         write(keys.profile, merged);
         return merged;
       } catch (error) { console.warn('Profile could not be loaded from Supabase.', error); return base; }
@@ -112,23 +112,84 @@
       try { const { client, user } = await sessionUser(); if (client && user) await client.from('profiles').update({ display_name: safeDisplayName, handle: `@${safeHandle}`, updated_at: new Date().toISOString() }).eq('user_id', user.id); } catch (error) { console.warn('Public identity sync failed.', error); }
       return next;
     },
+    async updatePersonalDetails({ firstName, lastName, country, city, preferredLanguage } = {}) {
+      const current = await this.getCurrentProfile();
+      const clean = (value, max = 80) => String(value || '').trim().replace(/[<>]/g, '').slice(0, max);
+      const next = { ...current, firstName: clean(firstName), lastName: clean(lastName), country: clean(country), city: clean(city), preferredLanguage: preferredLanguage === 'ar' ? 'ar' : 'en' };
+      write(keys.profile, next);
+      try {
+        const { client, user } = await sessionUser();
+        if (client && user) {
+          await client.auth.updateUser({ data: { first_name: next.firstName, last_name: next.lastName, country: next.country, city: next.city, preferred_language: next.preferredLanguage } });
+          await client.from('profiles').update({ first_name: next.firstName, last_name: next.lastName, country: next.country, city: next.city, preferred_language: next.preferredLanguage, updated_at: new Date().toISOString() }).eq('user_id', user.id);
+        }
+      } catch (error) { console.warn('Personal details sync failed.', error); }
+      return next;
+    },
     async updatePrivacyPreferences(patch = {}) {
       const current = await this.getCurrentProfile();
       const next = { ...current, privacy: { ...current.privacy, photosPublic: patch.photosPublic === true } };
       write(keys.profile, next);
-      try { const { client, user } = await sessionUser(); if (client && user) await client.from('profiles').update({ privacy: next.privacy, updated_at: new Date().toISOString() }).eq('user_id', user.id); } catch (error) { console.warn('Privacy sync failed.', error); }
+      try { const { client, user } = await sessionUser(); if (client && user) { await client.from('profiles').update({ privacy: next.privacy, updated_at: new Date().toISOString() }).eq('user_id', user.id); await client.from('profile_media').update({ is_public: next.privacy.photosPublic, updated_at: new Date().toISOString() }).eq('user_id', user.id); } } catch (error) { console.warn('Privacy sync failed.', error); }
       return next;
+    },
+    async listMyMedia() {
+      try {
+        const client = await database();
+        if (!client) return [];
+        const { data, error } = await client.from('profile_media').select('id,storage_path,media_type,mime_type,size_bytes,is_public,created_at').order('created_at', { ascending: false }).limit(100);
+        if (error) throw error;
+        const items = await Promise.all((data || []).map(async (item) => { const signed = await client.storage.from('iqzodiac-media').createSignedUrl(item.storage_path, 3600); return { ...item, url: signed.data?.signedUrl || '' }; }));
+        return items.filter((item) => item.url);
+      } catch (error) { console.warn('Profile media could not be loaded.', error); return []; }
+    },
+    async uploadMedia(file, mediaType = 'photo') {
+      const client = await database();
+      if (!client) throw new Error('A signed-in account is required.');
+      const { data: authData } = await client.auth.getUser();
+      const user = authData?.user;
+      if (!user || !file) throw new Error('A signed-in account is required.');
+      const allowed = mediaType === 'avatar' ? file.type.startsWith('image/') : (file.type.startsWith('image/') || file.type.startsWith('video/'));
+      const maxSize = mediaType === 'avatar' ? 5 * 1024 * 1024 : 50 * 1024 * 1024;
+      if (!allowed || file.size > maxSize) throw new Error(mediaType === 'avatar' ? 'Choose an image under 5 MB.' : 'Choose an image or video under 50 MB.');
+      const extension = (file.name.split('.').pop() || (file.type.split('/')[1] || 'bin')).toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8) || 'bin';
+      const path = `${user.id}/${mediaType}/${crypto.randomUUID()}.${extension}`;
+      if (mediaType === 'avatar') {
+        const { data: old } = await client.from('profile_media').select('id,storage_path').eq('user_id', user.id).eq('media_type', 'avatar').limit(10);
+        if (old?.length) { await client.storage.from('iqzodiac-media').remove(old.map((item) => item.storage_path)); await client.from('profile_media').delete().in('id', old.map((item) => item.id)); }
+      }
+      const upload = await client.storage.from('iqzodiac-media').upload(path, file, { contentType: file.type, upsert: false, cacheControl: '3600' });
+      if (upload.error) throw upload.error;
+      const row = await client.from('profile_media').insert({ user_id: user.id, storage_path: path, media_type: mediaType, mime_type: file.type, size_bytes: file.size, is_public: mediaType !== 'avatar' && (await this.getCurrentProfile()).privacy.photosPublic }).select('id,storage_path,media_type,mime_type,size_bytes,is_public,created_at').single();
+      if (row.error) { await client.storage.from('iqzodiac-media').remove([path]); throw row.error; }
+      const signed = await client.storage.from('iqzodiac-media').createSignedUrl(path, 3600);
+      return { ...row.data, url: signed.data?.signedUrl || '' };
+    },
+    async deleteMedia(media) {
+      const client = await database();
+      if (!client || !media?.id || !media.storage_path) return false;
+      const removed = await client.storage.from('iqzodiac-media').remove([media.storage_path]);
+      if (removed.error) throw removed.error;
+      const result = await client.from('profile_media').delete().eq('id', media.id);
+      if (result.error) throw result.error;
+      return true;
     },
     async updateCompatibilityProfile(patch) {
       const current = await this.getCurrentProfile(); const next = { ...current, ...patch, interests: Array.isArray(patch.interests) ? patch.interests : current.interests }; write(keys.profile, next);
       try { const { client, user } = await sessionUser(); if (client && user) await client.from('discovery_profiles').upsert({ user_id: user.id, zodiac_sign: patch.zodiac || current.zodiac || null, personality_element: patch.element || current.element || null, interests: next.interests, discovery_status: 'in_progress', discoverable: false, updated_at: new Date().toISOString() }); } catch (error) { console.warn('Compatibility sync failed.', error); }
       return next;
     },
-    async listCandidates() {
+    async listCandidates(filters = {}) {
       try {
         const client = await database();
         if (!client) return [];
-        const { data, error } = await client.rpc('list_compatible_profiles');
+        const { data, error } = await client.rpc('search_compatible_profiles', {
+          p_country: filters.country?.trim() || null,
+          p_city: filters.city?.trim() || null,
+          p_min_age: filters.minAge ? Number(filters.minAge) : null,
+          p_max_age: filters.maxAge ? Number(filters.maxAge) : null,
+          p_interest: filters.interest?.trim() || null,
+        });
         if (error) throw error;
         return Array.isArray(data) ? data.map((profile) => ({
           id: profile.user_id,

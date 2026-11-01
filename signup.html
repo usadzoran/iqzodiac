@@ -37,7 +37,10 @@
               <label class="signup-field"><span>Last name</span><input id="last-name" name="lastName" type="text" autocomplete="family-name" placeholder="Stone" required /></label>
               <label class="signup-field"><span class="signup-field-label">Date of birth</span><span class="date-input-wrap"><span class="date-input-icon" aria-hidden="true">🗓</span><input id="birth-date" name="birthDate" type="date" autocomplete="bday" required /><span class="date-input-chevron" aria-hidden="true">⌄</span></span><small>You must be 18 or older.</small></label>
               <label class="signup-field signup-field-wide"><span>Email address</span><input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required /></label>
-              <label class="signup-field signup-field-wide"><span>Phone number</span><input id="phone-number" name="phone" type="tel" autocomplete="tel" placeholder="+1 555 019 2488" required /></label>
+              <label class="signup-field"><span>Country</span><input id="country" name="country" type="text" autocomplete="country-name" placeholder="United States" required /></label>
+              <label class="signup-field"><span>City</span><input id="city" name="city" type="text" autocomplete="address-level2" placeholder="New York" required /></label>
+              <label class="signup-field"><span>Phone number</span><input id="phone-number" name="phone" type="tel" autocomplete="tel" placeholder="+1 555 019 2488" required /></label>
+              <label class="signup-field"><span>Preferred language</span><select id="preferred-language" name="preferredLanguage" autocomplete="language" required><option value="en">English</option><option value="ar">العربية</option></select></label>
               <label class="signup-field signup-field-wide"><span>Password</span><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required /></label>
               <label class="signup-field signup-field-wide"><span>Confirm password</span><input id="password-confirm" name="passwordConfirm" type="password" autocomplete="new-password" minlength="8" required /></label>
             </div>
@@ -51,6 +54,7 @@
             <div class="verification-grid">
               <label class="upload-card" for="id-photo"><input id="id-photo" type="file" accept="image/*" capture="environment" /><span class="upload-icon" aria-hidden="true">▣</span><strong>Optional ID preview</strong><small>Use a sample image only; no identity check is performed.</small><span class="upload-preview" id="id-preview"></span><span class="upload-action">Add sample image ↗</span></label>
               <label class="upload-card" for="face-photo"><input id="face-photo" type="file" accept="image/*" capture="user" /><span class="upload-icon" aria-hidden="true">◉</span><strong>Optional face preview</strong><small>Use a sample image only; it is not uploaded or stored.</small><span class="upload-preview" id="face-preview"></span><span class="upload-action">Add sample image ↗</span></label>
+              <label class="upload-card" for="profile-photo"><input id="profile-photo" type="file" accept="image/*" capture="user" /><span class="upload-icon" aria-hidden="true">✦</span><strong>Optional profile photo</strong><small>Preview your profile image; private storage is not enabled yet.</small><span class="upload-preview" id="profile-preview"></span><span class="upload-action">Choose profile photo ↗</span></label>
             </div>
             <label class="consent-row"><input id="verification-consent" type="checkbox" /><span class="custom-check" aria-hidden="true"></span><span>I understand these previews are not verified, uploaded, or saved.</span></label>
           </section>
