@@ -5,16 +5,16 @@
   const text = {
     en: {
       checking: 'Checking secure wallet status…',
-      connected: (version, coins) => `Supabase connected · schema ${version}. ${coins === null ? 'No wallet row exists for this account.' : `${coins} verified coins available.`}`,
-      unavailable: 'Could not verify Supabase. Wallet balances and actions remain unavailable.',
+      connected: (version, coins) => `Account services connected · release ${version}. ${coins === null ? 'No wallet is linked to this account yet.' : `${coins} verified coins available.`}`,
+      unavailable: 'Could not verify account services. Wallet balances and actions remain unavailable.',
       noPackages: 'No coin packages are configured. Purchases are disabled; no payment was created.',
       noPayouts: 'Payouts are disabled; no withdrawal request has been submitted.',
       noTransactions: 'No verified transaction rows are available.',
     },
     ar: {
       checking: 'جارٍ التحقق من حالة المحفظة الآمنة…',
-      connected: (version, coins) => `قاعدة Supabase متصلة · إصدار المخطط ${version}. ${coins === null ? 'لا توجد محفظة مرتبطة بهذا الحساب بعد.' : `الرصيد الموثق: ${coins} عملة.`}`,
-      unavailable: 'تعذّر التحقق من Supabase. الأرصدة والعمليات غير متاحة.',
+      connected: (version, coins) => `خدمات الحساب متصلة · الإصدار ${version}. ${coins === null ? 'لا توجد محفظة مرتبطة بهذا الحساب بعد.' : `الرصيد الموثق: ${coins} عملة.`}`,
+      unavailable: 'تعذّر التحقق من خدمات الحساب. الأرصدة والعمليات غير متاحة.',
       noPackages: 'لا توجد باقات عملات مضبوطة. الشراء معطّل ولم تُنشأ أي عملية دفع.',
       noPayouts: 'السحب معطّل ولم يُرسل أي طلب سحب.',
       noTransactions: 'لا توجد قيود معاملات موثّقة لعرضها.',

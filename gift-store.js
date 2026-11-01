@@ -4,15 +4,15 @@
   const language = window.IQZodiacLanguage?.language === 'ar' ? 'ar' : 'en';
   const labels = {
     en: {
-      checking: 'Checking the Supabase database…',
-      connected: (version) => `Supabase connected · schema ${version}. No authenticated VIP catalog is available to this local account.`,
-      unavailable: 'Could not verify Supabase. The gift catalog remains unavailable.',
+      checking: 'Checking account services…',
+      connected: (version) => `Account services connected · release ${version}. No authenticated VIP catalog is available to this account.`,
+      unavailable: 'Could not verify account services. The gift catalog remains unavailable.',
       empty: 'No gift catalog is configured. No gift can be sent and no coins will be deducted.',
     },
     ar: {
-      checking: 'جارٍ التحقق من قاعدة بيانات Supabase…',
-      connected: (version) => `قاعدة Supabase متصلة · إصدار المخطط ${version}. لا يوجد كتالوج VIP موثّق متاح لهذا الحساب المحلي.`,
-      unavailable: 'تعذّر التحقق من Supabase. كتالوج الهدايا غير متاح.',
+      checking: 'جارٍ التحقق من خدمات الحساب…',
+      connected: (version) => `خدمات الحساب متصلة · الإصدار ${version}. لا يوجد كتالوج VIP موثّق متاح لهذا الحساب.`,
+      unavailable: 'تعذّر التحقق من خدمات الحساب. كتالوج الهدايا غير متاح.',
       empty: 'لم يُضبط كتالوج للهدايا. لا يمكن إرسال هدية ولن تُخصم أي عملات.',
     },
   }[language];

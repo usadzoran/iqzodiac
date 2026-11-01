@@ -4,10 +4,10 @@
   const language = window.IQZodiacLanguage?.language === 'ar' ? 'ar' : 'en';
   const messages = {
     en: {
-      dbChecking: 'Checking the Supabase database…',
-      dbConnected: (version) => `Supabase database connected · schema ${version}.`,
-      dbUnavailable: 'Could not verify the Supabase database connection.',
-      authRequired: 'Verified Supabase Auth is required. The current signup is local-only; localStorage roles never grant VIP access.',
+      dbChecking: 'Checking account services…',
+      dbConnected: (version) => `Account services connected · release ${version}.`,
+      dbUnavailable: 'Could not verify account services.',
+      authRequired: 'Verified account access is required. Local browser roles never grant VIP access.',
       streamDisabled: 'Live streaming is disabled until a real WebRTC/HLS provider and signed playback flow are integrated.',
       backendMissing: 'The secure VIP API is not configured for this site origin. Set apiBaseUrl to the deployed backend before enabling access.',
       accessDenied: 'This account does not have a server-verified VIP role.',
@@ -16,10 +16,10 @@
       sessionsEmpty: 'No verified live sessions are available.',
     },
     ar: {
-      dbChecking: 'جارٍ التحقق من قاعدة بيانات Supabase…',
-      dbConnected: (version) => `قاعدة بيانات Supabase متصلة · إصدار المخطط ${version}.`,
-      dbUnavailable: 'تعذّر التحقق من اتصال قاعدة بيانات Supabase.',
-      authRequired: 'يلزم تسجيل دخول موثّق عبر Supabase Auth. التسجيل الحالي محلي فقط؛ ولا تمنح أدوار localStorage صلاحية VIP.',
+      dbChecking: 'جارٍ التحقق من خدمات الحساب…',
+      dbConnected: (version) => `خدمات الحساب متصلة · الإصدار ${version}.`,
+      dbUnavailable: 'تعذّر التحقق من خدمات الحساب.',
+      authRequired: 'يلزم وصول موثّق إلى الحساب. لا تمنح أدوار المتصفح المحلية صلاحية VIP.',
       streamDisabled: 'البث معطّل حتى ربط مزوّد WebRTC/HLS حقيقي ومسار تشغيل موقّع وآمن.',
       backendMissing: 'واجهة VIP الخلفية الآمنة غير مضبوطة لهذا الموقع. عيّن apiBaseUrl إلى الخادم المنشور قبل تفعيل الوصول.',
       accessDenied: 'هذا الحساب لا يملك دور VIP موثّقًا من الخادم.',

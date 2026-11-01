@@ -60,7 +60,7 @@
       voiceOff: 'Voice is off.',
       voiceUnavailable: 'Voice playback is unavailable in this browser.',
       demoTitle: 'Guided discovery · account connected',
-      demoNote: 'Your answers are stored in your private Supabase discovery profile. No external AI provider is connected; this assistant uses the site’s guided questionnaire.',
+      demoNote: 'Your answers are stored in your private discovery profile. No external AI provider is connected; this assistant uses the site’s guided questionnaire.',
       deviceOnly: 'SAVED TO YOUR ACCOUNT',
     },
     ar: {
@@ -106,7 +106,7 @@
       voiceOff: 'الصوت متوقف.',
       voiceUnavailable: 'ميزة الصوت غير متاحة في هذا المتصفح.',
       demoTitle: 'اكتشاف إرشادي · الحساب متصل',
-      demoNote: 'تُحفظ إجاباتك في ملف اكتشافك الخاص داخل Supabase. لا يوجد مزوّد ذكاء اصطناعي خارجي متصل؛ يعمل المساعد عبر أسئلة الموقع الإرشادية.',
+      demoNote: 'تُحفظ إجاباتك في ملف اكتشافك الخاص. لا يوجد مزوّد ذكاء اصطناعي خارجي متصل؛ يعمل المساعد عبر أسئلة الموقع الإرشادية.',
       deviceOnly: 'محفوظ في حسابك',
     },
   };
