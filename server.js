@@ -34,30 +34,47 @@ const routeFiles = {
   '/youtube': 'youtube.html',
 };
 const fetchText = (url) => new Promise((resolve, reject) => {
-  https.get(url, { headers: { 'User-Agent': 'IQZodiac Daily/1.0' } }, (res) => {
+  const request = https.get(url, { headers: { 'User-Agent': 'IQZodiac Daily/1.0' } }, (res) => {
     let body = '';
     res.setEncoding('utf8');
     res.on('data', (chunk) => { body += chunk; });
     res.on('end', () => res.statusCode >= 200 && res.statusCode < 300 ? resolve(body) : reject(new Error(`Upstream ${res.statusCode}`)));
-  }).on('error', reject);
+  });
+  request.setTimeout(8000, () => request.destroy(new Error('Upstream timeout')));
+  request.on('error', reject);
 });
 const decodeXML = (value) => String(value || '').replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"').trim();
 const tagValue = (block, tag) => decodeXML((block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i')) || [])[1]);
 const buildDailyFeed = async (url) => {
   const parsed = new URL(url, 'http://localhost');
-  const lat = Number(parsed.searchParams.get('lat')) || 40.7128;
-  const lon = Number(parsed.searchParams.get('lon')) || -74.006;
-  const location = parsed.searchParams.get('location') || 'Your location';
-  const [weatherRaw, newsRaw] = await Promise.all([
+  let lat = Number(parsed.searchParams.get('lat')) || 40.7128;
+  let lon = Number(parsed.searchParams.get('lon')) || -74.006;
+  let location = parsed.searchParams.get('location') || 'Your location';
+  const city = String(parsed.searchParams.get('city') || '').trim().slice(0, 80);
+  if (city) {
+    try {
+      const geocoded = JSON.parse(await fetchText(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`));
+      const match = geocoded.results?.[0];
+      if (match) { lat = Number(match.latitude); lon = Number(match.longitude); location = [match.name, match.country_code].filter(Boolean).join(', '); }
+    } catch { /* Keep the last valid coordinates when geocoding is unavailable. */ }
+  }
+  const feeds = [
+    ['world', 'https://feeds.bbci.co.uk/news/world/rss.xml', 'BBC World'],
+    ['technology', 'https://feeds.bbci.co.uk/news/technology/rss.xml', 'BBC Technology'],
+    ['business', 'https://feeds.bbci.co.uk/news/business/rss.xml', 'BBC Business'],
+    ['culture', 'https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml', 'BBC Culture'],
+    ['sport', 'https://feeds.bbci.co.uk/sport/rss.xml', 'BBC Sport'],
+  ];
+  const [weatherRaw, ...newsRaws] = await Promise.all([
     fetchText(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`),
-    fetchText('https://feeds.bbci.co.uk/news/rss.xml'),
+    ...feeds.map(([, feed]) => fetchText(feed).catch(() => '')),
   ]);
   const weatherJSON = JSON.parse(weatherRaw);
-  const items = [...newsRaw.matchAll(/<item>([\s\S]*?)<\/item>/gi)].slice(0, 8).map((match) => {
-    const block = match[1];
+  const items = newsRaws.flatMap((newsRaw, feedIndex) => [...newsRaw.matchAll(/<item>([\s\S]*?)<\/item>/gi)].slice(0, 5).map((match) => {
+    const block = match[1]; const [category, , source] = feeds[feedIndex];
     const rawDate = tagValue(block, 'pubDate');
-    return { title: tagValue(block, 'title'), description: tagValue(block, 'description').slice(0, 180), link: tagValue(block, 'link'), source: 'BBC News', publishedLabel: rawDate ? new Date(rawDate).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }) : 'Today' };
-  }).filter((item) => item.title && item.link);
+    return { title: tagValue(block, 'title'), description: tagValue(block, 'description').slice(0, 180), link: tagValue(block, 'link'), source, category, publishedLabel: rawDate ? new Date(rawDate).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }) : 'Today' };
+  })).filter((item) => item.title && item.link).filter((item, index, all) => all.findIndex((candidate) => candidate.link === item.link) === index).slice(0, 20);
   return { day: new Date().toISOString(), weather: { location, current: { temperature: weatherJSON.current.temperature_2m, apparent: weatherJSON.current.apparent_temperature, humidity: weatherJSON.current.relative_humidity_2m, code: weatherJSON.current.weather_code, wind: weatherJSON.current.wind_speed_10m }, today: { high: weatherJSON.daily.temperature_2m_max[0], low: weatherJSON.daily.temperature_2m_min[0] } }, news: items };
 };
 
