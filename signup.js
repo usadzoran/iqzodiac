@@ -40,12 +40,36 @@ const bindPreview = (inputId, previewId, label) => {
 bindPreview('id-photo', 'id-preview', 'ID');
 bindPreview('face-photo', 'face-preview', 'Face');
 
+const birthDateInput = document.querySelector('#birth-date');
+const today = new Date();
+const toDateValue = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+const latestBirthDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+const earliestBirthDate = new Date(today.getFullYear() - 120, today.getMonth(), today.getDate());
+birthDateInput.min = toDateValue(earliestBirthDate);
+birthDateInput.max = toDateValue(latestBirthDate);
+
+const ageFromBirthDate = (birthDateValue) => {
+  const [year, month, day] = birthDateValue.split('-').map(Number);
+  let age = today.getFullYear() - year;
+  const birthdayHasPassed = today.getMonth() + 1 > month || (today.getMonth() + 1 === month && today.getDate() >= day);
+  if (!birthdayHasPassed) age -= 1;
+  return age;
+};
+
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
   if (!form.checkValidity()) { form.reportValidity(); return; }
   const password = document.querySelector('#password').value;
   const confirmation = document.querySelector('#password-confirm').value;
   if (password !== confirmation) { showToast('Passwords do not match.'); return; }
+  const birthDate = birthDateInput.value;
+  const age = ageFromBirthDate(birthDate);
+  if (!birthDate || age < 18 || age > 120) { showToast('Please choose a valid date of birth.'); return; }
   const button = form.querySelector('button[type="submit"]');
   button.disabled = true;
   button.querySelector('span').textContent = 'Creating…';
@@ -57,7 +81,7 @@ form.addEventListener('submit', async (event) => {
     const { data, error } = await client.auth.signUp({
       email,
       password,
-      options: { data: { first_name: firstName, last_name: lastName, age: document.querySelector('#age').value, phone: document.querySelector('#phone-number').value.trim() } },
+      options: { data: { first_name: firstName, last_name: lastName, age, birth_date: birthDate, phone: document.querySelector('#phone-number').value.trim() } },
     });
     if (error) throw error;
     if (!data.session) {

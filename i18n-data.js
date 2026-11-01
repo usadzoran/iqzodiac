@@ -232,6 +232,7 @@ window.IQZodiacTranslations = {
     "First name": "الاسم الأول",
     "Last name": "اسم العائلة",
     "Age": "العمر",
+    "Date of birth": "تاريخ الميلاد",
     "You must be 18 or older.": "يجب ألا يقل عمرك عن ١٨ عامًا.",
     "Email address": "البريد الإلكتروني",
     "02 / Identity check": "٠٢ / التحقق من الهوية",
