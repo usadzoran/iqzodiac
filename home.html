@@ -72,39 +72,16 @@
             <textarea id="post-text" rows="3" maxlength="500" placeholder="Write something worth remembering..."></textarea>
             <div id="composer-media-preview" class="composer-media-preview" hidden></div>
             <div class="composer-footer">
-              <div class="composer-tools"><label class="composer-tool" for="post-media-input"><span aria-hidden="true">⊕</span> Add photo or video</label><input id="post-media-input" type="file" accept="image/*,video/*" hidden /><span class="composer-limit">500</span></div>
+              <div class="composer-tools"><span class="composer-limit">500</span></div>
               <button class="button button-primary publish-button" id="publish-post" type="button"><span>Publish</span><span class="button-arrow" aria-hidden="true">↗</span></button>
             </div>
           </section>
 
           <div class="feed-filter" role="tablist" aria-label="Feed filter"><button class="feed-filter-button is-active" data-filter="for-you" type="button">For you</button><button class="feed-filter-button" data-filter="following" type="button">Following</button></div>
           <div id="feed-list" class="feed-list">
-            <article class="post-card" data-post-id="1" data-author="mayachen">
-              <header class="post-header"><div class="post-avatar avatar-maya">M</div><div class="post-author"><strong>Maya Chen</strong><span>@mayachen · 12 min ago</span></div><button class="post-more" type="button" aria-label="More options">···</button></header>
-              <p class="post-body">A quiet morning can change the shape of an entire day. Leaving this here for anyone who needs the reminder.</p>
-              <div class="post-meta"><span class="like-count">248 likes</span><span class="comment-count">18 comments</span></div>
-              <div class="post-actions"><button class="post-action like-button" type="button" data-like="false"><span class="action-icon">♡</span><span>Like</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div>
-              <div class="comment-list"><div class="comment"><span class="comment-avatar avatar-lina">L</span><p><strong>Lina</strong> This arrived at exactly the right time.</p></div></div>
-              <form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment on Maya's post" /><button type="submit" aria-label="Post comment">↗</button></form>
-            </article>
-
-            <article class="post-card" data-post-id="2" data-author="noahw">
-              <header class="post-header"><div class="post-avatar avatar-noah">N</div><div class="post-author"><strong>Noah Williams</strong><span>@noahw · 1 hr ago</span></div><button class="post-more" type="button" aria-label="More options">···</button></header>
-              <p class="post-body">Found a little more light on the way home.</p>
-              <div class="post-media post-photo photo-dawn" role="img" aria-label="Abstract sunset photo"><span>PHOTO</span><strong>More light on the way home</strong></div>
-              <div class="post-meta"><span class="like-count">1,024 likes</span><span class="comment-count">64 comments</span></div>
-              <div class="post-actions"><button class="post-action like-button" type="button" data-like="false"><span class="action-icon">♡</span><span>Like</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div>
-              <div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment on Noah's post" /><button type="submit" aria-label="Post comment">↗</button></form>
-            </article>
-
-            <article class="post-card" data-post-id="3" data-author="linaortiz">
-              <header class="post-header"><div class="post-avatar avatar-lina">L</div><div class="post-author"><strong>Lina Ortiz</strong><span>@linaortiz · 3 hrs ago</span></div><button class="post-more" type="button" aria-label="More options">···</button></header>
-              <p class="post-body">A small reset before the next big thing.</p>
-              <div class="post-media post-video video-night" role="img" aria-label="Short night sky video"><span class="video-play">▶</span><span class="video-label">VIDEO · 0:18</span><strong>Night walk / city lights</strong></div>
-              <div class="post-meta"><span class="like-count">512 likes</span><span class="comment-count">29 comments</span></div>
-              <div class="post-actions"><button class="post-action like-button" type="button" data-like="false"><span class="action-icon">♡</span><span>Like</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div>
-              <div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment on Lina's post" /><button type="submit" aria-label="Post comment">↗</button></form>
-            </article>
+            <!-- Posts are rendered only from the authenticated Supabase feed. -->
+            <p class="match-empty">Loading the shared feed…</p>
+          <p class="match-empty">Loading the shared feed…</p>
           </div>
         </section>
 

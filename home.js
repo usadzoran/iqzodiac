@@ -64,13 +64,7 @@ const bindPost = (post) => {
       likeCount.textContent = `${formatCount(Math.max(0, Number(likeCount.textContent.replace(/[^0-9]/g, '')) + (data ? 1 : -1)))} likes`;
       return;
     }
-    const number = Number(likeCount.textContent.replace(/[^0-9]/g, '')) + (liked ? -1 : 1);
-    likeButton.dataset.like = String(!liked);
-    likeButton.classList.toggle('is-liked', !liked);
-    likeButton.querySelector('.action-icon').textContent = liked ? '♡' : '♥';
-    likeButton.querySelector('span:last-child').textContent = liked ? 'Like' : 'Liked';
-    likeCount.textContent = `${formatCount(number)} likes`;
-    showToast(liked ? 'Like removed.' : 'Post liked.');
+    showToast('Sign in to interact with the shared feed.');
   });
 
   commentButton.addEventListener('click', () => {
@@ -87,10 +81,9 @@ const bindPost = (post) => {
     const value = escapeText(commentInput.value);
     if (!value) return;
     const client = await database();
-    if (client && /^[0-9a-f-]{36}$/i.test(post.dataset.postId || '')) {
-      const { error } = await client.from('comments').insert({ post_id: post.dataset.postId, author_id: authenticatedUserId, body: value });
-      if (error) { showToast('Comment could not be saved.'); return; }
-    }
+    if (!client || !authenticatedUserId || !/^[0-9a-f-]{36}$/i.test(post.dataset.postId || '')) { showToast('Sign in to comment on shared posts.'); return; }
+    const { error } = await client.from('comments').insert({ post_id: post.dataset.postId, author_id: authenticatedUserId, body: value });
+    if (error) { showToast('Comment could not be saved.'); return; }
     const comment = document.createElement('div');
     comment.className = 'comment';
     const avatar = document.createElement('span');
@@ -109,14 +102,13 @@ const bindPost = (post) => {
   });
 };
 
-document.querySelectorAll('.post-card').forEach(bindPost);
 document.querySelector('#feed-list').innerHTML = '<p class="match-empty">Loading the shared feed…</p>';
 
 document.querySelectorAll('[data-flow]').forEach((button) => {
   button.addEventListener('click', () => showToast(`${button.dataset.flow} is coming soon.`));
 });
 
-const followedPeople = new Set(JSON.parse(window.localStorage.getItem('iqzodiac-following') || '[]'));
+const followedPeople = new Set();
 const updateFollowState = (button) => {
   const following = followedPeople.has(button.dataset.follow);
   button.classList.toggle('is-following', following);
@@ -125,16 +117,16 @@ const updateFollowState = (button) => {
 };
 document.querySelectorAll('[data-follow]').forEach((button) => {
   updateFollowState(button);
-  button.addEventListener('click', () => {
+  button.addEventListener('click', async () => {
+    const client = await database();
+    if (!client || !authenticatedUserId) { showToast('Sign in to follow members.'); return; }
     const handle = button.dataset.follow;
-    if (followedPeople.has(handle)) {
-      followedPeople.delete(handle);
-      showToast('You unfollowed this person.');
-    } else {
-      followedPeople.add(handle);
-      showToast('You’re following this person.');
-    }
-    window.localStorage.setItem('iqzodiac-following', JSON.stringify([...followedPeople]));
+    const target = document.querySelector(`#feed-list .post-card[data-author="${CSS.escape(handle)}"]`)?.dataset.authorId;
+    if (!target) { showToast('This member is not available in the shared feed.'); return; }
+    const { data, error } = await client.rpc('toggle_follow', { p_followed_id: target });
+    if (error) { showToast('Follow status could not be saved.'); return; }
+    if (data) followedPeople.add(handle); else followedPeople.delete(handle);
+    showToast(data ? 'You’re following this member.' : 'You unfollowed this member.');
     updateFollowState(button);
     applyFeedFilter();
   });
@@ -175,9 +167,7 @@ const moodCopy = {
   low: 'You don’t have to turn the day around all at once. One small, gentle thing is enough.',
 };
 const todayKey = new Date().toLocaleDateString('en-CA');
-const moodStorageKey = `iqzodiac-mood-${todayKey}`;
 let selectedMood = null;
-try { selectedMood = window.localStorage.getItem(moodStorageKey); } catch { selectedMood = null; }
 const selectMood = (mood) => {
   selectedMood = mood;
   moodButtons.forEach((button) => {
@@ -187,7 +177,12 @@ const selectMood = (mood) => {
   });
   moodMessage.textContent = moodCopy[mood];
   moodReflection.hidden = false;
-  try { window.localStorage.setItem(moodStorageKey, mood); } catch { /* Keep the check-in usable when storage is disabled. */ }
+  void (async () => {
+    const client = await database();
+    if (!client || !authenticatedUserId) return;
+    const { error } = await client.from('daily_moods').upsert({ user_id: authenticatedUserId, mood_date: todayKey, mood, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mood_date' });
+    if (error) showToast('Mood check-in could not be saved.');
+  })();
 };
 moodButtons.forEach((button) => button.addEventListener('click', () => selectMood(button.dataset.mood)));
 if (moodCopy[selectedMood]) selectMood(selectedMood);
@@ -197,42 +192,6 @@ document.querySelector('#mood-write').addEventListener('click', () => {
   textarea.value = `Today I’m feeling ${selectedMood === 'low' ? 'a little low' : selectedMood}, and I’m giving myself permission to take it one moment at a time.`;
   textarea.focus();
   document.querySelector('.composer-card').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
-});
-
-const mediaInput = document.querySelector('#post-media-input');
-const composerPreview = document.querySelector('#composer-media-preview');
-mediaInput.addEventListener('change', (event) => {
-  const [file] = event.target.files;
-  if (!file) return;
-  composerMedia = file;
-  createMediaPreview(file, composerPreview);
-  showToast(`${file.name} is ready to publish.`);
-});
-
-document.querySelector('#publish-post').addEventListener('click', () => {
-  const text = escapeText(document.querySelector('#post-text').value);
-  if (!text && !composerMedia) {
-    showToast('Write something or add a photo/video first.');
-    return;
-  }
-
-  const post = document.createElement('article');
-  post.className = 'post-card post-card-new';
-  post.dataset.postId = `new-${Date.now()}`;
-  post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">${escapeHTML(currentPublicIdentity.initials)}</div><div class="post-author"><strong>${escapeHTML(currentPublicIdentity.displayName)}</strong><span>${escapeHTML(currentPublicIdentity.handle)} · just now</span></div><button class="post-more" type="button" aria-label="More options">···</button></header><p class="post-body"></p><div class="post-media-slot"></div><div class="post-meta"><span class="like-count">0 likes</span><span class="comment-count">0 comments</span></div><div class="post-actions"><button class="post-action like-button" type="button" data-like="false"><span class="action-icon">♡</span><span>Like</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment on your post" /><button type="submit" aria-label="Post comment">↗</button></form>`;
-  post.querySelector('.post-body').textContent = text;
-  if (!text) post.querySelector('.post-body').remove();
-  if (composerMedia) createMediaPreview(composerMedia, post.querySelector('.post-media-slot'), 'post-uploaded-media');
-  post.dataset.author = currentPublicIdentity.handle.slice(1);
-  document.querySelector('#feed-list').prepend(post);
-  bindPost(post);
-  if (filters.find((item) => item.classList.contains('is-active'))?.dataset.filter === 'following') post.hidden = true;
-  document.querySelector('#post-text').value = '';
-  composerMedia = null;
-  mediaInput.value = '';
-  composerPreview.replaceChildren();
-  composerPreview.hidden = true;
-  showToast('Your post is live.');
 });
 
 // Reveal home sections as they enter view; keep the page fully visible if motion is reduced.
@@ -282,7 +241,7 @@ if ('IntersectionObserver' in window && !reduceMotion) {
     } else {
       feed.forEach((item) => {
         const post = document.createElement('article');
-        post.className = 'post-card'; post.dataset.postId = item.post_id; post.dataset.author = String(item.handle || '').replace(/^@/, '');
+        post.className = 'post-card'; post.dataset.postId = item.post_id; post.dataset.author = String(item.handle || '').replace(/^@/, ''); post.dataset.authorId = item.author_id;
         const liked = Boolean(item.liked_by_me);
         post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">${escapeHTML(String(item.display_name || 'OM').slice(0, 1))}</div><div class="post-author"><strong>${escapeHTML(item.display_name || 'Orbit Member')}</strong><span>${escapeHTML(item.handle || '@member')} · ${escapeHTML(new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(item.created_at)))}</span></div></header><p class="post-body">${escapeHTML(item.body)}</p><div class="post-meta"><span class="like-count">${formatCount(Number(item.like_count || 0))} likes</span><span class="comment-count">${formatCount(Number(item.comment_count || 0))} comments</span></div><div class="post-actions"><button class="post-action like-button ${liked ? 'is-liked' : ''}" type="button" data-like="${liked}"><span class="action-icon">${liked ? '♥' : '♡'}</span><span>${liked ? 'Liked' : 'Like'}</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment" /><button type="submit" aria-label="Post comment">↗</button></form>`;
         feedList.append(post); bindPost(post);

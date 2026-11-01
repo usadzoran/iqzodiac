@@ -29,9 +29,9 @@
       interestsPrompt: 'What interests or activities do you enjoy most? You can list a few, separated by commas.',
       interestsLabel: 'Interests',
       interestsPlaceholder: 'For example: music, hiking, art…',
-      birthdayPrompt: 'One last detail: enter your birth date so I can calculate your zodiac sign. This demo uses the date only in this browser.',
+      birthdayPrompt: 'One last detail: enter your birth date so I can calculate your zodiac sign and save it to your account.',
       birthdayLabel: 'Date of birth',
-      continue: 'Show my demo result',
+      continue: 'Show my result',
       required: 'Please answer this question before continuing.',
       progress: (n, total) => `Step ${n} of ${total}`,
       resultTitle: 'Your discovery snapshot',
@@ -59,8 +59,8 @@
       voiceOn: 'Voice on — prompts use a warm, gently paced browser voice when available.',
       voiceOff: 'Voice is off.',
       voiceUnavailable: 'Voice playback is unavailable in this browser.',
-      demoTitle: 'Guided discovery · account connected',
-      demoNote: 'Your answers are stored in your private discovery profile. No external AI provider is connected; this assistant uses the site’s guided questionnaire.',
+      demoTitle: 'Connected discovery profile',
+      demoNote: 'Your answers are stored in your private Supabase discovery profile and remain available on your account.',
       deviceOnly: 'SAVED TO YOUR ACCOUNT',
     },
     ar: {
@@ -75,9 +75,9 @@
       interestsPrompt: 'ما الاهتمامات أو الأنشطة التي تستمتع بها؟ يمكنك كتابة بعضها وفصلها بفواصل.',
       interestsLabel: 'الاهتمامات',
       interestsPlaceholder: 'مثلًا: الموسيقى، المشي، الفن…',
-      birthdayPrompt: 'تفصيل أخير: أدخل تاريخ ميلادك لأحسب برجك. تستخدم هذه التجربة التاريخ داخل هذا المتصفح فقط.',
+      birthdayPrompt: 'تفصيل أخير: أدخل تاريخ ميلادك لأحسب برجك وأحفظه في حسابك.',
       birthdayLabel: 'تاريخ الميلاد',
-      continue: 'عرض نتيجتي التجريبية',
+      continue: 'عرض نتيجتي',
       required: 'أجب عن هذا السؤال قبل المتابعة.',
       progress: (n, total) => `الخطوة ${n} من ${total}`,
       resultTitle: 'ملخص اكتشافك',
@@ -105,8 +105,8 @@
       voiceOn: 'الصوت يعمل — تُنطق الأسئلة بنبرة دافئة وهادئة قليلًا متى توفرت.',
       voiceOff: 'الصوت متوقف.',
       voiceUnavailable: 'ميزة الصوت غير متاحة في هذا المتصفح.',
-      demoTitle: 'اكتشاف إرشادي · الحساب متصل',
-      demoNote: 'تُحفظ إجاباتك في ملف اكتشافك الخاص. لا يوجد مزوّد ذكاء اصطناعي خارجي متصل؛ يعمل المساعد عبر أسئلة الموقع الإرشادية.',
+      demoTitle: 'ملف الاكتشاف متصل',
+      demoNote: 'تُحفظ إجاباتك في ملف اكتشافك الخاص داخل Supabase وتبقى متاحة في حسابك.',
       deviceOnly: 'محفوظ في حسابك',
     },
   };
@@ -127,21 +127,8 @@
   const ui = () => copy[currentLanguage()];
   const fromArabic = (text) => currentLanguage() === 'ar' ? text : (translations.arToEn[text] || text);
   const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
-  const profileKey = 'iqzodiac-current-profile';
-  const readProfile = () => { try { return JSON.parse(localStorage.getItem(profileKey) || 'null'); } catch { return null; } };
-  const profileId = readProfile()?.id || 'guest';
-  const storageKey = `iqzodiac-discovery-demo-v1:${profileId}`;
   const emptyState = () => ({ questionIndex: 0, answers: [], interests: '', birthDate: '', stage: 'questions' });
-  const loadState = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
-      if (!saved || !Array.isArray(saved.answers)) return emptyState();
-      const restored = { ...emptyState(), ...saved };
-      delete restored.signupWelcome;
-      return restored;
-    } catch { return emptyState(); }
-  };
-  let state = loadState();
+  let state = emptyState();
   const questionnaireVersion = 'discover-v2';
   const database = () => window.IQZodiacSupabase?.ready;
   let advanceTimer = null;
@@ -194,7 +181,6 @@
       else if (state.questionIndex >= questions.length && state.interests) state.stage = 'birthdate';
       else if (state.questionIndex >= questions.length) state.stage = 'interests';
       else state.stage = 'questions';
-      localStorage.setItem(storageKey, JSON.stringify(state));
     } catch (error) {
       console.warn('Discovery progress could not be loaded from Supabase.', error);
     }
@@ -391,25 +377,8 @@
   };
   const saveState = () => {
     try {
-      const persistedState = { ...state };
-      delete persistedState.signupWelcome;
-      localStorage.setItem(storageKey, JSON.stringify(persistedState));
-      const profile = readProfile();
-      if (profile?.id) {
-        profile.onboarding = {
-          ...(profile.onboarding || {}),
-          status: state.stage === 'done' ? 'completed' : 'in_progress',
-          assistant: 'iqzodiac-discovery',
-          startedAt: profile.onboarding?.startedAt || new Date().toISOString(),
-          completedAt: state.stage === 'done' ? (profile.onboarding?.completedAt || new Date().toISOString()) : null,
-          answers: state.answers,
-          interests: state.interests,
-          birthDate: state.birthDate,
-        };
-        localStorage.setItem(profileKey, JSON.stringify(profile));
-      }
       void persistToDatabase();
-    } catch { /* Keep the onboarding usable when local storage is unavailable. */ }
+    } catch { /* Database sync reports its own error state. */ }
   };
   if (new URLSearchParams(window.location.search).get('welcome') === '1') {
     state.signupWelcome = true;
