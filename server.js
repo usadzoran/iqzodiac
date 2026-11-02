@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const handleYouTubeSearch = require('./lib/youtube-search');
 const handleVipLive = require('./api/vip/live');
+const { fetchDiscoverNews } = require('./lib/discover-news');
 
 const root = __dirname;
 const port = Number(process.env.PORT || 3000);
@@ -105,6 +106,16 @@ const server = http.createServer((request, response) => {
     }).catch(() => {
       response.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       response.end(JSON.stringify({ error: 'Daily sources unavailable' }));
+    });
+    return;
+  }
+  if (requestPath === '/api/discover-news') {
+    fetchDiscoverNews().then((payload) => {
+      response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      response.end(JSON.stringify(payload));
+    }).catch(() => {
+      response.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      response.end(JSON.stringify({ error: 'Discover news sources unavailable' }));
     });
     return;
   }
