@@ -18,8 +18,6 @@
     .discover-card h2{margin:12px 0 8px;color:var(--ink);font-size:19px}.discover-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.7}
     .discover-card a{align-self:flex-start;margin-top:20px;color:var(--cyan);font:10px "DM Mono",monospace;letter-spacing:.06em;text-decoration:none;text-transform:uppercase}
     .assistant-discover-note{margin-top:10px;color:var(--orange);font-size:10px;line-height:1.5}
-    .discover-news{margin-top:14px;padding:22px;border:1px solid rgba(131,229,232,.16);border-radius:8px;background:linear-gradient(145deg,rgba(28,39,74,.72),rgba(15,21,41,.5));box-shadow:0 20px 55px rgba(0,0,0,.22)}
-    .discover-news-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.discover-news-heading h2{margin:8px 0 0;color:var(--ink);font-size:21px}.discover-news-heading span{color:var(--cyan);font:10px "DM Mono",monospace;text-transform:uppercase}.discover-news-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:18px}.discover-news-item{display:flex;justify-content:space-between;gap:16px;padding:14px;border:1px solid rgba(131,229,232,.1);border-radius:6px;color:inherit;text-decoration:none;background:rgba(8,14,30,.32)}.discover-news-item:hover{border-color:rgba(131,229,232,.38)}.discover-news-item small,.discover-news-item time{color:var(--cyan);font:9px "DM Mono",monospace}.discover-news-item h3{margin:7px 0;color:var(--ink);font-size:14px;line-height:1.4}.discover-news-item p{margin:0;color:var(--muted);font-size:11px;line-height:1.6}.discover-news-item time{flex:none;color:var(--muted)}.discover-news-empty,.discover-news-error{color:var(--muted);font-size:12px;line-height:1.7}@media(max-width:680px){.discover-grid{grid-template-columns:1fr}.discover-shell{width:min(100% - 22px)}.discover-news-list{grid-template-columns:1fr}.discover-news-item{display:block}.discover-news-item time{display:block;margin-top:10px}}
     @media(max-width:680px){.discover-grid{grid-template-columns:1fr}.discover-shell{width:min(100% - 22px)}}
   </style>
 </head>
@@ -32,7 +30,6 @@
       <article class="discover-card"><div><p class="card-kicker">02 / Spaces</p><h2>Join a room</h2><p>Drop into conversations that feel welcoming and easy to enter.</p></div><a href="./rooms.html">Explore Rooms ↗</a></article>
       <article class="discover-card"><div><p class="card-kicker">03 / Self-discovery</p><h2>Find your compatible orbit</h2><p>Open the real member matches created from completed discovery profiles.</p><small class="assistant-discover-note">No sample profiles or invented compatibility results are shown.</small></div><a href="./match.html">Open Match ↗</a></article>
     </section>
-    <section class="discover-news" aria-labelledby="discover-news-title"><div class="discover-news-heading"><div><p class="card-kicker">04 / World News &amp; Trends</p><h2 id="discover-news-title">Latest English stories</h2></div><span id="discover-news-status">Loading</span></div><div id="discover-news-list" class="discover-news-list" aria-live="polite"><p class="discover-news-empty">Synchronizing live sources…</p></div></section>
   </main>
   <footer class="footer"><span>© 2026 IQZodiac</span><span>Look inward. Move forward.</span><button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>
   <nav class="site-nav" aria-label="Main navigation">
@@ -45,6 +42,6 @@
     <a href="./profile.html"><span class="nav-glyph" aria-hidden="true">◍</span><span data-menu-key="profile">Profile</span></a>
   </nav>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-client.js"></script><script src="./auth-guard.js"></script>
-    <script src="./i18n-data.js?v=20261022-global"></script><script src="./language.js?v=20261022-global"></script><script src="./discover-news-sources.js?v=20261102-news-v2"></script><script src="./discover-news.js?v=20261102-news-v2"></script>
+    <script src="./i18n-data.js?v=20261022-global"></script><script src="./language.js?v=20261022-global"></script>
 </body>
 </html>
