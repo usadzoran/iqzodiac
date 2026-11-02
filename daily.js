@@ -47,8 +47,17 @@
       const article = document.createElement('article');
       article.className = 'news-item daily-news-item';
       article.tabIndex = 0;
+      article.setAttribute('role', 'button');
+      article.setAttribute('aria-label', `${item.title}. ${item.description || ''}`);
       const image = item.imageUrl ? `<img src="${escapeHTML(item.imageUrl)}" alt="" loading="lazy" />` : '<span class="news-image-fallback" aria-hidden="true">✦</span>';
       article.innerHTML = `<div class="daily-news-image">${image}</div><div class="daily-news-copy"><small>${escapeHTML(item.source)} · ${escapeHTML(item.publishedLabel)}</small><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.description)}</p><span class="daily-news-read">Read inside IQZodiac ↗</span></div>`;
+      article.querySelector('.daily-news-image img')?.addEventListener('error', (event) => {
+        const fallback = document.createElement('span');
+        fallback.className = 'news-image-fallback';
+        fallback.setAttribute('aria-hidden', 'true');
+        fallback.textContent = '✦';
+        event.currentTarget.replaceWith(fallback);
+      }, { once: true });
       article.addEventListener('click', () => openReader(item));
       article.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openReader(item); } });
       newsList.append(article);
@@ -71,6 +80,48 @@
       return { title: item.title, description: item.description, link: item.article_url, imageUrl: item.image_url, source: source?.name || 'News', category, publishedLabel: item.published_at ? new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(item.published_at)) : 'Stored' };
     });
   };
+  const cacheFreshNews = async (client, items, fetchedAt) => {
+    const { data: sources, error: sourceError } = await client.from('discover_news_sources').select('id,source_key').eq('is_active', true).eq('language', 'en').limit(20);
+    if (sourceError) { console.warn('Daily news source cache unavailable.', sourceError); return; }
+    const sourceByKey = new Map((sources || []).map((source) => [source.source_key, source.id]));
+    const rows = items.map((item) => ({
+      source_id: sourceByKey.get(item.sourceKey),
+      external_id: String(item.externalId || item.articleUrl).slice(0, 1000),
+      title: String(item.title || '').slice(0, 500),
+      description: String(item.description || '').slice(0, 4000),
+      article_url: item.articleUrl,
+      image_url: item.imageUrl || null,
+      published_at: item.publishedAt || null,
+      fetched_at: fetchedAt || new Date().toISOString(),
+      language: 'en',
+    })).filter((item) => item.source_id && item.external_id && item.title && item.article_url);
+    if (!rows.length) return;
+    const { error } = await client.from('discover_news_articles').upsert(rows, { onConflict: 'source_id,external_id' });
+    if (error) console.warn('Daily news article cache update failed.', error);
+  };
+  const loadFreshNews = async () => {
+    const client = await window.IQZodiacSupabase.ready;
+    const { data, error } = await client.functions.invoke('daily-news-feed', { body: {} });
+    if (error) throw error;
+    if (!Array.isArray(data?.items) || !data.items.length) throw new Error('news_feed_empty');
+    const items = data.items.filter((item) => item.title && item.articleUrl).map((item) => ({
+      title: item.title,
+      description: item.description || '',
+      link: item.articleUrl,
+      imageUrl: /^https:\/\//i.test(item.imageUrl || '') ? item.imageUrl : null,
+      source: item.sourceName || 'News',
+      sourceKey: item.sourceKey,
+      category: item.category || 'world',
+      publishedLabel: item.publishedAt ? new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(item.publishedAt)) : 'Recent',
+      publishedAt: item.publishedAt || null,
+    }));
+    try { await cacheFreshNews(client, data.items, data.fetchedAt); } catch (cacheError) { console.warn('Daily news loaded but could not be cached.', cacheError); }
+    return items;
+  };
+  const loadFallbackNews = () => {
+    if (window.location.hostname === 'usadzoran.github.io') return loadStoredNews();
+    return syncDiscoverNews().catch(() => null).then(() => loadStoredNews());
+  };
   const syncDiscoverNews = async () => {
     const response = await fetch('/api/discover-news', { headers: { Accept: 'application/json' }, cache: 'no-store' });
     if (!response.ok) throw new Error('rss_unavailable');
@@ -86,7 +137,7 @@
     if (!quiet) { weatherContent.innerHTML = '<div class="loading-pulse">Reading the sky…</div>'; newsList.innerHTML = '<div class="loading-pulse">Gathering today’s stories…</div>'; }
     const location = await getLocation();
     const weatherPromise = fetch(`/api/daily-feed?lat=${encodeURIComponent(location.lat)}&lon=${encodeURIComponent(location.lon)}&location=${encodeURIComponent(location.label)}&city=${encodeURIComponent(location.city || '')}`, { cache: 'no-store' }).then((response) => { if (!response.ok) throw new Error('weather_unavailable'); return response.json(); });
-    const newsPromise = syncDiscoverNews().catch(() => null).then(() => loadStoredNews());
+    const newsPromise = loadFreshNews().catch((error) => { console.warn('Fresh Daily news is unavailable; using saved stories.', error); return loadFallbackNews(); });
     try { const payload = await weatherPromise; renderWeather(payload.weather); document.querySelector('#daily-date').textContent = new Intl.DateTimeFormat(window.IQZodiacLanguage?.locale || undefined, { weekday:'long', month:'long', day:'numeric' }).format(new Date(payload.day)); } catch { weatherContent.innerHTML = '<p class="error-copy">Weather is temporarily unavailable. Check your connection and refresh.</p>'; }
     try { const storedNews = await newsPromise; renderNews(storedNews); sourceNote.textContent = 'News is synchronized with the IQZodiac database.'; if (!quiet) showToast('Today’s news is ready.'); } catch { newsList.innerHTML = '<p class="error-copy">News is temporarily unavailable. Try refreshing in a moment.</p>'; sourceNote.textContent = 'News could not be synchronized right now.'; }
   };

@@ -87,7 +87,7 @@
 ## New site navigation and daily briefing
 - [x] Replace the old user menu with a unified site navigation that keeps Home, Match, Discover, Rooms, and Profile reachable and adds Daily.
 - [x] Add a Daily page with live weather and news panels that follows the current IQZodiac visual language and supports English/Arabic menu labels.
-- [x] Fetch weather from Open-Meteo and news from an external BBC RSS feed through the server without writing to the database or localStorage.
+- [x] Fetch current news titles, summaries, and image thumbnails through a JWT-verified Supabase Edge Function so the feed works on GitHub Pages; cache fetched stories in the existing news tables for fallback.
 - [x] Mark the daily feed as `no-store`, refresh it on demand, and reload the page when the calendar day changes so the previous day’s items leave the view.
 
 ## User roles, compatibility matching, and VIP access
