@@ -11,7 +11,10 @@
   const readerTitle = document.querySelector('#news-reader-title');
   const readerSource = document.querySelector('#news-reader-source');
   const readerDescription = document.querySelector('#news-reader-description');
+  const readerBody = document.querySelector('#news-reader-body');
   let latestNews = [];
+  let readerRequestId = 0;
+  let readerTrigger = null;
   if (cityInput) cityInput.value = localStorage.getItem('iqzodiac-daily-city') || '';
   const weatherCodes = { 0:['☀️','Clear sky'],1:['🌤️','Mainly clear'],2:['⛅','Partly cloudy'],3:['☁️','Overcast'],45:['🌫️','Foggy'],48:['🌫️','Rime fog'],51:['🌦️','Light drizzle'],53:['🌦️','Drizzle'],61:['🌧️','Light rain'],63:['🌧️','Rain'],65:['🌧️','Heavy rain'],71:['🌨️','Light snow'],73:['🌨️','Snow'],75:['❄️','Heavy snow'],80:['🌦️','Rain showers'],81:['🌦️','Rain showers'],82:['⛈️','Heavy showers'],95:['⛈️','Thunderstorm'],99:['⛈️','Storm'] };
   const showToast = (message) => { if (!toast || !toastMessage) return; toastMessage.textContent = message; toast.classList.add('is-visible'); setTimeout(() => toast.classList.remove('is-visible'), 2600); };
@@ -27,15 +30,57 @@
     document.querySelector('#weather-location').textContent = weather.location;
     weatherContent.innerHTML = `<div class="weather-main"><span class="weather-symbol" aria-hidden="true">${code[0]}</span><div><div class="weather-temp">${Math.round(weather.current.temperature)}<small>°C</small></div><div class="weather-summary">${code[1]} · feels like ${Math.round(weather.current.apparent)}°</div></div></div><div class="weather-stats"><div class="weather-stat"><small>Humidity</small><strong>${weather.current.humidity}%</strong></div><div class="weather-stat"><small>Wind</small><strong>${Math.round(weather.current.wind)} km/h</strong></div><div class="weather-stat"><small>High / low</small><strong>${Math.round(weather.today.high)}° / ${Math.round(weather.today.low)}°</strong></div></div>`;
   };
-  const openReader = (item) => {
+  const setReaderMessage = (message, state = 'loading') => {
+    if (!readerBody) return;
+    const paragraph = document.createElement('p');
+    paragraph.className = `news-reader-message is-${state}`;
+    paragraph.setAttribute('role', state === 'loading' ? 'status' : 'note');
+    paragraph.textContent = message;
+    readerBody.replaceChildren(paragraph);
+  };
+  const loadFullArticle = async (item, requestId) => {
+    setReaderMessage('Loading the full story from the publisher…');
+    try {
+      const client = await window.IQZodiacSupabase.ready;
+      const { data, error } = await client.functions.invoke('daily-news-article', {
+        body: { articleUrl: item.link, expectedTitle: item.title },
+      });
+      if (error) throw error;
+      if (requestId !== readerRequestId || reader.hidden) return;
+      if (!Array.isArray(data?.blocks) || !data.blocks.length) throw new Error('article_text_unavailable');
+      const fragment = document.createDocumentFragment();
+      data.blocks.forEach((block) => {
+        const tag = block.type === 'heading' ? 'h3' : block.type === 'quote' ? 'blockquote' : block.type === 'list' ? 'p' : 'p';
+        const element = document.createElement(tag);
+        element.className = `news-reader-block is-${tag === 'p' ? block.type : tag}`;
+        element.textContent = String(block.text || '');
+        if (element.textContent.trim()) fragment.append(element);
+      });
+      if (!fragment.childNodes.length) throw new Error('article_text_unavailable');
+      readerBody.replaceChildren(fragment);
+      if (data.byline) {
+        readerSource.textContent = `${item.source} · ${item.publishedLabel} · ${data.byline}`;
+      }
+    } catch (error) {
+      if (requestId !== readerRequestId || reader.hidden) return;
+      console.warn('The full article is unavailable in the Daily reader.', error);
+      setReaderMessage('The publisher did not make the full article available here. The summary above is the text currently provided for this story.', 'unavailable');
+    }
+  };
+  const openReader = (item, trigger = null) => {
+    readerRequestId += 1;
+    const requestId = readerRequestId;
+    readerTrigger = trigger;
     readerTitle.textContent = item.title;
     readerSource.textContent = `${item.source} · ${item.publishedLabel}`;
     readerDescription.textContent = item.description || 'No summary is available for this story.';
     if (item.imageUrl) { readerImage.src = item.imageUrl; readerImage.alt = item.title; readerImage.hidden = false; } else readerImage.hidden = true;
     reader.hidden = false;
     document.body.classList.add('news-reader-open');
+    document.querySelector('#news-reader-close')?.focus();
+    loadFullArticle(item, requestId);
   };
-  const closeReader = () => { reader.hidden = true; document.body.classList.remove('news-reader-open'); };
+  const closeReader = () => { readerRequestId += 1; reader.hidden = true; document.body.classList.remove('news-reader-open'); readerTrigger?.focus?.(); readerTrigger = null; };
   const renderNews = (items = latestNews) => {
     latestNews = items;
     const category = categorySelect?.value || 'all';
@@ -58,8 +103,8 @@
         fallback.textContent = '✦';
         event.currentTarget.replaceWith(fallback);
       }, { once: true });
-      article.addEventListener('click', () => openReader(item));
-      article.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openReader(item); } });
+      article.addEventListener('click', () => openReader(item, article));
+      article.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openReader(item, article); } });
       newsList.append(article);
     });
   };
