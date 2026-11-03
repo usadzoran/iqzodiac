@@ -154,9 +154,18 @@
         answer_choice: answer.choice || null, answer_text: answer.text || null, answered_at: new Date().toISOString(),
       })).filter(Boolean);
       if (state.interests) answerRows.push({ user_id: userId, questionnaire_version: questionnaireVersion, question_id: 'interests', answer_choice: null, answer_text: state.interests, answered_at: new Date().toISOString() });
-      if (answerRows.length) await client.from('discovery_answers').upsert(answerRows, { onConflict: 'user_id,questionnaire_version,question_id' });
+      if (answerRows.length) {
+        const { error: answersError } = await client.from('discovery_answers').upsert(answerRows, { onConflict: 'user_id,questionnaire_version,question_id' });
+        if (answersError) throw answersError;
+      }
+      const saveNote = document.querySelector('#assistant-demo-note');
+      if (saveNote) saveNote.dataset.saveState = 'saved';
+      return true;
     } catch (error) {
       console.warn('Discovery progress could not be synced to Supabase.', error);
+      const saveNote = document.querySelector('#assistant-demo-note');
+      if (saveNote) saveNote.dataset.saveState = 'error';
+      return false;
     }
   };
   const hydrateFromDatabase = async () => {
@@ -172,7 +181,12 @@
       if (!profile && !answers?.length) return;
       const answerMap = new Map((answers || []).map((answer) => [answer.question_id, answer]));
       state = emptyState();
-      state.answers = questions.map((_, index) => { const answer = answerMap.get(`q${index + 1}`); return answer ? { choice: answer.answer_choice || undefined, text: answer.answer_text || undefined } : undefined; });
+      state.answers = questions.map((question, index) => {
+        const answer = answerMap.get(`q${index + 1}`);
+        if (!answer) return undefined;
+        const selected = question.a.find(([label]) => label === answer.answer_choice);
+        return { choice: answer.answer_choice || undefined, element: selected?.[1], text: answer.answer_text || undefined };
+      });
       const firstMissing = state.answers.findIndex((answer) => !answer);
       state.questionIndex = firstMissing === -1 ? questions.length : firstMissing;
       state.interests = answerMap.get('interests')?.answer_text || (profile?.interests || []).join(', ');
@@ -377,8 +391,9 @@
   };
   const saveState = () => {
     try {
-      void persistToDatabase();
+      return persistToDatabase();
     } catch { /* Database sync reports its own error state. */ }
+    return Promise.resolve(false);
   };
   if (new URLSearchParams(window.location.search).get('welcome') === '1') {
     state.signupWelcome = true;
@@ -457,10 +472,6 @@
     const elementText = element ? `${text.names[element]} — ${text.resultSummary[element]}` : text.noScore;
     resultBox.innerHTML = `<p class="card-kicker">${language === 'ar' ? 'نتيجة اكتشافك' : 'YOUR DISCOVERY RESULT'}</p><h2>${escapeHTML(text.resultTitle)}</h2><p class="assistant-result-note">${escapeHTML(text.resultNote)}</p><div class="assistant-result-grid"><article><small>${escapeHTML(text.element)}</small><strong>${escapeHTML(element ? text.names[element] : (language === 'ar' ? 'غير محدد' : 'Undetermined'))}</strong><p>${escapeHTML(elementText)}</p></article><article><small>${escapeHTML(text.zodiac)}</small><strong>${escapeHTML(zodiac ? zodiac[language === 'ar' ? 1 : 0] : '')}</strong><p>${escapeHTML(state.birthDate)}</p></article><article class="assistant-result-interests"><small>${escapeHTML(text.interests)}</small><strong>${escapeHTML(savedInterests.length ? savedInterests.join(' · ') : text.noInterests)}</strong></article></div><p class="assistant-match-note">${escapeHTML(text.noResults)}</p><a class="button button-secondary" href="./match.html">${escapeHTML(text.matches)} <span class="button-arrow">↗</span></a>`;
     resultBox.hidden = false;
-    if (!resultBox.dataset.redirectScheduled) {
-      resultBox.dataset.redirectScheduled = 'true';
-      window.setTimeout(() => window.location.assign('./match.html?from=discovery'), 4200);
-    }
   };
   const renderTurn = () => {
     const text = ui(); const total = questions.length + 2;
@@ -512,7 +523,10 @@
     document.querySelector('.assistant-chat-foot p').textContent = `${ui().saved}. ${currentLanguage() === 'ar' ? 'يمكنك متابعة المحادثة من أي جهاز بعد تسجيل الدخول.' : 'You can continue from any device after signing in.'}`;
     document.querySelector('#restart-discovery').textContent = ui().reset;
     document.querySelector('#assistant-demo-title').textContent = ui().demoTitle;
-    document.querySelector('#assistant-demo-note').textContent = ui().demoNote;
+    const saveNote = document.querySelector('#assistant-demo-note');
+    saveNote.textContent = ui().demoNote;
+    if (saveNote.dataset.saveState === 'error') saveNote.textContent = currentLanguage() === 'ar' ? 'تعذر حفظ التقدم. تحقق من الاتصال ثم أعد المحاولة.' : 'Progress could not be saved. Check your connection and try again.';
+    if (saveNote.dataset.saveState === 'saved') saveNote.textContent = ui().saved;
     document.querySelector('#assistant-device-label').textContent = ui().deviceOnly;
     updateVoiceControls();
     if (isNewConversation()) showAvatarWelcome(); else showAvatarSmile();
@@ -526,11 +540,19 @@
     if (state.questionIndex >= questions.length) state.stage = 'interests';
     saveState(); advanceWithThinking();
   };
-  resetButton.addEventListener('click', () => {
+  resetButton.addEventListener('click', async () => {
     if (advanceTimer !== null) { window.clearTimeout(advanceTimer); advanceTimer = null; }
     turn.inert = false;
     turn.removeAttribute('aria-busy');
-    state = emptyState(); saveState(); render();
+    const previousState = state;
+    state = emptyState();
+    try {
+      const client = await database();
+      const { data: sessionData } = await client.auth.getSession();
+      const userId = sessionData.session?.user?.id;
+      if (userId) await client.from('discovery_answers').delete().eq('user_id', userId).eq('questionnaire_version', questionnaireVersion);
+    } catch (error) { console.warn('Discovery answers could not be reset.', error); state = previousState; }
+    await saveState(); render();
   });
   voiceToggle.addEventListener('click', () => {
     if (advanceTimer !== null) return;

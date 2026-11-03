@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const handleYouTubeSearch = require('./lib/youtube-search');
 const handleVipLive = require('./api/vip/live');
+const handleAssistantChat = require('./lib/assistant-chat');
 const { fetchDiscoverNews } = require('./lib/discover-news');
 
 const root = __dirname;
@@ -95,6 +96,15 @@ const server = http.createServer((request, response) => {
       if (!response.headersSent) {
         response.writeHead(503, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
         response.end(JSON.stringify({ error: { code: 'vip_service_unavailable', message: 'VIP access verification is temporarily unavailable.' } }));
+      }
+    });
+    return;
+  }
+  if (requestPath === '/api/assistant/chat') {
+    handleAssistantChat(request, response).catch(() => {
+      if (!response.headersSent) {
+        response.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+        response.end(JSON.stringify({ error: { code: 'assistant_service_unavailable', message: 'Assistant service is temporarily unavailable.' } }));
       }
     });
     return;

@@ -38,6 +38,9 @@
 - [x] Redirect a newly created account directly to the IQZodiac onboarding assistant after successful signup validation.
 - [x] Ask discovery questions one at a time, accept suggested or written answers, and continue through interests and birth date.
 - [x] Persist onboarding status, answers, interests, and birth date under the current IQZodiac profile for the rest of the prototype experience.
+- [x] Restore the selected personality element after reload and remove stale discovery answers when the member starts over.
+- [x] Add a scoped conversational assistant for site help, YouTube search, and film/character search without admin or private-data permissions.
+- [ ] Deploy the assistant backend with Supabase, OpenAI, YouTube, and optional TMDB environment variables; set the public endpoint in `assistant-config.js`.
 
 ## Voice-guided onboarding assistant
 - [x] Automatically read the active onboarding prompt aloud in the selected Arabic or English language at startup and after each answer when browser speech is available.
