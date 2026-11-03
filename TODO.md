@@ -40,7 +40,8 @@
 - [x] Persist onboarding status, answers, interests, and birth date under the current IQZodiac profile for the rest of the prototype experience.
 - [x] Restore the selected personality element after reload and remove stale discovery answers when the member starts over.
 - [x] Add a scoped conversational assistant for site help, YouTube search, and film/character search without admin or private-data permissions.
-- [ ] Deploy the assistant backend with Supabase, OpenAI, YouTube, and optional TMDB environment variables; set the public endpoint in `assistant-config.js`.
+- [x] Create `assistant_conversation_logs` with user-scoped RLS and deploy the JWT-verified `assistant-chat` Supabase Edge Function.
+- [ ] Add the server-only OpenAI, YouTube, and optional TMDB secrets in Supabase Edge Function settings, then run live assistant searches.
 
 ## Voice-guided onboarding assistant
 - [x] Automatically read the active onboarding prompt aloud in the selected Arabic or English language at startup and after each answer when browser speech is available.
@@ -125,6 +126,6 @@
 - [x] Add only explicit creator/platform revenue-rule and disabled feature-status rows; wallets, sessions, purchases, gifts, and transactions remain empty.
 - [x] Connect the website to the public feature-status row using only the Supabase publishable key; never place the management token or service-role key in frontend code.
 - [x] Make the live API fail closed: Supabase Auth and a server-verified VIP role are required; no local role can unlock it.
-- [ ] Deploy the Vercel backend endpoint and connect Supabase Auth; the current signup remains local-only.
+- [x] Deploy the assistant backend as a Supabase Edge Function with JWT verification; VIP backend and account production wiring remain separate.
 - [ ] Integrate real streaming, realtime chat, payments, and payouts before enabling any feature flags.
 - [x] Kept PayPal/Visa/Mastercard actions as server-side integration contracts only; no card data or real money is collected in the prototype.

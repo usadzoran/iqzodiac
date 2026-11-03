@@ -1,45 +1,48 @@
-# تشغيل مساعد IQZodiac الذكي
+# تشغيل مساعد IQZodiac الذكي عبر Supabase
 
-المساعد الجديد يعمل عبر endpoint خادمي وليس من المتصفح مباشرة. هذا يمنع كشف مفاتيح OpenAI وYouTube وTMDB ويضع الصلاحيات في الخادم.
-
-## المتغيرات المطلوبة في الخادم
+المساعد الآن يعمل من خلال Edge Function المنشورة في مشروع Supabase Zodiaque:
 
 ```text
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your_publishable_or_anon_key
+https://mludiumdvwdvuetivxvj.supabase.co/functions/v1/assistant-chat
+```
+
+الوظيفة تتطلب JWT صالحًا (`verify_jwt=true`) وتتحقق من المستخدم قبل البحث أو حفظ سجل المحادثة.
+
+## متغيرات Edge Function السرية
+
+أضف هذه القيم في Supabase Dashboard → Edge Functions → Secrets، أو عبر Supabase CLI:
+
+```text
 OPENAI_API_KEY=your_server_only_key
 YOUTUBE_API_KEY=your_server_only_key
 TMDB_API_KEY=your_server_only_key
-ASSISTANT_ALLOWED_ORIGINS=https://usadzoran.github.io
-ASSISTANT_RATE_LIMIT_PER_MINUTE=20
 IQZODIAC_ASSISTANT_MODEL=gpt-6-luna
+ASSISTANT_ALLOWED_ORIGIN=https://usadzoran.github.io
 ```
 
-`TMDB_API_KEY` اختياري. بدونه يستطيع المساعد شرح الموقع والبحث في YouTube إذا كان `YOUTUBE_API_KEY` موجودًا، لكنه سيبلغ المستخدم بأن بحث الأفلام والشخصيات غير مهيأ.
+`TMDB_API_KEY` و`YOUTUBE_API_KEY` اختياريان، لكن البحث عن الأفلام أو الفيديوهات لن يعمل فعليًا بدونهما. لا تضع أي مفتاح داخل ملفات frontend أو GitHub.
 
-## النشر
+## سجل المحادثات وRLS
 
-يحتوي المشروع على `api/assistant/chat.js` المتوافق مع Vercel. بعد نشر المشروع، ضع عنوان endpoint العام في `assistant-config.js`:
+تم إنشاء جدول `public.assistant_conversation_logs` مع:
 
-```js
-window.IQZodiacAssistantConfig = Object.freeze({
-  apiBase: 'https://your-project.vercel.app/api/assistant/chat',
-});
-```
+- `user_id` مرتبط بـ `auth.users`.
+- `conversation_id` لربط رسائل المحادثة الواحدة.
+- `role` محصور في `user` أو `assistant`.
+- `intent` محصور في `site_help` أو `youtube_search` أو `media_search`.
+- `results` كمصفوفة JSON للنتائج التي أرجعها الخادم.
+- فهارس حسب المستخدم والمحادثة والتاريخ.
 
-لا تضع أي مفتاح API في `assistant-config.js` أو أي ملف frontend.
+سياسات RLS تسمح للمستخدم بقراءة وإضافة وحذف سجله فقط. لا توجد صلاحية `anon`، ولا توجد صلاحية تحديث عامة للصفوف.
 
-## الصلاحيات المسموحة
+## إعداد الواجهة
 
-- شرح صفحات IQZodiac من خريطة الموقع المضمّنة في الخادم.
-- البحث في YouTube وإرجاع روابط الفيديو فقط.
-- البحث في TMDB عن الأفلام والمسلسلات والممثلين والشخصيات عند تفعيل المفتاح.
-- الإجابة باللغة العربية أو الإنجليزية.
+تم تحديث `assistant-config.js` ليستخدم رابط Supabase مباشرة. ترسل الواجهة access token الحالي في ترويسة `Authorization`، وترسل `conversationId` للحفاظ على سجل المحادثة نفسه.
 
-## الصلاحيات الممنوعة
+## الوظائف الممنوعة
 
-المساعد لا يملك صلاحية تعديل الحساب، منح VIP، تغيير الرصيد أو المدفوعات، إرسال رسائل، كشف الصور الخاصة، قراءة ملفات مستخدمين آخرين، أو تنفيذ عمليات إدارية. التحقق من جلسة Supabase يتم قبل كل طلب، مع تحديد معدل الطلبات والتحقق من مصدر الموقع.
+المساعد لا يملك صلاحية تعديل الحساب، منح VIP، تغيير الرصيد أو المدفوعات، إرسال رسائل، كشف الصور الخاصة، قراءة ملفات مستخدمين آخرين، أو تنفيذ عمليات إدارية. البحث والرد منفصلان عن جداول المستخدمين الخاصة.
 
-## ملاحظات الإنتاج
+## التحقق
 
-يجب تطبيق migration `20261103100000_discovery_reset_policy.sql` على Supabase حتى يعمل زر Start over بحذف إجابات الاكتشاف القديمة. لا يتم تشغيل ميزات الدفع أو VIP عبر المساعد؛ تلك العمليات يجب أن تبقى في endpoints منفصلة ومحمية.
+تم نشر الوظيفة بحالة `ACTIVE` مع `verify_jwt=true`. كما تم تشغيل فحص JavaScript المحلي بعد تحديث إعدادات الاتصال. يجب بعد إضافة الأسرار اختبار سؤال عن الموقع، بحث YouTube، وبحث فيلم بحساب مستخدم مسجل الدخول.

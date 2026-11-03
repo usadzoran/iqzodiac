@@ -10,7 +10,7 @@
   const send = root.querySelector('#smart-chat-send');
   const config = window.IQZodiacAssistantConfig || {};
   const apiBase = String(config.apiBase || '').trim() || (/github\.io$/i.test(window.location.hostname) ? '' : '/api/assistant/chat');
-  const state = { history: [], busy: false };
+  const state = { history: [], busy: false, conversationId: '' };
 
   const language = () => document.documentElement.lang === 'ar' ? 'ar' : 'en';
   const copy = {
@@ -73,10 +73,11 @@
     try {
       const token = await getAccessToken();
       if (!token) throw new Error('unauthorized');
-      const response = await fetch(apiBase, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ message: text, history: state.history.slice(-13, -1) }) });
+      const response = await fetch(apiBase, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ message: text, history: state.history.slice(-13, -1), conversationId: state.conversationId }) });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.error?.code || 'request_failed');
       addMessage('assistant', payload.answer || t('error'), payload.results || []);
+      if (payload.conversationId) state.conversationId = payload.conversationId;
       state.history.push({ role: 'assistant', content: payload.answer || '' });
     } catch (error) {
       addMessage('assistant', error.message === 'unauthorized' ? (language() === 'ar' ? 'سجّل الدخول أولًا لاستخدام المساعد.' : 'Please sign in before using the assistant.') : t('error'));
