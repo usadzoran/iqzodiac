@@ -8,6 +8,7 @@
   const input = root.querySelector('#smart-chat-input');
   const status = root.querySelector('#smart-chat-status');
   const send = root.querySelector('#smart-chat-send');
+  const guestMode = root.dataset.guest === 'true';
   const config = window.IQZodiacAssistantConfig || {};
   const apiBase = String(config.apiBase || '').trim() || (/github\.io$/i.test(window.location.hostname) ? '' : '/api/assistant/chat');
   const state = { history: [], busy: false, conversationId: '' };
@@ -52,6 +53,7 @@
   }
 
   async function getAccessToken() {
+    if (guestMode) return '';
     try {
       const client = await window.IQZodiacSupabase?.ready;
       const { data } = await client.auth.getSession();
@@ -72,8 +74,10 @@
     renderCopy();
     try {
       const token = await getAccessToken();
-      if (!token) throw new Error('unauthorized');
-      const response = await fetch(apiBase, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ message: text, history: state.history.slice(-13, -1), conversationId: state.conversationId }) });
+      if (!guestMode && !token) throw new Error('unauthorized');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const response = await fetch(apiBase, { method: 'POST', headers, body: JSON.stringify({ message: text, history: guestMode ? [] : state.history.slice(-13, -1), conversationId: state.conversationId, guest: guestMode }) });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.error?.code || 'request_failed');
       addMessage('assistant', payload.answer || t('error'), payload.results || []);

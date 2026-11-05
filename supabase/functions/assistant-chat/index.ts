@@ -62,37 +62,50 @@ async function callModel(messages: any[]) {
   const payload = await upstream.json();
   return payload.choices?.[0]?.message?.content?.trim() || null;
 }
+function siteHelpFallback(message: string) {
+  const arabic = /[\u0600-\u06ff]/.test(message);
+  if (arabic) return "مرحبًا بك في IQZodiac. يمكنك إنشاء حساب جديد للبدء، ثم سيقودك المساعد إلى اكتشاف اهتماماتك وشخصيتك وبرجك. بعد ذلك يمكنك استخدام Home للمنشورات، Match للتوافق، Discover للاستكشاف، Daily للأخبار والطقس، Rooms للغرف الصوتية، Profile لإدارة ملفك وخصوصيتك، وYouTube للبحث عن الفيديوهات. لا أستطيع الوصول إلى بياناتك الخاصة أو تغيير الحسابات والمدفوعات.";
+  return "Welcome to IQZodiac. Create an account to begin, then the onboarding assistant will help you explore your interests, personality pattern, and zodiac sign. Home is for posts, Match for compatibility, Discover for exploring paths, Daily for news and weather, Rooms for audio rooms, Profile for your privacy and profile, and YouTube for video search. I cannot access private data or change accounts or payments.";
+}
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return response(405, { error: { code: "method_not_allowed", message: "Use POST." } });
-  const authHeader = req.headers.get("Authorization") || "";
-  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
-  if (!token) return response(401, { error: { code: "unauthorized", message: "Please sign in before using the assistant." } });
-  const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
-  if (!supabaseUrl || !anonKey) return response(503, { error: { code: "auth_not_configured", message: "Assistant authentication is not configured." } });
-  const supabase = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: `Bearer ${token}` } } });
-  const { data: authData, error: authError } = await supabase.auth.getUser(token);
-  if (authError || !authData.user) return response(401, { error: { code: "unauthorized", message: "Please sign in before using the assistant." } });
   let body: any;
   try { body = await req.json(); } catch { return response(400, { error: { code: "invalid_json", message: "The request body is invalid." } }); }
+  const guestMode = body.guest === true;
   const message = String(body.message || "").trim();
   if (!message || message.length > maxMessageLength) return response(400, { error: { code: "invalid_message", message: "Message must contain between 1 and 1200 characters." } });
-  const history = Array.isArray(body.history) ? body.history.slice(-maxHistoryMessages).filter((item: any) => ["user", "assistant"].includes(item?.role) && typeof item.content === "string").map((item: any) => ({ role: item.role, content: item.content.slice(0, 1200) })) : [];
-  const intent = detectIntent(message);
+  const authHeader = req.headers.get("Authorization") || "";
+  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+  if (!token && !guestMode) return response(401, { error: { code: "unauthorized", message: "Please sign in before using the assistant." } });
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "";
+  let supabase: any = null;
+  let authData: any = { user: null };
+  if (!guestMode) {
+    if (!supabaseUrl || !anonKey) return response(503, { error: { code: "auth_not_configured", message: "Assistant authentication is not configured." } });
+    supabase = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: `Bearer ${token}` } } });
+    const authResult = await supabase.auth.getUser(token);
+    authData = authResult.data;
+    if (authResult.error || !authData.user) return response(401, { error: { code: "unauthorized", message: "Please sign in before using the assistant." } });
+  }
+  const history = guestMode ? [] : (Array.isArray(body.history) ? body.history.slice(-maxHistoryMessages).filter((item: any) => ["user", "assistant"].includes(item?.role) && typeof item.content === "string").map((item: any) => ({ role: item.role, content: item.content.slice(0, 1200) })) : []);
+  const intent = guestMode ? "site_help" : detectIntent(message);
   const query = cleanQuery(message) || message.slice(0, 160);
   let searchResults: any = null;
   try { if (intent === "youtube_search") searchResults = await searchYouTube(query); if (intent === "media_search") searchResults = await searchMedia(query); } catch { searchResults = { unavailable: true, reason: "search_unavailable" }; }
   const context = JSON.stringify({ intent, query, siteMap, searchResults });
   const answer = await callModel([{ role: "system", content: `${systemPrompt}\n\nServer-authorized context:\n${context}` }, ...history, { role: "user", content: message }]);
-  const finalAnswer = answer || (intent === "youtube_search" && searchResults?.items?.length ? `وجدت ${searchResults.items.length} نتائج في YouTube.` : intent === "media_search" && searchResults?.items?.length ? `وجدت ${searchResults.items.length} نتائج للأفلام أو الشخصيات.` : "المساعد غير متصل حاليًا أو لم يجد نتائج.");
+  const finalAnswer = answer || (intent === "site_help" ? siteHelpFallback(message) : intent === "youtube_search" && searchResults?.items?.length ? `وجدت ${searchResults.items.length} نتائج في YouTube.` : intent === "media_search" && searchResults?.items?.length ? `وجدت ${searchResults.items.length} نتائج للأفلام أو الشخصيات.` : "المساعد غير متصل حاليًا أو لم يجد نتائج.");
   const conversationId = typeof body.conversationId === "string" && /^[0-9a-f-]{36}$/i.test(body.conversationId) ? body.conversationId : crypto.randomUUID();
-  const logRows = [
-    { user_id: authData.user.id, conversation_id: conversationId, role: "user", content: message, intent, results: [] },
-    { user_id: authData.user.id, conversation_id: conversationId, role: "assistant", content: finalAnswer.slice(0, 4000), intent, results: Array.isArray(searchResults?.items) ? searchResults.items : [] },
-  ];
-  const { error: logError } = await supabase.from("assistant_conversation_logs").insert(logRows);
-  if (logError) console.error("assistant log insert failed", logError.message);
-  return response(200, { answer: finalAnswer, intent, results: searchResults?.items || [], conversationId });
+  if (!guestMode) {
+    const logRows = [
+      { user_id: authData.user.id, conversation_id: conversationId, role: "user", content: message, intent, results: [] },
+      { user_id: authData.user.id, conversation_id: conversationId, role: "assistant", content: finalAnswer.slice(0, 4000), intent, results: Array.isArray(searchResults?.items) ? searchResults.items : [] },
+    ];
+    const { error: logError } = await supabase.from("assistant_conversation_logs").insert(logRows);
+    if (logError) console.error("assistant log insert failed", logError.message);
+  }
+  return response(200, { answer: finalAnswer, intent, results: guestMode ? [] : searchResults?.items || [], conversationId: guestMode ? "" : conversationId });
 });

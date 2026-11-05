@@ -7,9 +7,11 @@
     <title>IQZodiac — Know your pattern</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://mludiumdvwdvuetivxvj.supabase.co" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./smart-assistant.css?v=smart-scoped-20261103" />
   </head>
   <body>
     <div class="aurora aurora-one" aria-hidden="true"></div>
@@ -46,10 +48,10 @@
         <p class="hero-copy">Make sense of the signals that make you, <em>you.</em></p>
         <p class="hero-subcopy">A clearer read on your inner world is one decision away.</p>
 
-        <div class="assistant-placeholder" title="Connected AI assistant" aria-label="Connected AI assistant">
+        <button type="button" class="assistant-placeholder" title="Connected AI assistant" aria-label="Connected AI assistant" aria-controls="landing-assistant-modal" aria-expanded="false">
           <span class="assistant-robot" aria-hidden="true"><i></i><b></b><em></em></span>
           <span>AI assistant <small>connected</small></span>
-        </div>
+        </button>
 
         <div class="actions" aria-label="Account actions">
           <a class="button button-primary" href="./home.html">
@@ -84,8 +86,27 @@
       <span class="toast-message"></span>
     </div>
 
+    <div id="landing-assistant-modal" class="assistant-modal" hidden>
+      <div class="assistant-modal-backdrop" data-assistant-close></div>
+      <section class="assistant-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="landing-assistant-title">
+        <button type="button" class="assistant-modal-close" data-assistant-close aria-label="Close assistant">×</button>
+        <section id="smart-assistant" class="smart-assistant" data-guest="true" aria-labelledby="landing-assistant-title">
+          <header class="smart-assistant-head">
+            <div><p id="smart-assistant-kicker" class="card-kicker">SCOPED AI · SITE HELP</p><h2 id="landing-assistant-title">Ask IQZodiac <span id="smart-assistant-title-tail">anything useful.</span></h2></div>
+            <p id="smart-assistant-permissions" class="smart-assistant-permissions">Can explain the site, its sections, and how to get started. Cannot access private data or change accounts.</p>
+          </header>
+          <div id="smart-chat-log" class="smart-chat-log" role="log" aria-live="polite" aria-relevant="additions text"></div>
+          <form id="smart-chat-form" class="smart-chat-form"><input id="smart-chat-input" type="text" maxlength="1200" autocomplete="off" /><button id="smart-chat-send" type="submit">Send</button></form>
+          <p id="smart-chat-status" class="smart-chat-status" aria-live="polite"></p>
+        </section>
+      </section>
+    </div>
+
     <script src="./i18n-data.js?v=20261022-global"></script>
     <script src="./language.js?v=20261022-global"></script>
+    <script src="./assistant-config.js?v=smart-scoped-20261103"></script>
+    <script src="./smart-assistant.js?v=smart-scoped-20261103"></script>
+    <script src="./index-assistant.js"></script>
     <script src="./script.js"></script>
       <script src="./nav-performance.js" defer></script>
   </body>
