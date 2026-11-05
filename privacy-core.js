@@ -92,10 +92,10 @@
       try {
         const { client, user } = await sessionUser();
         if (!client || !user) return base;
-        const { data: profile } = await client.from('profiles').select('user_id,first_name,last_name,age,phone,country,city,preferred_language,display_name,handle,privacy').eq('user_id', user.id).maybeSingle();
+        const { data: profile } = await client.from('profiles').select('user_id,first_name,last_name,age,phone,country,city,birth_country,birth_city,residence_country,residence_city,preferred_language,display_name,handle,privacy').eq('user_id', user.id).maybeSingle();
         const { data: discovery } = await client.from('discovery_profiles').select('zodiac_sign,personality_element,interests').eq('user_id', user.id).maybeSingle();
         const metadata = user.user_metadata || {};
-        const merged = { ...base, id: user.id, displayName: profile?.display_name || base.displayName, pseudonym: profile?.display_name || base.pseudonym, handle: profile?.handle || base.handle, firstName: profile?.first_name || metadata.first_name || base.firstName || '', lastName: profile?.last_name || metadata.last_name || base.lastName || '', age: profile?.age || metadata.age || base.age || null, phone: profile?.phone || metadata.phone || base.phone || '', country: profile?.country || metadata.country || base.country || '', city: profile?.city || metadata.city || base.city || '', preferredLanguage: profile?.preferred_language || metadata.preferred_language || base.preferredLanguage || 'en', privacy: { ...base.privacy, ...(profile?.privacy || {}) }, zodiac: discovery?.zodiac_sign || base.zodiac, element: discovery?.personality_element || base.element, interests: discovery?.interests || base.interests };
+        const merged = { ...base, id: user.id, displayName: profile?.display_name || base.displayName, pseudonym: profile?.display_name || base.pseudonym, handle: profile?.handle || base.handle, firstName: profile?.first_name || metadata.first_name || base.firstName || '', lastName: profile?.last_name || metadata.last_name || base.lastName || '', age: profile?.age || metadata.age || base.age || null, phone: profile?.phone || metadata.phone || base.phone || '', country: profile?.residence_country || profile?.country || metadata.country || base.country || '', city: profile?.residence_city || profile?.city || metadata.city || base.city || '', birthCountry: profile?.birth_country || metadata.birth_country || base.birthCountry || '', birthCity: profile?.birth_city || metadata.birth_city || base.birthCity || '', residenceCountry: profile?.residence_country || profile?.country || metadata.residence_country || base.country || '', residenceCity: profile?.residence_city || profile?.city || metadata.residence_city || base.city || '', preferredLanguage: profile?.preferred_language || metadata.preferred_language || base.preferredLanguage || 'en', privacy: { ...base.privacy, ...(profile?.privacy || {}) }, zodiac: discovery?.zodiac_sign || base.zodiac, element: discovery?.personality_element || base.element, interests: discovery?.interests || base.interests };
         write(keys.profile, merged);
         return merged;
       } catch (error) { console.warn('Profile could not be loaded from Supabase.', error); return base; }
@@ -112,16 +112,18 @@
       try { const { client, user } = await sessionUser(); if (client && user) await client.from('profiles').update({ display_name: safeDisplayName, handle: `@${safeHandle}`, updated_at: new Date().toISOString() }).eq('user_id', user.id); } catch (error) { console.warn('Public identity sync failed.', error); }
       return next;
     },
-    async updatePersonalDetails({ firstName, lastName, country, city, preferredLanguage } = {}) {
+    async updatePersonalDetails({ firstName, lastName, country, city, birthCountry, birthCity, residenceCountry, residenceCity, preferredLanguage } = {}) {
       const current = await this.getCurrentProfile();
       const clean = (value, max = 80) => String(value || '').trim().replace(/[<>]/g, '').slice(0, max);
-      const next = { ...current, firstName: clean(firstName), lastName: clean(lastName), country: clean(country), city: clean(city), preferredLanguage: preferredLanguage === 'ar' ? 'ar' : 'en' };
+      const nextResidenceCountry = clean(residenceCountry || country);
+      const nextResidenceCity = clean(residenceCity || city);
+      const next = { ...current, firstName: clean(firstName), lastName: clean(lastName), country: nextResidenceCountry, city: nextResidenceCity, residenceCountry: nextResidenceCountry, residenceCity: nextResidenceCity, birthCountry: clean(birthCountry), birthCity: clean(birthCity), preferredLanguage: preferredLanguage === 'ar' ? 'ar' : 'en' };
       write(keys.profile, next);
       try {
         const { client, user } = await sessionUser();
         if (client && user) {
-          await client.auth.updateUser({ data: { first_name: next.firstName, last_name: next.lastName, country: next.country, city: next.city, preferred_language: next.preferredLanguage } });
-          await client.from('profiles').update({ first_name: next.firstName, last_name: next.lastName, country: next.country, city: next.city, preferred_language: next.preferredLanguage, updated_at: new Date().toISOString() }).eq('user_id', user.id);
+          await client.auth.updateUser({ data: { first_name: next.firstName, last_name: next.lastName, country: next.country, city: next.city, birth_country: next.birthCountry, birth_city: next.birthCity, residence_country: next.residenceCountry, residence_city: next.residenceCity, preferred_language: next.preferredLanguage } });
+          await client.from('profiles').update({ first_name: next.firstName, last_name: next.lastName, country: next.country, city: next.city, birth_country: next.birthCountry, birth_city: next.birthCity, residence_country: next.residenceCountry, residence_city: next.residenceCity, preferred_language: next.preferredLanguage, updated_at: new Date().toISOString() }).eq('user_id', user.id);
         }
       } catch (error) { console.warn('Personal details sync failed.', error); }
       return next;

@@ -18,10 +18,38 @@ const firstNameInput = document.querySelector('#first-name');
 const lastNameInput = document.querySelector('#last-name');
 const countryInput = document.querySelector('#country');
 const cityInput = document.querySelector('#city');
+const birthCountryInput = document.querySelector('#birth-country');
+const birthCityInput = document.querySelector('#birth-city');
 const preferredLanguageInput = document.querySelector('#preferred-language');
 const galleryVisibility = document.querySelector('#gallery-visibility');
 const galleryPrivacyStatus = document.querySelector('#gallery-privacy-status');
 let profilePhotoPreference;
+const locationData = window.IQZodiacLocations || { countries: [], citiesByCountry: {} };
+const locationNames = new Intl.DisplayNames(['en'], { type: 'region' });
+const addLocationOption = (select, value, label, selected = false) => {
+  const option = new Option(label, value, false, selected);
+  select.add(option);
+};
+const populateCountries = (select) => {
+  select.replaceChildren();
+  addLocationOption(select, '', 'Select country', true);
+  locationData.countries.map((code) => ({ code, name: locationNames.of(code) || code })).sort((a, b) => a.name.localeCompare(b.name)).forEach(({ code, name }) => addLocationOption(select, code, name));
+};
+const countryCodeFor = (value) => {
+  const normalized = String(value || '').trim().toLowerCase();
+  return locationData.countries.find((code) => code.toLowerCase() === normalized || String(locationNames.of(code) || '').trim().toLowerCase() === normalized) || '';
+};
+const populateCities = (countrySelect, citySelect, selected = '') => {
+  citySelect.replaceChildren();
+  addLocationOption(citySelect, '', countrySelect.value ? 'Select state / city' : 'Select a country first', !selected);
+  const cities = [...new Set(locationData.citiesByCountry[countrySelect.value] || [])].sort((a, b) => a.localeCompare(b));
+  cities.forEach((city) => addLocationOption(citySelect, city, city, city === selected));
+  addLocationOption(citySelect, 'Other', 'Other / not listed', selected === 'Other');
+  citySelect.disabled = !countrySelect.value;
+};
+populateCountries(countryInput); populateCountries(birthCountryInput);
+countryInput.addEventListener('change', () => populateCities(countryInput, cityInput));
+birthCountryInput.addEventListener('change', () => populateCities(birthCountryInput, birthCityInput));
 try { profilePhotoPreference = JSON.parse(window.localStorage.getItem('iqzodiac-current-profile') || '{}')?.privacy?.photosPublic; } catch { profilePhotoPreference = undefined; }
 galleryVisibility.checked = typeof profilePhotoPreference === 'boolean' ? profilePhotoPreference : readChoice('gallery-visible');
 const updatePrivacyPreview = () => { galleryPrivacyStatus.textContent = galleryVisibility.checked ? 'Public — approved profile media can be viewed by compatible members.' : 'Private — profile photos stay hidden from other members.'; document.querySelector('.gallery-card').classList.toggle('gallery-is-public', galleryVisibility.checked); };
@@ -51,8 +79,10 @@ const zodiac = document.querySelector('#zodiac-sign'); const element = document.
   usernameInput.value = String(profile.handle || '@orbit-member').replace(/^@/, '');
   firstNameInput.value = profile.firstName || '';
   lastNameInput.value = profile.lastName || '';
-  countryInput.value = profile.country || '';
-  cityInput.value = profile.city || '';
+  countryInput.value = countryCodeFor(profile.residenceCountry || profile.country);
+  populateCities(countryInput, cityInput, profile.residenceCity || profile.city || '');
+  birthCountryInput.value = countryCodeFor(profile.birthCountry);
+  populateCities(birthCountryInput, birthCityInput, profile.birthCity || '');
   preferredLanguageInput.value = profile.preferredLanguage === 'ar' ? 'ar' : 'en';
   document.querySelector('#avatar-preview .avatar-initials').textContent = profile.initials || 'OM';
   zodiac.value = profile.zodiac || ''; element.value = profile.element || ''; interestsInput.value = (profile.interests || []).join(', ');
@@ -65,7 +95,7 @@ document.querySelector('#save-profile').addEventListener('click', async () => {
   saveChoice('gallery-visible', galleryVisibility.checked);
   if (adapter) {
     await adapter.updatePublicIdentity({ displayName: displayNameInput.value.trim(), handle: `@${usernameInput.value.trim().replace(/^@/, '')}` });
-    await adapter.updatePersonalDetails({ firstName: firstNameInput.value, lastName: lastNameInput.value, country: countryInput.value, city: cityInput.value, preferredLanguage: preferredLanguageInput.value });
+    await adapter.updatePersonalDetails({ firstName: firstNameInput.value, lastName: lastNameInput.value, country: countryInput.options[countryInput.selectedIndex]?.textContent || '', city: cityInput.value, residenceCountry: countryInput.options[countryInput.selectedIndex]?.textContent || '', residenceCity: cityInput.value, birthCountry: birthCountryInput.options[birthCountryInput.selectedIndex]?.textContent || '', birthCity: birthCityInput.value, preferredLanguage: preferredLanguageInput.value });
     try { window.localStorage.setItem('iqzodiac-language', preferredLanguageInput.value); } catch { /* Keep profile saving working if storage is unavailable. */ }
     await adapter.updatePrivacyPreferences({ photosPublic: galleryVisibility.checked });
     await adapter.updateCompatibilityProfile({ zodiac: zodiac.value, element: element.value, interests: interestsInput.value.split(',').map((item) => item.trim()).filter(Boolean) });

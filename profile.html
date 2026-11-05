@@ -64,8 +64,10 @@
               <div class="profile-details-grid">
                 <label class="profile-detail-field"><span>First name</span><input id="first-name" type="text" autocomplete="given-name" /></label>
                 <label class="profile-detail-field"><span>Last name</span><input id="last-name" type="text" autocomplete="family-name" /></label>
-                <label class="profile-detail-field"><span>Country</span><input id="country" type="text" autocomplete="country-name" /></label>
-                <label class="profile-detail-field"><span>City</span><input id="city" type="text" autocomplete="address-level2" /></label>
+                <label class="profile-detail-field"><span>Residence country</span><select id="country" autocomplete="country-name"><option value="">Select country</option></select></label>
+                <label class="profile-detail-field"><span>Residence state / city</span><select id="city" autocomplete="address-level2" disabled><option value="">Select a country first</option></select></label>
+                <label class="profile-detail-field"><span>Birth country</span><select id="birth-country" autocomplete="country-of-birth"><option value="">Select country</option></select></label>
+                <label class="profile-detail-field"><span>Birth state / city</span><select id="birth-city" autocomplete="address-level2" disabled><option value="">Select a country first</option></select></label>
                 <label class="profile-detail-field"><span>Preferred language</span><select id="preferred-language" autocomplete="language"><option value="en">English</option><option value="ar">العربية</option></select></label>
               </div>
               <p class="field-help">Your location and language help personalize discovery. They remain private unless you choose otherwise.</p>
@@ -171,6 +173,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-client.js"></script><script src="./auth-guard.js"></script>
     <script src="./i18n-data.js?v=20261022-global"></script>
   <script src="./language.js?v=20261022-global"></script>
+    <script src="./location-data.js"></script>
     <script src="./privacy-core.js"></script>
     <script src="./profile.js"></script>
       <script src="./nav-performance.js" defer></script>
