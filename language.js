@@ -142,9 +142,14 @@
   document.head.append(style);
   applyLanguage();
 
+  let applyTimer = 0;
+  const scheduleApply = () => {
+    window.clearTimeout(applyTimer);
+    applyTimer = window.setTimeout(applyLanguage, 40);
+  };
   const observer = new MutationObserver((records) => {
-    if (applying) return;
-    if (records.some((record) => record.type === 'characterData' || record.addedNodes.length > 0 || record.type === 'attributes')) applyLanguage();
+    if (applying || !records.some((record) => record.type === 'characterData' || record.addedNodes.length > 0 || record.type === 'attributes')) return;
+    scheduleApply();
   });
   observer.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['placeholder', 'aria-label', 'title', 'alt'] });
 
