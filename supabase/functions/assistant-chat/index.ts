@@ -21,7 +21,7 @@ const siteMap = [
   { name: "VIP", path: "/vip", description: "VIP feature status; streaming, payments, gifts, and payouts require production providers." },
   { name: "Assistant", path: "/assistant", description: "This scoped assistant and the guided discovery questionnaire." },
 ];
-const systemPrompt = `You are IQZodiac Assistant. You may only help with the IQZodiac website and server-supplied search results. You may explain website features, search YouTube videos, and search films, TV titles, actors, directors, and fictional characters. You must not claim to change accounts, grant VIP, send messages, reveal private photos, change payments, access private data, or perform admin actions. Never invent results, people, scores, prices, availability, or features. Answer briefly in the user's language (Arabic or English).`;
+const systemPrompt = `You are the official IQZodiac website assistant. Answer ONLY questions about IQZodiac itself: its pages, navigation, signup, login, onboarding, profile, privacy, matching, discovery, daily briefing, rooms, YouTube page, messages, VIP status, and how these website features work. Do not answer general knowledge, personal advice, politics, coding, medical, legal, financial, entertainment, or unrelated questions. Do not search or recommend external content. If a request is outside IQZodiac, politely say you can only help with the IQZodiac website and invite the user to ask about a site section. Never claim to change accounts, grant VIP, send messages, reveal private photos, change payments, access private data, or perform admin actions. Never invent results, people, scores, prices, availability, or features. Answer briefly in the user's language (Arabic or English).`;
 
 function response(status: number, body: unknown) {
   return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } });
@@ -67,6 +67,14 @@ function siteHelpFallback(message: string) {
   if (arabic) return "مرحبًا بك في IQZodiac. يمكنك إنشاء حساب جديد للبدء، ثم سيقودك المساعد إلى اكتشاف اهتماماتك وشخصيتك وبرجك. بعد ذلك يمكنك استخدام Home للمنشورات، Match للتوافق، Discover للاستكشاف، Daily للأخبار والطقس، Rooms للغرف الصوتية، Profile لإدارة ملفك وخصوصيتك، وYouTube للبحث عن الفيديوهات. لا أستطيع الوصول إلى بياناتك الخاصة أو تغيير الحسابات والمدفوعات.";
   return "Welcome to IQZodiac. Create an account to begin, then the onboarding assistant will help you explore your interests, personality pattern, and zodiac sign. Home is for posts, Match for compatibility, Discover for exploring paths, Daily for news and weather, Rooms for audio rooms, Profile for your privacy and profile, and YouTube for video search. I cannot access private data or change accounts or payments.";
 }
+function isSiteQuestion(message: string) {
+  return /(iqzodiac|الموقع|الحساب|تسجيل|دخول|إنشاء|الصفحة|قسم|هوم|home|match|discover|daily|rooms|profile|youtube|messages|vip|assistant|مساعد|خصوص|مطابق|غرف|ملف|أخبار|طقس|توافق|اهتمامات|برج|شخصية)/i.test(message);
+}
+function outOfScopeAnswer(message: string) {
+  return /[\u0600-\u06ff]/.test(message)
+    ? "أستطيع مساعدتك فقط في شرح موقع IQZodiac وأقسامه وطريقة استخدام الحساب. اكتب سؤالك عن التسجيل أو تسجيل الدخول أو Match أو Profile أو Discover أو أي قسم من الموقع."
+    : "I can only help with the IQZodiac website, its sections, and how to use your account. Ask me about signup, login, Match, Profile, Discover, or another IQZodiac section.";
+}
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -90,14 +98,14 @@ Deno.serve(async (req: Request) => {
     authData = authResult.data;
     if (authResult.error || !authData.user) return response(401, { error: { code: "unauthorized", message: "Please sign in before using the assistant." } });
   }
+  if (!isSiteQuestion(message)) return response(200, { answer: outOfScopeAnswer(message), intent: "out_of_scope", results: [], conversationId: "" });
   const history = guestMode ? [] : (Array.isArray(body.history) ? body.history.slice(-maxHistoryMessages).filter((item: any) => ["user", "assistant"].includes(item?.role) && typeof item.content === "string").map((item: any) => ({ role: item.role, content: item.content.slice(0, 1200) })) : []);
-  const intent = guestMode ? "site_help" : detectIntent(message);
-  const query = cleanQuery(message) || message.slice(0, 160);
-  let searchResults: any = null;
-  try { if (intent === "youtube_search") searchResults = await searchYouTube(query); if (intent === "media_search") searchResults = await searchMedia(query); } catch { searchResults = { unavailable: true, reason: "search_unavailable" }; }
+  const intent = "site_help";
+  const query = message.slice(0, 160);
+  const searchResults: any = null;
   const context = JSON.stringify({ intent, query, siteMap, searchResults });
   const answer = await callModel([{ role: "system", content: `${systemPrompt}\n\nServer-authorized context:\n${context}` }, ...history, { role: "user", content: message }]);
-  const finalAnswer = answer || (intent === "site_help" ? siteHelpFallback(message) : intent === "youtube_search" && searchResults?.items?.length ? `وجدت ${searchResults.items.length} نتائج في YouTube.` : intent === "media_search" && searchResults?.items?.length ? `وجدت ${searchResults.items.length} نتائج للأفلام أو الشخصيات.` : "المساعد غير متصل حاليًا أو لم يجد نتائج.");
+  const finalAnswer = answer || siteHelpFallback(message);
   const conversationId = typeof body.conversationId === "string" && /^[0-9a-f-]{36}$/i.test(body.conversationId) ? body.conversationId : crypto.randomUUID();
   if (!guestMode) {
     const logRows = [
