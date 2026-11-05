@@ -37,8 +37,8 @@
               <label class="signup-field"><span>Last name</span><input id="last-name" name="lastName" type="text" autocomplete="family-name" placeholder="Stone" required /></label>
               <label class="signup-field"><span class="signup-field-label">Date of birth</span><span class="date-input-wrap"><span class="date-input-icon" aria-hidden="true">🗓</span><input id="birth-date" name="birthDate" type="date" autocomplete="bday" required /><span class="date-input-chevron" aria-hidden="true">⌄</span></span><small>You must be 18 or older.</small></label>
               <label class="signup-field signup-field-wide"><span>Email address</span><input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required /></label>
-              <label class="signup-field"><span>Country</span><input id="country" name="country" type="text" autocomplete="country-name" placeholder="United States" required /></label>
-              <label class="signup-field"><span>City</span><input id="city" name="city" type="text" autocomplete="address-level2" placeholder="New York" required /></label>
+              <label class="signup-field"><span>Country</span><select id="country" name="country" autocomplete="country-name" required><option value="">Select your country</option></select></label>
+              <label class="signup-field"><span>City</span><select id="city" name="city" autocomplete="address-level2" required disabled><option value="">Select a country first</option></select><small id="city-help">Choose your country to see available cities.</small></label>
               <label class="signup-field"><span>Phone number</span><input id="phone-number" name="phone" type="tel" autocomplete="tel" placeholder="+1 555 019 2488" required /></label>
               <label class="signup-field"><span>Preferred language</span><select id="preferred-language" name="preferredLanguage" autocomplete="language" required><option value="en">English</option><option value="ar">العربية</option></select></label>
               <label class="signup-field signup-field-wide"><span>Password</span><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required /></label>
@@ -69,6 +69,7 @@
     <script src="./language.js?v=20261022-global"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./supabase-client.js"></script>
+    <script src="./location-data.js"></script>
     <script src="./signup.js"></script>
   </body>
 </html>

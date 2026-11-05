@@ -63,6 +63,45 @@ const saveProfilePhoto = async (client, user, file) => {
 };
 
 const birthDateInput = document.querySelector('#birth-date');
+const countryInput = document.querySelector('#country');
+const cityInput = document.querySelector('#city');
+const cityHelp = document.querySelector('#city-help');
+
+const locationNames = new Intl.DisplayNames(['en'], { type: 'region' });
+const locationData = window.IQZodiacLocations || { countries: [], citiesByCountry: {} };
+const addOption = (select, value, label, disabled = false) => {
+  const option = document.createElement('option');
+  option.value = value;
+  option.textContent = label;
+  option.disabled = disabled;
+  select.append(option);
+};
+
+locationData.countries
+  .map((code) => ({ code, name: locationNames.of(code) || code }))
+  .sort((a, b) => a.name.localeCompare(b.name))
+  .forEach(({ code, name }) => addOption(countryInput, code, name));
+
+const updateCities = () => {
+  const countryCode = countryInput.value;
+  cityInput.replaceChildren();
+  if (!countryCode) {
+    addOption(cityInput, '', 'Select a country first', true);
+    cityInput.disabled = true;
+    cityHelp.textContent = 'Choose your country to see available cities.';
+    return;
+  }
+  const cities = [...new Set(locationData.citiesByCountry[countryCode] || [])].sort((a, b) => a.localeCompare(b));
+  addOption(cityInput, '', 'Select your city', true);
+  cities.forEach((city) => addOption(cityInput, city, city));
+  addOption(cityInput, 'Other', 'Other / not listed');
+  cityInput.disabled = false;
+  cityHelp.textContent = cities.length ? 'Choose a city from the list, or select Other.' : 'No city list is available for this country yet; select Other.';
+};
+
+countryInput.addEventListener('change', updateCities);
+updateCities();
+
 const today = new Date();
 const toDateValue = (date) => {
   const year = date.getFullYear();
@@ -99,8 +138,8 @@ form.addEventListener('submit', async (event) => {
     const client = await window.IQZodiacSupabase.ready;
     const firstName = document.querySelector('#first-name').value.trim();
     const lastName = document.querySelector('#last-name').value.trim();
-    const country = document.querySelector('#country').value.trim();
-    const city = document.querySelector('#city').value.trim();
+    const country = countryInput.options[countryInput.selectedIndex]?.textContent.trim() || '';
+    const city = cityInput.value.trim();
     const preferredLanguage = document.querySelector('#preferred-language').value;
     const email = document.querySelector('#email').value.trim().toLowerCase();
     const { data, error } = await client.auth.signUp({
