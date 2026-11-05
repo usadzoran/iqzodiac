@@ -13,6 +13,7 @@
   const readerDescription = document.querySelector('#news-reader-description');
   const readerBody = document.querySelector('#news-reader-body');
   let latestNews = [];
+  let dailyLoadId = 0;
   let readerRequestId = 0;
   let readerTrigger = null;
   if (cityInput) cityInput.value = localStorage.getItem('iqzodiac-daily-city') || '';
@@ -179,12 +180,48 @@
     if (rows.length) { const { error } = await client.from('discover_news_articles').upsert(rows, { onConflict: 'source_id,external_id' }); if (error) throw error; }
   };
   const loadDaily = async (quiet = false) => {
-    if (!quiet) { weatherContent.innerHTML = '<div class="loading-pulse">Reading the sky…</div>'; newsList.innerHTML = '<div class="loading-pulse">Gathering today’s stories…</div>'; }
+    const requestId = ++dailyLoadId;
+    if (!quiet) {
+      weatherContent.innerHTML = '<div class="loading-pulse">Reading the sky…</div>';
+      if (!latestNews.length) newsList.innerHTML = '<div class="loading-pulse">Gathering today’s stories…</div>';
+      else document.querySelector('#news-count').textContent = 'Refreshing';
+    }
     const location = await getLocation();
-    const weatherPromise = fetch(`/api/daily-feed?lat=${encodeURIComponent(location.lat)}&lon=${encodeURIComponent(location.lon)}&location=${encodeURIComponent(location.label)}&city=${encodeURIComponent(location.city || '')}`, { cache: 'no-store' }).then((response) => { if (!response.ok) throw new Error('weather_unavailable'); return response.json(); });
-    const newsPromise = loadFreshNews().catch((error) => { console.warn('Fresh Daily news is unavailable; using saved stories.', error); return loadFallbackNews(); });
-    try { const payload = await weatherPromise; renderWeather(payload.weather); document.querySelector('#daily-date').textContent = new Intl.DateTimeFormat(window.IQZodiacLanguage?.locale || undefined, { weekday:'long', month:'long', day:'numeric' }).format(new Date(payload.day)); } catch { weatherContent.innerHTML = '<p class="error-copy">Weather is temporarily unavailable. Check your connection and refresh.</p>'; }
-    try { const storedNews = await newsPromise; renderNews(storedNews); sourceNote.textContent = 'News is synchronized with the IQZodiac database.'; if (!quiet) showToast('Today’s news is ready.'); } catch { newsList.innerHTML = '<p class="error-copy">News is temporarily unavailable. Try refreshing in a moment.</p>'; sourceNote.textContent = 'News could not be synchronized right now.'; }
+    if (requestId !== dailyLoadId) return;
+
+    const weatherTask = fetch(`/api/daily-feed?lat=${encodeURIComponent(location.lat)}&lon=${encodeURIComponent(location.lon)}&location=${encodeURIComponent(location.label)}&city=${encodeURIComponent(location.city || '')}`, { cache: 'no-store' })
+      .then((response) => { if (!response.ok) throw new Error('weather_unavailable'); return response.json(); })
+      .then((payload) => {
+        if (requestId !== dailyLoadId) return;
+        renderWeather(payload.weather);
+        document.querySelector('#daily-date').textContent = new Intl.DateTimeFormat(window.IQZodiacLanguage?.locale || undefined, { weekday:'long', month:'long', day:'numeric' }).format(new Date(payload.day));
+      })
+      .catch(() => {
+        if (requestId === dailyLoadId) weatherContent.innerHTML = '<p class="error-copy">Weather is temporarily unavailable. Check your connection and refresh.</p>';
+      });
+
+    const newsTask = loadFreshNews()
+      .catch((error) => { console.warn('Fresh Daily news is unavailable; using saved stories.', error); return loadFallbackNews(); })
+      .then((items) => {
+        if (requestId !== dailyLoadId) return;
+        if (!items.length && latestNews.length) {
+          sourceNote.textContent = 'No new stories are available. Showing the last available stories.';
+          return;
+        }
+        renderNews(items);
+        sourceNote.textContent = 'News is synchronized with the IQZodiac database.';
+        if (!quiet) showToast('Today’s news is ready.');
+      })
+      .catch(() => {
+        if (requestId !== dailyLoadId) return;
+        if (latestNews.length) sourceNote.textContent = 'News refresh failed. Showing the last available stories.';
+        else {
+          newsList.innerHTML = '<p class="error-copy">News is temporarily unavailable. Try refreshing in a moment.</p>';
+          sourceNote.textContent = 'News could not be synchronized right now.';
+        }
+      });
+
+    await Promise.all([weatherTask, newsTask]);
   };
   document.querySelector('#refresh-daily').addEventListener('click', () => loadDaily());
   document.querySelector('#weather-location-form')?.addEventListener('submit', (event) => { event.preventDefault(); const city = cityInput.value.trim().slice(0, 80); if (!city) return; localStorage.setItem('iqzodiac-daily-city', city); loadDaily(); });
@@ -192,7 +229,6 @@
   document.querySelector('#news-reader-close')?.addEventListener('click', closeReader);
   reader?.addEventListener('click', (event) => { if (event.target === reader) closeReader(); });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && reader && !reader.hidden) closeReader(); });
-  document.addEventListener('iqzodiac:languagechange', () => loadDaily(true));
   loadDaily();
   const today = new Date().toDateString(); setInterval(() => { if (new Date().toDateString() !== today) window.location.reload(); }, 60000);
 })();
