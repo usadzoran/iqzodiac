@@ -56,9 +56,9 @@ async function callModel(messages: any[]) {
   const apiKey = Deno.env.get("OPENAI_API_KEY");
   if (!apiKey) return null;
   const base = (Deno.env.get("OPENAI_API_BASE") || "https://api.openai.com/v1").replace(/\/$/, "");
-  const model = Deno.env.get("IQZODIAC_ASSISTANT_MODEL") || "gpt-6-luna";
+  const model = Deno.env.get("IQZODIAC_ASSISTANT_MODEL") || "gpt-4o-mini";
   const upstream = await fetch(`${base}/chat/completions`, { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model, messages, max_completion_tokens: 700, reasoning: { effort: "low" } }) });
-  if (!upstream.ok) return null;
+  if (!upstream.ok) { console.error(`OpenAI request failed with status ${upstream.status} using model ${model}`); return null; }
   const payload = await upstream.json();
   return payload.choices?.[0]?.message?.content?.trim() || null;
 }
