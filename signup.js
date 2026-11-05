@@ -10,6 +10,17 @@ const showToast = (message) => {
   toastTimer = window.setTimeout(() => toast.classList.remove('is-visible'), 3200);
 };
 
+const authMessage = (error) => {
+  const code = String(error?.code || error?.status || '').toLowerCase();
+  const message = String(error?.message || '').toLowerCase();
+  if (code.includes('user_already_exists') || message.includes('already registered') || message.includes('already been registered')) return 'This email is already registered. Try logging in instead.';
+  if (code.includes('email_address_invalid') || message.includes('invalid email')) return 'Please enter a valid email address.';
+  if (code.includes('password') && (message.includes('weak') || message.includes('length'))) return 'Choose a stronger password with at least 8 characters.';
+  if (message.includes('rate limit')) return 'Too many attempts. Please wait a few minutes and try again.';
+  if (message.includes('failed to fetch') || message.includes('network')) return 'The connection to secure sign-up failed. Check your internet connection and try again.';
+  return error?.message || 'Account creation failed. Please try again.';
+};
+
 const createPseudonym = () => {
   const roots = ['Nova', 'Luna', 'Orion', 'Astra', 'Echo', 'Comet', 'Sage', 'River', 'Sol', 'Lyra'];
   const bytes = new Uint8Array(3);
@@ -95,19 +106,23 @@ form.addEventListener('submit', async (event) => {
     const { data, error } = await client.auth.signUp({
       email,
       password,
-      options: { data: { first_name: firstName, last_name: lastName, age, birth_date: birthDate, phone: document.querySelector('#phone-number').value.trim(), country, city, preferred_language: preferredLanguage } },
+      options: {
+        emailRedirectTo: new URL('./login.html?confirmed=1', window.location.href).href,
+        data: { first_name: firstName, last_name: lastName, age, birth_date: birthDate, phone: document.querySelector('#phone-number').value.trim(), country, city, preferred_language: preferredLanguage },
+      },
     });
     if (error) throw error;
     try { window.localStorage.setItem('iqzodiac-language', preferredLanguage); } catch { /* Keep account creation working if storage is unavailable. */ }
     const profilePhoto = document.querySelector('#profile-photo').files?.[0];
     if (data.session && data.user && profilePhoto) { try { await saveProfilePhoto(client, data.user, profilePhoto); } catch (photoError) { console.warn('Profile photo upload deferred.', photoError); } }
     if (!data.session) {
-      window.location.assign('./login.html?confirmed=1');
+      showToast('Account created. Check your email and click the confirmation link before logging in.');
+      window.setTimeout(() => window.location.assign('./login.html?confirmed=1'), 1800);
       return;
     }
     window.location.assign('./assistant.html?welcome=1');
   } catch (error) {
-    showToast(error?.message || 'Account creation failed.');
+    showToast(authMessage(error));
     button.disabled = false;
     button.querySelector('span').textContent = 'Create account';
   }
