@@ -19,12 +19,53 @@
   const weatherCodes = { 0:['☀️','Clear sky'],1:['🌤️','Mainly clear'],2:['⛅','Partly cloudy'],3:['☁️','Overcast'],45:['🌫️','Foggy'],48:['🌫️','Rime fog'],51:['🌦️','Light drizzle'],53:['🌦️','Drizzle'],61:['🌧️','Light rain'],63:['🌧️','Rain'],65:['🌧️','Heavy rain'],71:['🌨️','Light snow'],73:['🌨️','Snow'],75:['❄️','Heavy snow'],80:['🌦️','Rain showers'],81:['🌦️','Rain showers'],82:['⛈️','Heavy showers'],95:['⛈️','Thunderstorm'],99:['⛈️','Storm'] };
   const showToast = (message) => { if (!toast || !toastMessage) return; toastMessage.textContent = message; toast.classList.add('is-visible'); setTimeout(() => toast.classList.remove('is-visible'), 2600); };
   const escapeHTML = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[char]));
-  const getLocation = () => new Promise((resolve) => {
+  const getLocation = () => new Promise((resolve, reject) => {
     const savedCity = localStorage.getItem('iqzodiac-daily-city') || '';
-    if (savedCity) return resolve({ lat: 40.7128, lon: -74.006, label: savedCity, city: savedCity });
-    if (!navigator.geolocation) return resolve({ lat: 40.7128, lon: -74.006, label: 'New York' });
-    navigator.geolocation.getCurrentPosition((position) => resolve({ lat: position.coords.latitude, lon: position.coords.longitude, label: 'Your location' }), () => resolve({ lat: 40.7128, lon: -74.006, label: 'New York · default' }), { timeout: 5000 });
+    if (savedCity) {
+      const language = String(window.IQZodiacLanguage?.locale || navigator.language || 'en').split('-')[0];
+      const query = new URLSearchParams({ name: savedCity, count: '1', language, format: 'json' });
+      fetch(`https://geocoding-api.open-meteo.com/v1/search?${query}`, { headers: { Accept: 'application/json' }, cache: 'no-store' })
+        .then((response) => { if (!response.ok) throw new Error('geocoding_unavailable'); return response.json(); })
+        .then((payload) => {
+          const place = payload.results?.[0];
+          if (!place) throw new Error('city_not_found');
+          resolve({ lat: place.latitude, lon: place.longitude, label: [place.name, place.country].filter(Boolean).join(', ') });
+        })
+        .catch(reject);
+      return;
+    }
+    if (!navigator.geolocation) return resolve({ lat: 40.7128, lon: -74.006, label: 'New York · default' });
+    navigator.geolocation.getCurrentPosition((position) => resolve({ lat: position.coords.latitude, lon: position.coords.longitude, label: 'Your location' }), () => resolve({ lat: 40.7128, lon: -74.006, label: 'New York · default' }), { timeout: 7000, maximumAge: 600000 });
   });
+  const loadWeather = async () => {
+    const location = await getLocation();
+    const query = new URLSearchParams({
+      latitude: String(location.lat),
+      longitude: String(location.lon),
+      current: 'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m',
+      daily: 'temperature_2m_max,temperature_2m_min',
+      forecast_days: '1',
+      timezone: 'auto',
+    });
+    const response = await fetch(`https://api.open-meteo.com/v1/forecast?${query}`, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+    if (!response.ok) throw new Error('weather_unavailable');
+    const payload = await response.json();
+    if (!payload.current || !payload.daily?.temperature_2m_max?.length || !payload.daily?.temperature_2m_min?.length) throw new Error('weather_data_incomplete');
+    return {
+      day: payload.daily.time?.[0] || payload.current.time,
+      weather: {
+        location: location.label,
+        current: {
+          temperature: payload.current.temperature_2m,
+          apparent: payload.current.apparent_temperature,
+          humidity: payload.current.relative_humidity_2m,
+          code: payload.current.weather_code,
+          wind: payload.current.wind_speed_10m,
+        },
+        today: { high: payload.daily.temperature_2m_max[0], low: payload.daily.temperature_2m_min[0] },
+      },
+    };
+  };
   const renderWeather = (weather) => {
     const code = weatherCodes[weather.current.code] || ['🌌','Current conditions'];
     document.querySelector('#weather-location').textContent = weather.location;
@@ -180,10 +221,9 @@
   };
   const loadDaily = async (quiet = false) => {
     if (!quiet) { weatherContent.innerHTML = '<div class="loading-pulse">Reading the sky…</div>'; newsList.innerHTML = '<div class="loading-pulse">Gathering today’s stories…</div>'; }
-    const location = await getLocation();
-    const weatherPromise = fetch(`/api/daily-feed?lat=${encodeURIComponent(location.lat)}&lon=${encodeURIComponent(location.lon)}&location=${encodeURIComponent(location.label)}&city=${encodeURIComponent(location.city || '')}`, { cache: 'no-store' }).then((response) => { if (!response.ok) throw new Error('weather_unavailable'); return response.json(); });
+    const weatherPromise = loadWeather();
     const newsPromise = loadFreshNews().catch((error) => { console.warn('Fresh Daily news is unavailable; using saved stories.', error); return loadFallbackNews(); });
-    try { const payload = await weatherPromise; renderWeather(payload.weather); document.querySelector('#daily-date').textContent = new Intl.DateTimeFormat(window.IQZodiacLanguage?.locale || undefined, { weekday:'long', month:'long', day:'numeric' }).format(new Date(payload.day)); } catch { weatherContent.innerHTML = '<p class="error-copy">Weather is temporarily unavailable. Check your connection and refresh.</p>'; }
+    try { const payload = await weatherPromise; renderWeather(payload.weather); document.querySelector('#daily-date').textContent = new Intl.DateTimeFormat(window.IQZodiacLanguage?.locale || undefined, { weekday:'long', month:'long', day:'numeric' }).format(new Date(`${payload.day}T12:00:00`)); } catch (error) { console.warn('Live weather could not be loaded.', error); weatherContent.innerHTML = `<p class="error-copy">${error?.message === 'city_not_found' ? 'We couldn’t find that city. Check the spelling and try again.' : 'Weather is temporarily unavailable. Check your connection and refresh.'}</p>`; }
     try { const storedNews = await newsPromise; renderNews(storedNews); sourceNote.textContent = 'News is synchronized with the IQZodiac database.'; if (!quiet) showToast('Today’s news is ready.'); } catch { newsList.innerHTML = '<p class="error-copy">News is temporarily unavailable. Try refreshing in a moment.</p>'; sourceNote.textContent = 'News could not be synchronized right now.'; }
   };
   document.querySelector('#refresh-daily').addEventListener('click', () => loadDaily());
