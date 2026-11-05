@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css?v=messages-demo-20261022" />
-  <link rel="stylesheet" href="./messages.css?v=messages-mobile-20261022" />
+  <link rel="stylesheet" href="./messages.css?v=messages-calls-20261105" />
 </head>
 <body class="messages-page has-user-menu">
   <div class="aurora aurora-one" aria-hidden="true"></div>
@@ -23,7 +23,7 @@
       <a class="messages-back" href="./home.html">Back to your feed <span aria-hidden="true">↗</span></a>
     </header>
 
-    <div class="demo-notice" role="note"><span aria-hidden="true">ⓘ</span><p><strong>Private account messaging.</strong> Messages are stored securely and visible only to conversation participants. Audio calling is not connected yet.</p></div>
+    <div class="demo-notice" role="note"><span aria-hidden="true">ⓘ</span><p><strong>Private account messaging.</strong> Messages are stored securely and visible only to conversation participants. Audio and video calling are not connected yet.</p></div>
 
     <section class="messages-panel" aria-label="Messaging demo">
       <aside class="conversation-sidebar" aria-label="Conversations">
@@ -36,7 +36,10 @@
       <section class="conversation-view" aria-label="Conversation">
         <header class="conversation-topbar">
           <div class="conversation-person"><div id="active-avatar" class="contact-avatar avatar-maya">M</div><div><h2 id="active-name">Maya Chen</h2><p id="active-handle">@mayachen · Sample profile</p></div></div>
-          <button id="call-button" class="call-button" type="button"><span aria-hidden="true">◖</span> Audio call <span class="call-demo-label">DEMO</span></button>
+          <div class="conversation-call-actions" aria-label="Call actions">
+            <button id="call-button" class="call-button" type="button" aria-label="Audio call" title="Audio call"><span aria-hidden="true">◖</span><span class="call-button-label">Audio call</span><span class="call-demo-label">DEMO</span></button>
+            <button id="video-call-button" class="call-button video-call-button" type="button" aria-label="Video call" title="Video call"><span aria-hidden="true">▣</span><span class="call-button-label">Video call</span><span class="call-demo-label">DEMO</span></button>
+          </div>
         </header>
         <section class="face-consent-panel" aria-labelledby="face-consent-title">
           <div><p class="card-kicker">FACE PRIVACY</p><h3 id="face-consent-title">The face stays protected.</h3><p id="face-consent-status">A reveal requires two explicit yeses.</p></div>
@@ -60,12 +63,12 @@
     <div class="call-card">
       <button id="close-call" class="call-close" type="button" aria-label="Close call window">×</button>
       <span class="call-orbit" aria-hidden="true"><i></i><i></i><b></b></span>
-      <p class="card-kicker">AUDIO CALL · SIMULATION</p>
+      <p id="call-mode" class="card-kicker">AUDIO CALL · SIMULATION</p>
       <div id="call-avatar" class="call-avatar avatar-maya">M</div>
       <h2 id="call-title">Maya Chen</h2>
       <p id="call-status" class="call-status">Demo call · no one is being contacted</p>
       <div id="call-timer" class="call-timer">00:00</div>
-      <div class="call-warning">This is only a visual demo. Your microphone is not accessed.</div>
+      <div class="call-warning">Visual demo only. No microphone or camera is accessed.</div>
       <div class="call-controls">
         <button id="mute-call" class="call-control" type="button"><span>◖</span><small>Mute demo</small></button>
         <button id="end-call" class="call-control end-call" type="button"><span>×</span><small>End demo</small></button>
@@ -78,6 +81,6 @@
     <script src="./i18n-data.js?v=20261022-global"></script>
   <script src="./language.js?v=20261022-global"></script>
   <script src="./privacy-core.js"></script>
-  <script src="./messages.js"></script>
+  <script src="./messages.js?v=messages-calls-20261105"></script>
 </body>
 </html>

@@ -6,6 +6,7 @@
   const messageInput = document.querySelector('#message-input');
   const callModal = document.querySelector('#call-modal');
   const callButton = document.querySelector('#call-button');
+  const videoCallButton = document.querySelector('#video-call-button');
   const callStatus = document.querySelector('#call-status');
   const callTimer = document.querySelector('#call-timer');
   const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -47,7 +48,19 @@
   document.querySelector('#message-form').addEventListener('submit', async (event) => { event.preventDefault(); const body = messageInput.value.trim(); if (!body || !activeConversation) return; const { error } = await client.from('messages').insert({ conversation_id: activeConversation, sender_id: user.id, body }); if (error) { toast('Message could not be sent.'); return; } messageInput.value = ''; document.querySelector('#message-counter').textContent = '0 / 600'; await renderMessages(); messageInput.focus(); });
   document.querySelector('#request-reveal')?.addEventListener('click', async () => { if (!activeConversation) return; const { error } = await client.from('face_reveal_consents').upsert({ conversation_id: activeConversation, user_id: user.id }); if (error) toast('Consent could not be saved.'); else await renderRevealState(); });
   const stopCall = () => { clearInterval(timerInterval); timerInterval = null; elapsedSeconds = 0; callModal.hidden = true; };
-  callButton.addEventListener('click', () => { if (!activeConversation) { toast('Open a real conversation before starting a call.'); return; } callStatus.textContent = 'Audio calling is not connected yet.'; callTimer.textContent = '00:00'; callModal.hidden = false; timerInterval = setInterval(() => { elapsedSeconds += 1; callTimer.textContent = `${String(Math.floor(elapsedSeconds / 60)).padStart(2, '0')}:${String(elapsedSeconds % 60).padStart(2, '0')}`; }, 1000); });
+  const startCallDemo = (mode) => {
+    if (!activeConversation) { toast('Open a real conversation before starting a call.'); return; }
+    const label = mode === 'video' ? 'Video' : 'Audio';
+    document.querySelector('#call-mode').textContent = `${label.toUpperCase()} CALL · SIMULATION`;
+    callStatus.textContent = `${label} calling is not connected yet.`;
+    callTimer.textContent = '00:00';
+    callModal.hidden = false;
+    clearInterval(timerInterval);
+    elapsedSeconds = 0;
+    timerInterval = setInterval(() => { elapsedSeconds += 1; callTimer.textContent = `${String(Math.floor(elapsedSeconds / 60)).padStart(2, '0')}:${String(elapsedSeconds % 60).padStart(2, '0')}`; }, 1000);
+  };
+  callButton.addEventListener('click', () => startCallDemo('audio'));
+  videoCallButton.addEventListener('click', () => startCallDemo('video'));
   document.querySelector('#close-call').addEventListener('click', stopCall); document.querySelector('#end-call').addEventListener('click', stopCall); callModal.addEventListener('click', (event) => { if (event.target === callModal) stopCall(); });
   (async () => { try { client = await database(); const { data: session } = await client.auth.getSession(); user = session.session?.user; if (!user) return; const { data, error } = await client.rpc('list_my_conversations'); if (error) throw error; contacts = (data || []).map((row) => ({ id: row.other_user_id, name: row.display_name || 'Orbit Member', handle: row.handle || '@member', preview: row.last_message || 'Start a private conversation', time: row.last_message_at ? new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(row.last_message_at)) : '' })); if (activeId && !contacts.some((person) => person.id === activeId)) { const { data: matches } = await client.rpc('list_compatible_profiles'); const match = (matches || []).find((row) => row.user_id === activeId); if (match) contacts.unshift({ id: match.user_id, name: match.display_name, handle: match.handle, preview: 'Matched member' }); } if (!activeId) activeId = contacts[0]?.id || null; renderContacts(); await loadConversation(); } catch (error) { console.warn('Conversation data could not be loaded.', error); contactList.innerHTML = '<p class="sidebar-note">The shared messaging service is temporarily unavailable. No sample conversations are shown.</p>'; } })();
 })();
