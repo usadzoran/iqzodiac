@@ -55,7 +55,7 @@ galleryVisibility.checked = typeof profilePhotoPreference === 'boolean' ? profil
 const updatePrivacyPreview = () => { galleryPrivacyStatus.textContent = galleryVisibility.checked ? 'Public — approved profile media can be viewed by compatible members.' : 'Private — profile photos stay hidden from other members.'; document.querySelector('.gallery-card').classList.toggle('gallery-is-public', galleryVisibility.checked); };
 galleryVisibility.addEventListener('change', async () => { saveChoice('gallery-visible', galleryVisibility.checked); updatePrivacyPreview(); const dataAdapter = window.IQZodiacData?.adapter; if (dataAdapter) await dataAdapter.updatePrivacyPreferences({ photosPublic: galleryVisibility.checked }); });
 updatePrivacyPreview();
-const followersCount = document.querySelector('#followers-count'); const likesCount = document.querySelector('#likes-count'); const followButton = document.querySelector('#follow-button'); const followLabel = document.querySelector('#follow-label'); const likeProfile = document.querySelector('#like-profile'); const likeLabel = document.querySelector('#like-label'); const heartIcon = document.querySelector('.heart-icon'); const notificationItems = [...document.querySelectorAll('.notification-item')]; const notificationCount = document.querySelector('#notification-count');
+const followersCount = document.querySelector('#followers-count'); const likesCount = document.querySelector('#likes-count'); const followButton = document.querySelector('#follow-button'); const followLabel = document.querySelector('#follow-label'); const likeProfile = document.querySelector('#like-profile'); const likeLabel = document.querySelector('#like-label'); const heartIcon = document.querySelector('.heart-icon'); const notificationList = document.querySelector('#notification-list'); let notificationItems = [...document.querySelectorAll('.notification-item')]; const notificationCount = document.querySelector('#notification-count');
 let isFollowing = false; let hasLiked = false; let followers = readNumber('followers-count', 0); let likes = readNumber('likes-count', 0);
 const formatCount = (value) => new Intl.NumberFormat('en-US').format(value);
 const updateSocialPreview = () => { followersCount.textContent = formatCount(followers); likesCount.textContent = formatCount(likes); followLabel.textContent = isFollowing ? 'Following' : 'Follow back'; followButton.classList.toggle('is-following', isFollowing); likeProfile.setAttribute('aria-pressed', String(hasLiked)); likeProfile.classList.toggle('is-liked', hasLiked); heartIcon.textContent = hasLiked ? '♥' : '♡'; likeLabel.textContent = hasLiked ? 'Liked' : 'Like profile'; };
@@ -63,8 +63,37 @@ const updateNotificationCount = () => { const unread = notificationItems.filter(
 followButton.addEventListener('click', () => { isFollowing = !isFollowing; followers += isFollowing ? 1 : -1; saveChoice('following', isFollowing); window.localStorage.setItem('iqzodiac:followers-count', String(followers)); updateSocialPreview(); showToast(isFollowing ? 'You are now following Alex.' : 'You unfollowed Alex.'); });
 likeProfile.addEventListener('click', () => { hasLiked = !hasLiked; likes += hasLiked ? 1 : -1; saveChoice('profile-liked', hasLiked); window.localStorage.setItem('iqzodiac:likes-count', String(likes)); updateSocialPreview(); showToast(hasLiked ? 'Profile liked.' : 'Like removed.'); });
 notificationItems.forEach((item) => item.addEventListener('click', () => { item.classList.remove('is-unread'); updateNotificationCount(); showToast(item.dataset.notification); }));
-document.querySelector('#mark-all-read').addEventListener('click', () => { notificationItems.forEach((item) => item.classList.remove('is-unread')); updateNotificationCount(); showToast('All notifications marked as read.'); });
+const markNotificationRead = async (item) => {
+  if (!item.dataset.notificationId || !window.IQZodiacSupabase?.ready) return;
+  try { const client = await window.IQZodiacSupabase.ready; await client.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', item.dataset.notificationId); } catch { /* The local visual state still updates. */ }
+};
+notificationItems.forEach((item) => item.addEventListener('click', () => { item.classList.remove('is-unread'); void markNotificationRead(item); updateNotificationCount(); showToast(item.dataset.notification); }));
+document.querySelector('#mark-all-read').addEventListener('click', async () => {
+  notificationItems.forEach((item) => item.classList.remove('is-unread'));
+  try { const client = await window.IQZodiacSupabase.ready; const { data } = await client.auth.getUser(); if (data?.user?.id) await client.from('notifications').update({ read_at: new Date().toISOString() }).eq('recipient_id', data.user.id).is('read_at', null); } catch { /* Keep the page usable if the network is unavailable. */ }
+  updateNotificationCount(); showToast('All notifications marked as read.');
+});
 updateSocialPreview(); updateNotificationCount();
+
+const renderNotifications = (rows) => {
+  notificationList.replaceChildren();
+  notificationItems = [];
+  if (!rows.length) { notificationList.innerHTML = '<p class="sidebar-note">No post activity notifications yet.</p>'; updateNotificationCount(); return; }
+  rows.forEach((row) => {
+    const item = document.createElement('button'); item.type = 'button'; item.className = `notification-item${row.read_at ? '' : ' is-unread'}`; item.dataset.notificationId = row.id; item.dataset.notification = row.message;
+    const avatar = document.createElement('span'); avatar.className = 'notification-avatar'; avatar.textContent = String(row.message || 'S').trim().slice(0, 1).toUpperCase();
+    const copy = document.createElement('span'); copy.className = 'notification-copy'; const strong = document.createElement('strong'); strong.textContent = row.message; const small = document.createElement('small'); small.textContent = new Date(row.created_at).toLocaleString(); copy.append(strong, small);
+    const dot = document.createElement('span'); dot.className = 'notification-dot'; item.append(avatar, copy, dot); notificationList.append(item); notificationItems.push(item);
+    item.addEventListener('click', () => { item.classList.remove('is-unread'); void markNotificationRead(item); updateNotificationCount(); });
+  });
+  updateNotificationCount();
+};
+const loadNotifications = async () => {
+  try { const client = await window.IQZodiacSupabase.ready; const { data: userData } = await client.auth.getUser(); if (!userData?.user?.id) return; const { data, error } = await client.from('notifications').select('id,notification_type,post_id,comment_id,message,read_at,created_at').eq('recipient_id', userData.user.id).order('created_at', { ascending: false }).limit(30); if (error) throw error; renderNotifications(data || []);
+    client.channel(`notifications:${userData.user.id}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `recipient_id=eq.${userData.user.id}` }, (payload) => { renderNotifications([payload.new, ...[...notificationItems].map((item) => ({ id: item.dataset.notificationId, message: item.dataset.notification, read_at: item.classList.contains('is-unread') ? null : new Date().toISOString(), created_at: new Date().toISOString() }))]); showToast(payload.new.message); }).subscribe();
+  } catch { /* Notifications remain empty if the account service is unavailable. */ }
+};
+void loadNotifications();
 followButton.disabled = true;
 likeProfile.disabled = true;
 followLabel.textContent = 'Use Match to connect';
