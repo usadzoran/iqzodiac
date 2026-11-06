@@ -67,7 +67,6 @@
     document.querySelector('#modal-them').textContent = publicInitials(profile);
     document.querySelector('#match-modal').hidden = false;
     document.querySelector('#open-conversation').href = `./messages.html?match=${encodeURIComponent(profile.id || '')}`;
-    document.querySelector('#open-gifts').href = `./gift-store.html?to=${encodeURIComponent(profile.id || '')}`;
     document.querySelector('#close-match').focus();
   };
 

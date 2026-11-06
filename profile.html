@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <link rel="stylesheet" href="./styles.css?v=coins-profile-20261106" />
+    <link rel="stylesheet" href="./styles.css?v=coins-gifts-profile-20261106" />
   </head>
   <body class="profile-page has-site-nav">
     <div class="aurora aurora-one" aria-hidden="true"></div>
@@ -117,12 +117,12 @@
       <section class="profile-card profile-wallet-card" id="coin-wallet" aria-labelledby="profile-wallet-title" data-i18n-skip>
         <div class="card-heading">
           <div>
-            <p class="card-kicker" id="profile-wallet-kicker">03 / Wallet &amp; gifts</p>
-            <h2 id="profile-wallet-title">Coins for gifts</h2>
+            <p class="card-kicker" id="profile-wallet-kicker">03 / Profile wallet</p>
+            <h2 id="profile-wallet-title">Coins &amp; gifts</h2>
           </div>
           <span class="privacy-badge" id="profile-wallet-badge">CHECKING WALLET</span>
         </div>
-        <p class="section-intro" id="profile-wallet-description">Manage your coin balance here. Use coins to send gifts when gifting is enabled.</p>
+        <p class="section-intro" id="profile-wallet-description">Your coin balance and gift options are together here. Purchases and sending stay disabled until their secure server-side flows are connected.</p>
         <div class="profile-wallet-content">
           <div class="profile-wallet-balance">
             <span id="profile-wallet-balance-label">Available balance</span>
@@ -135,8 +135,18 @@
           </div>
         </div>
         <div class="profile-wallet-links">
-          <a class="button button-secondary" id="profile-wallet-gifts" href="./gift-store.html">View gift store</a>
           <a class="profile-wallet-ledger-link" id="profile-wallet-ledger" href="./wallet.html">Transaction history ↗</a>
+        </div>
+        <div class="profile-gift-catalog" id="profile-gift-catalog">
+          <div class="profile-gift-heading">
+            <div>
+              <p class="card-kicker" id="profile-gift-kicker">GIFTS · IN YOUR PROFILE</p>
+              <h3 id="profile-gift-title">Available gifts</h3>
+            </div>
+            <span class="profile-gift-badge" id="profile-gift-badge">CHECKING</span>
+          </div>
+          <p class="profile-gift-status" id="profile-gift-status" role="status" aria-live="polite">Checking available gifts…</p>
+          <div class="profile-gift-grid" id="profile-gift-grid" aria-live="polite"></div>
         </div>
         <p class="profile-wallet-status" id="profile-wallet-status" role="status" aria-live="polite">Checking your verified coin balance…</p>
       </section>
@@ -203,7 +213,7 @@
     <script src="./location-data.js"></script>
     <script src="./privacy-core.js"></script>
     <script src="./profile.js"></script>
-    <script src="./profile-wallet.js?v=coins-profile-20261106"></script>
+    <script src="./profile-wallet.js?v=coins-gifts-profile-20261106"></script>
       <script src="./nav-performance.js" defer></script>
   </body>
 </html>

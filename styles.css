@@ -282,6 +282,24 @@ h1 {
 .profile-wallet-ledger-link:hover { color: var(--ink); }
 .profile-wallet-status { margin: 15px 0 0; color: var(--dim); font-size: 10px; line-height: 1.5; }
 .profile-wallet-status[data-state="error"] { color: var(--orange); }
+.profile-gift-catalog { margin-top: 22px; padding-top: 19px; border-top: 1px solid rgba(218,225,255,0.12); }
+.profile-gift-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; }
+.profile-gift-heading h3 { margin: 0; color: var(--ink); font-size: 17px; font-weight: 600; letter-spacing: -0.035em; }
+.profile-gift-badge { color: var(--dim); font: 8px "DM Mono", monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+.profile-gift-status { margin: 12px 0 0; color: var(--dim); font: 10px/1.6 "DM Mono", monospace; }
+.profile-gift-status[data-state="ready"] { color: #8de4c4; }
+.profile-gift-status[data-state="error"] { color: var(--orange); }
+.profile-gift-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.profile-gift-grid:empty { display: none; }
+.profile-gift-item { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; padding: 13px; border: 1px solid rgba(218,225,255,0.12); border-radius: 3px; background: rgba(5,8,17,0.22); }
+.profile-gift-art { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(242,167,124,0.28); border-radius: 50%; background: rgba(242,167,124,0.08); color: var(--orange); font-size: 20px; }
+.profile-gift-copy { min-width: 0; }
+.profile-gift-copy h4 { margin: 1px 0 5px; overflow-wrap: anywhere; color: var(--ink); font-size: 12px; font-weight: 600; }
+.profile-gift-copy p { margin: 0; color: var(--dim); font: 8px "DM Mono", monospace; letter-spacing: 0.06em; text-transform: uppercase; }
+.profile-gift-offer { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.profile-gift-price { color: var(--orange); font: 10px "DM Mono", monospace; }
+.profile-gift-send { padding: 8px 10px; border: 1px solid rgba(131,229,232,0.25); border-radius: 2px; background: rgba(131,229,232,0.04); color: var(--dim); font: 8px "DM Mono", monospace; text-transform: uppercase; }
+.profile-gift-send:disabled { cursor: not-allowed; opacity: 0.65; }
 .card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
 .card-kicker { margin: 0 0 9px; color: var(--cyan); font: 10px "DM Mono", monospace; letter-spacing: 0.13em; text-transform: uppercase; }
 .card-heading h2 { margin: 0; color: var(--ink); font-size: 22px; font-weight: 600; letter-spacing: -0.045em; }
@@ -389,6 +407,7 @@ h1 {
   .profile-heading h1 { font-size: 52px; }
   .profile-wallet-content { grid-template-columns: 1fr; }
   .profile-wallet-controls .button { width: 100%; }
+  .profile-gift-grid { grid-template-columns: 1fr; }
   .identity-content { grid-template-columns: 1fr; justify-items: center; }
   .identity-fields { width: 100%; }
   .privacy-badge { font-size: 8px; }

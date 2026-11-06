@@ -117,7 +117,7 @@
 
 ## Match refresh, gift store, and wallet
 - [x] Rebuilt Match layout from the broken compressed stylesheet into a structured responsive discovery experience.
-- [x] Added the gift-store page scaffold; demo gifts, prices, recipients, and local coin deductions are not shown.
+- [x] Integrated the gift catalog into the Profile wallet card beside the coin balance; the old gift-store URL redirects to Profile, and no demo gifts, prices, recipients, or local coin deductions are shown.
 - [x] Added the wallet status page; no local balance or transaction is presented as real, and purchases/payouts remain disabled.
 
 ## Supabase VIP database scaffold
