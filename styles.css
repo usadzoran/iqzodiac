@@ -271,6 +271,17 @@ h1 {
 .profile-card { border: 1px solid var(--line); border-radius: 4px; background: linear-gradient(145deg, rgba(24, 31, 57, 0.76), rgba(12, 17, 32, 0.64)); box-shadow: 0 20px 70px rgba(0,0,0,0.17); }
 .identity-card { padding: clamp(22px, 3vw, 34px); }
 .gallery-card { padding: clamp(22px, 3vw, 34px); }
+.profile-wallet-card { margin-top: 17px; padding: clamp(22px, 3vw, 34px); }
+.profile-wallet-content { display: grid; grid-template-columns: minmax(150px, 0.7fr) minmax(0, 1.3fr); gap: 24px; align-items: center; margin-top: 20px; padding: 19px; border: 1px solid rgba(131,229,232,0.15); background: rgba(5,8,17,0.25); }
+.profile-wallet-balance > span, .profile-wallet-balance > small { display: block; color: var(--dim); font: 9px "DM Mono", monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+.profile-wallet-balance strong { display: block; margin: 7px 0 3px; color: var(--cyan); font-size: clamp(28px, 4vw, 42px); font-weight: 700; letter-spacing: -0.06em; }
+.profile-wallet-controls p { max-width: 460px; margin: 10px 0 0; color: var(--dim); font-size: 10px; line-height: 1.5; }
+.profile-wallet-controls .button:disabled { cursor: not-allowed; opacity: 0.58; filter: saturate(0.55); }
+.profile-wallet-links { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 18px; }
+.profile-wallet-ledger-link { color: var(--cyan); font: 9px "DM Mono", monospace; letter-spacing: 0.07em; text-decoration: none; text-transform: uppercase; }
+.profile-wallet-ledger-link:hover { color: var(--ink); }
+.profile-wallet-status { margin: 15px 0 0; color: var(--dim); font-size: 10px; line-height: 1.5; }
+.profile-wallet-status[data-state="error"] { color: var(--orange); }
 .card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
 .card-kicker { margin: 0 0 9px; color: var(--cyan); font: 10px "DM Mono", monospace; letter-spacing: 0.13em; text-transform: uppercase; }
 .card-heading h2 { margin: 0; color: var(--ink); font-size: 22px; font-weight: 600; letter-spacing: -0.045em; }
@@ -376,6 +387,8 @@ h1 {
   .profile-link { font-size: 9px; }
   .profile-heading { margin-top: 58px; margin-bottom: 32px; }
   .profile-heading h1 { font-size: 52px; }
+  .profile-wallet-content { grid-template-columns: 1fr; }
+  .profile-wallet-controls .button { width: 100%; }
   .identity-content { grid-template-columns: 1fr; justify-items: center; }
   .identity-fields { width: 100%; }
   .privacy-badge { font-size: 8px; }

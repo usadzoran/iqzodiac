@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <link rel="stylesheet" href="./styles.css?v=home-refresh-20261022" />
+    <link rel="stylesheet" href="./styles.css?v=coins-profile-20261106" />
   </head>
   <body class="profile-page has-site-nav">
     <div class="aurora aurora-one" aria-hidden="true"></div>
@@ -114,6 +114,33 @@
         <div class="vip-access-row"><div><span class="card-kicker">VIP ORBIT</span><strong>Unlock future priority spaces.</strong><small id="vip-access-copy">VIP will unlock special sections and priority matching after checkout is connected.</small></div><a class="button button-secondary" href="./vip.html">View VIP access <span class="button-arrow">↗</span></a></div>
       </section>
 
+      <section class="profile-card profile-wallet-card" id="coin-wallet" aria-labelledby="profile-wallet-title" data-i18n-skip>
+        <div class="card-heading">
+          <div>
+            <p class="card-kicker" id="profile-wallet-kicker">03 / Wallet &amp; gifts</p>
+            <h2 id="profile-wallet-title">Coins for gifts</h2>
+          </div>
+          <span class="privacy-badge" id="profile-wallet-badge">CHECKING WALLET</span>
+        </div>
+        <p class="section-intro" id="profile-wallet-description">Manage your coin balance here. Use coins to send gifts when gifting is enabled.</p>
+        <div class="profile-wallet-content">
+          <div class="profile-wallet-balance">
+            <span id="profile-wallet-balance-label">Available balance</span>
+            <strong id="profile-wallet-coins">—</strong>
+            <small id="profile-wallet-coin-unit">coins</small>
+          </div>
+          <div class="profile-wallet-controls">
+            <button class="button button-primary" id="profile-buy-coins" type="button" disabled aria-disabled="true">Buy coins</button>
+            <p id="profile-wallet-purchase-note">Purchases are currently disabled until secure checkout and verified payment webhooks are connected.</p>
+          </div>
+        </div>
+        <div class="profile-wallet-links">
+          <a class="button button-secondary" id="profile-wallet-gifts" href="./gift-store.html">View gift store</a>
+          <a class="profile-wallet-ledger-link" id="profile-wallet-ledger" href="./wallet.html">Transaction history ↗</a>
+        </div>
+        <p class="profile-wallet-status" id="profile-wallet-status" role="status" aria-live="polite">Checking your verified coin balance…</p>
+      </section>
+
       <div class="social-grid">
         <section class="profile-card community-card" aria-labelledby="community-title">
           <div class="card-heading">
@@ -172,10 +199,11 @@
     <div class="toast" role="status" aria-live="polite" aria-atomic="true"><span class="toast-icon" aria-hidden="true">✦</span><span class="toast-message"></span></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-client.js"></script><script src="./auth-guard.js"></script>
     <script src="./i18n-data.js?v=20261022-global"></script>
-  <script src="./language.js?v=20261022-global"></script>
+    <script src="./language.js?v=20261022-global"></script>
     <script src="./location-data.js"></script>
     <script src="./privacy-core.js"></script>
     <script src="./profile.js"></script>
+    <script src="./profile-wallet.js?v=coins-profile-20261106"></script>
       <script src="./nav-performance.js" defer></script>
   </body>
 </html>

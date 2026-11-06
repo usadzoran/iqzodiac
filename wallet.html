@@ -29,10 +29,17 @@
       <article class="balance-card cash-balance-card"><p class="card-kicker">CREATOR EARNINGS</p><strong id="wallet-cash">—</strong><span>Pending and withdrawable earnings are not available yet.</span></article>
     </section>
 
-    <section id="top-up" class="wallet-section">
-      <div class="section-heading"><div><p class="card-kicker">01 / Coin purchases</p><h2>Buy coins</h2><p>Purchases remain disabled until a payment provider and verified server-side webhooks are connected. No card details are collected.</p></div><span class="secure-note">NOT CONNECTED</span></div>
-      <p id="checkout-status" class="wallet-status" aria-live="polite">No coin packages or prices are configured in the database.</p>
-      <button class="button button-primary" type="button" disabled aria-disabled="true">Coin purchase unavailable</button>
+    <section id="top-up" class="wallet-section" data-i18n-skip>
+      <div class="section-heading">
+        <div>
+          <p id="wallet-purchase-kicker" class="card-kicker">01 / Coin purchases</p>
+          <h2 id="wallet-purchase-heading">Buy coins from your Profile</h2>
+          <p id="wallet-purchase-copy">Coin purchases are managed from your Profile. This page keeps your verified balance and transaction history.</p>
+        </div>
+        <span id="wallet-purchase-badge" class="secure-note">PROFILE</span>
+      </div>
+      <p id="wallet-purchase-status" class="wallet-status" aria-live="polite">Checkout remains disabled until secure payment and server verification are connected.</p>
+      <a id="wallet-purchase-link" href="./profile.html#coin-wallet" class="button button-primary">Open Profile wallet</a>
     </section>
 
     <section id="withdraw" class="wallet-section withdraw-section">
@@ -60,7 +67,7 @@
     <script src="./i18n-data.js?v=20261022-global"></script>
   <script src="./language.js?v=20261022-global"></script>
   <script src="./vip-data.js?v=wallet-20261025"></script>
-  <script src="./wallet.js?v=wallet-20261025"></script>
+  <script src="./wallet.js?v=coins-profile-20261106"></script>
     <script src="./nav-performance.js" defer></script>
   </body>
 </html>
