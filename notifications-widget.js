@@ -27,20 +27,36 @@
     }
   };
 
+  const deleteNotification = async (id) => {
+    const previousRows = notificationRows;
+    notificationRows = notificationRows.filter((row) => row.id !== id);
+    updateBadge();
+    renderPopover();
+    const { error } = await client.from('notifications').delete().eq('id', id);
+    if (error) {
+      notificationRows = previousRows;
+      updateBadge();
+      renderPopover();
+      console.warn('Notification could not be deleted.', error);
+    }
+  };
+
   const renderPopover = () => {
     if (!popoverList) return;
     popoverList.replaceChildren();
-    const unreadRows = notificationRows.filter((row) => !row.read_at).slice(0, 8);
-    if (!unreadRows.length) {
-      popoverList.innerHTML = '<p class="sidebar-note">No new notifications.</p>';
+    const rows = notificationRows.slice(0, 8);
+    if (!rows.length) {
+      popoverList.innerHTML = '<p class="sidebar-note">No notifications.</p>';
       return;
     }
-    unreadRows.forEach((row) => {
+    rows.forEach((row) => {
+      const entry = document.createElement('div');
+      entry.className = 'notification-popover-entry';
       const item = document.createElement('button');
       item.type = 'button';
-      item.className = 'notification-popover-item is-unread';
+      item.className = `notification-popover-item${row.read_at ? '' : ' is-unread'}`;
       const icon = document.createElement('span');
-      icon.textContent = '•';
+      icon.textContent = row.read_at ? '·' : '•';
       const copy = document.createElement('span');
       copy.textContent = row.message || 'New notification';
       const time = document.createElement('small');
@@ -51,7 +67,18 @@
         await markNotificationRead(row.id);
         renderPopover();
       });
-      popoverList.append(item);
+      const deleteButton = document.createElement('button');
+      deleteButton.type = 'button';
+      deleteButton.className = 'notification-delete';
+      deleteButton.setAttribute('aria-label', 'Delete notification');
+      deleteButton.title = 'Delete notification';
+      deleteButton.textContent = '×';
+      deleteButton.addEventListener('click', async (event) => {
+        event.stopPropagation();
+        await deleteNotification(row.id);
+      });
+      entry.append(item, deleteButton);
+      popoverList.append(entry);
     });
   };
 
@@ -89,7 +116,7 @@
       userId = auth?.user?.id;
       if (!userId) return;
       const update = async () => {
-        const { data, error } = await client.from('notifications').select('id,message,read_at,created_at').eq('recipient_id', userId).order('created_at', { ascending: false }).limit(30);
+        const { data, error } = await client.from('notifications').select('id,message,read_at,created_at,post_id,comment_id').eq('recipient_id', userId).order('created_at', { ascending: false }).limit(30);
         if (error) throw error;
         notificationRows = data || [];
         updateBadge();

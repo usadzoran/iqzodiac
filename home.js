@@ -13,6 +13,7 @@ const showToast = (message) => {
 const formatCount = (value) => new Intl.NumberFormat('en-US').format(value);
 const escapeText = (value) => value.trim().slice(0, 500);
 const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+const formatDateTime = (value) => value ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '';
 const database = () => window.IQZodiacSupabase?.ready;
 let authenticatedUserId = null;
 let savedProfile = {};
@@ -22,6 +23,24 @@ const currentPublicIdentity = {
   displayName: String(hasPseudonymousProfile ? (savedProfile.displayName || savedProfile.pseudonym || 'Orbit Member') : 'Orbit Member').slice(0, 32),
   handle: hasPseudonymousProfile && /^@[a-z0-9._-]{1,24}$/i.test(savedProfile.handle || '') ? savedProfile.handle : '@orbit-member',
   initials: String(hasPseudonymousProfile ? (savedProfile.initials || 'OM') : 'OM').slice(0, 2).toUpperCase(),
+};
+const createCommentElement = (comment) => {
+  const element = document.createElement('div');
+  element.className = 'comment';
+  const avatar = document.createElement('span');
+  avatar.className = 'comment-avatar home-avatar-small';
+  avatar.textContent = String(comment.display_name || comment.handle || 'OM').replace(/^@/, '').slice(0, 1).toUpperCase();
+  const copy = document.createElement('p');
+  const author = document.createElement('strong');
+  author.textContent = comment.handle || comment.display_name || '@member';
+  const body = document.createElement('span');
+  body.textContent = ` ${comment.body || ''}`;
+  const time = document.createElement('small');
+  time.className = 'comment-time';
+  time.textContent = formatDateTime(comment.created_at);
+  copy.append(author, body, time);
+  element.append(avatar, copy);
+  return element;
 };
 document.querySelectorAll('[data-current-user-name]').forEach((node) => { node.textContent = currentPublicIdentity.displayName; });
 document.querySelectorAll('[data-current-user-handle]').forEach((node) => { node.textContent = currentPublicIdentity.handle; });
@@ -84,16 +103,7 @@ const bindPost = (post) => {
     if (!client || !authenticatedUserId || !/^[0-9a-f-]{36}$/i.test(post.dataset.postId || '')) { showToast('Sign in to comment on shared posts.'); return; }
     const { error } = await client.from('comments').insert({ post_id: post.dataset.postId, author_id: authenticatedUserId, body: value });
     if (error) { showToast('Comment could not be saved.'); return; }
-    const comment = document.createElement('div');
-    comment.className = 'comment';
-    const avatar = document.createElement('span');
-    avatar.className = 'comment-avatar home-avatar-small';
-    avatar.textContent = currentPublicIdentity.initials;
-    const copy = document.createElement('p');
-    const author = document.createElement('strong');
-    author.textContent = currentPublicIdentity.handle.slice(1);
-    copy.append(author, document.createTextNode(` ${value}`));
-    comment.append(avatar, copy);
+    const comment = createCommentElement({ display_name: currentPublicIdentity.displayName, handle: currentPublicIdentity.handle, body: value, created_at: new Date().toISOString() });
     commentList.append(comment);
     const count = Number(commentCount.textContent.replace(/[^0-9]/g, '')) + 1;
     commentCount.textContent = `${formatCount(count)} comments`;
@@ -243,9 +253,22 @@ if ('IntersectionObserver' in window && !reduceMotion) {
         const post = document.createElement('article');
         post.className = 'post-card'; post.dataset.postId = item.post_id; post.dataset.author = String(item.handle || '').replace(/^@/, ''); post.dataset.authorId = item.author_id;
         const liked = Boolean(item.liked_by_me);
-        post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">${escapeHTML(String(item.display_name || 'OM').slice(0, 1))}</div><div class="post-author"><strong>${escapeHTML(item.display_name || 'Orbit Member')}</strong><span>${escapeHTML(item.handle || '@member')} · ${escapeHTML(new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(item.created_at)))}</span></div></header><p class="post-body">${escapeHTML(item.body)}</p><div class="post-meta"><span class="like-count">${formatCount(Number(item.like_count || 0))} likes</span><span class="comment-count">${formatCount(Number(item.comment_count || 0))} comments</span></div><div class="post-actions"><button class="post-action like-button ${liked ? 'is-liked' : ''}" type="button" data-like="${liked}"><span class="action-icon">${liked ? '♥' : '♡'}</span><span>${liked ? 'Liked' : 'Like'}</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment" /><button type="submit" aria-label="Post comment">↗</button></form>`;
+        post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">${escapeHTML(String(item.display_name || 'OM').slice(0, 1))}</div><div class="post-author"><strong>${escapeHTML(item.display_name || 'Orbit Member')}</strong><span>${escapeHTML(item.handle || '@member')} · ${escapeHTML(formatDateTime(item.created_at))}</span></div></header><p class="post-body">${escapeHTML(item.body)}</p><div class="post-meta"><span class="like-count">${formatCount(Number(item.like_count || 0))} likes</span><span class="comment-count">${formatCount(Number(item.comment_count || 0))} comments</span></div><div class="post-actions"><button class="post-action like-button ${liked ? 'is-liked' : ''}" type="button" data-like="${liked}"><span class="action-icon">${liked ? '♥' : '♡'}</span><span>${liked ? 'Liked' : 'Like'}</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment" /><button type="submit" aria-label="Post comment">↗</button></form>`;
         feedList.append(post); bindPost(post);
       });
+    }
+    const postIds = (feed || []).map((item) => item.post_id).filter(Boolean);
+    if (postIds.length) {
+      let comments = [];
+      const { data: enrichedComments, error: commentsError } = await client.rpc('get_post_comments', { p_post_ids: postIds });
+      if (!commentsError) {
+        comments = enrichedComments || [];
+      } else {
+        const { data: basicComments, error: basicCommentsError } = await client.from('comments').select('id,post_id,author_id,body,created_at').in('post_id', postIds).order('created_at', { ascending: true });
+        if (basicCommentsError) throw basicCommentsError;
+        comments = (basicComments || []).map((comment) => ({ ...comment, handle: comment.author_id === authenticatedUserId ? currentPublicIdentity.handle : '@member' }));
+      }
+      comments.forEach((comment) => document.querySelector(`.post-card[data-post-id="${CSS.escape(comment.post_id)}"] .comment-list`)?.append(createCommentElement(comment)));
     }
     const today = new Date().toLocaleDateString('en-CA');
     const { data: mood } = await client.from('daily_moods').select('mood').eq('mood_date', today).maybeSingle();

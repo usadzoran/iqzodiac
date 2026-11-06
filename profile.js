@@ -68,6 +68,13 @@ const markNotificationRead = async (item) => {
   if (!item.dataset.notificationId || !window.IQZodiacSupabase?.ready) return;
   try { const client = await window.IQZodiacSupabase.ready; await client.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', item.dataset.notificationId); } catch { /* The local visual state still updates. */ }
 };
+const deleteCompactNotification = async (id) => {
+  const previousRows = [...notificationItems];
+  notificationItems = notificationItems.filter((item) => item.dataset.notificationId !== id);
+  updateNotificationCount(); updateNotificationBadge();
+  renderCompactNotifications(notificationItems.map((item) => ({ id: item.dataset.notificationId, message: item.dataset.notification, read_at: item.classList.contains('is-unread') ? null : new Date().toISOString(), created_at: new Date().toISOString() })));
+  try { const client = await window.IQZodiacSupabase.ready; const { error } = await client.from('notifications').delete().eq('id', id); if (error) throw error; } catch { notificationItems = previousRows; updateNotificationCount(); updateNotificationBadge(); renderCompactNotifications([]); }
+};
 notificationItems.forEach((item) => item.addEventListener('click', () => { item.classList.remove('is-unread'); void markNotificationRead(item); updateNotificationCount(); showToast(item.dataset.notification); }));
 document.querySelector('#mark-all-read').addEventListener('click', async () => {
   notificationItems.forEach((item) => item.classList.remove('is-unread'));
@@ -76,12 +83,15 @@ document.querySelector('#mark-all-read').addEventListener('click', async () => {
 });
 const renderCompactNotifications = (rows) => {
   notificationPopoverList.replaceChildren();
-  const unreadRows = rows.filter((row) => !row.read_at).slice(0, 8);
-  if (!unreadRows.length) { notificationPopoverList.innerHTML = '<p class="sidebar-note">No new notifications.</p>'; return; }
-  unreadRows.forEach((row) => {
-    const item = document.createElement('button'); item.type = 'button'; item.className = 'notification-popover-item is-unread'; item.dataset.notificationId = row.id;
-    const icon = document.createElement('span'); icon.textContent = '•'; const copy = document.createElement('span'); copy.textContent = row.message; const time = document.createElement('small'); time.textContent = new Date(row.created_at).toLocaleString(); copy.append(time); item.append(icon, copy);
-    item.addEventListener('click', async () => { await markNotificationRead({ dataset: { notificationId: row.id } }); item.remove(); showToast(row.message); }); notificationPopoverList.append(item);
+  const visibleRows = rows.slice(0, 8);
+  if (!visibleRows.length) { notificationPopoverList.innerHTML = '<p class="sidebar-note">No notifications.</p>'; return; }
+  visibleRows.forEach((row) => {
+    const entry = document.createElement('div'); entry.className = 'notification-popover-entry';
+    const item = document.createElement('button'); item.type = 'button'; item.className = `notification-popover-item${row.read_at ? '' : ' is-unread'}`; item.dataset.notificationId = row.id;
+    const icon = document.createElement('span'); icon.textContent = row.read_at ? '·' : '•'; const copy = document.createElement('span'); copy.textContent = row.message || 'New notification'; const time = document.createElement('small'); time.textContent = row.created_at ? new Date(row.created_at).toLocaleString() : ''; copy.append(time); item.append(icon, copy);
+    item.addEventListener('click', async () => { await markNotificationRead({ dataset: { notificationId: row.id } }); item.classList.remove('is-unread'); showToast(row.message); });
+    const deleteButton = document.createElement('button'); deleteButton.type = 'button'; deleteButton.className = 'notification-delete'; deleteButton.setAttribute('aria-label', 'Delete notification'); deleteButton.title = 'Delete notification'; deleteButton.textContent = '×'; deleteButton.addEventListener('click', (event) => { event.stopPropagation(); void deleteCompactNotification(row.id); });
+    entry.append(item, deleteButton); notificationPopoverList.append(entry);
   });
 };
 notificationTrigger?.addEventListener('click', () => { const open = notificationPopover.hidden; notificationPopover.hidden = !open; notificationTrigger.setAttribute('aria-expanded', String(open)); });

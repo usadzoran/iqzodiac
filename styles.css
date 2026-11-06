@@ -101,11 +101,14 @@ body::before {
 .notification-popover-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 2px 2px 9px; border-bottom: 1px solid rgba(218,225,255,0.1); color: var(--ink); font-size: 11px; }
 .notification-popover-heading button { border: 0; background: transparent; color: var(--cyan); cursor: pointer; font: 8px "DM Mono", monospace; text-transform: uppercase; }
 .notification-popover-list { display: grid; gap: 2px; max-height: 260px; overflow-y: auto; padding-top: 5px; }
+.notification-popover-entry { display: grid; grid-template-columns: minmax(0, 1fr) 24px; align-items: center; gap: 2px; }
 .notification-popover-item { display: grid; grid-template-columns: 22px 1fr; gap: 8px; width: 100%; padding: 8px 4px; border: 0; border-radius: 4px; background: transparent; color: var(--muted); cursor: pointer; text-align: left; }
 .notification-popover-item:hover { background: rgba(131,229,232,0.08); color: var(--ink); }
 .notification-popover-item.is-unread { color: var(--ink); }
 .notification-popover-item span:first-child { color: var(--cyan); font-size: 11px; }
 .notification-popover-item small { display: block; margin-top: 3px; color: var(--dim); font-size: 8px; }
+.notification-delete { width: 22px; height: 22px; padding: 0; border: 1px solid transparent; border-radius: 50%; background: transparent; color: var(--dim); cursor: pointer; font: 16px/1 "Manrope", sans-serif; }
+.notification-delete:hover, .notification-delete:focus-visible { border-color: rgba(242,167,124,0.55); color: var(--orange); outline: none; }
 
 .mini-mark {
   display: inline-flex;
@@ -542,6 +545,7 @@ h1 {
 .comment-avatar { display: grid; flex: none; width: 22px; height: 22px; place-items: center; border-radius: 50%; color: var(--night); font-size: 8px; font-weight: 800; }
 .comment p { margin: 1px 0 0; }
 .comment p strong { margin-right: 3px; color: var(--ink); font-size: 10px; }
+.comment-time { display: block; margin-top: 3px; color: var(--dim); font-size: 8px; }
 .comment-form { display: flex; align-items: center; gap: 7px; margin-top: 12px; }
 .comment-form input { min-width: 0; flex: 1; padding: 9px 0; border: 0; border-bottom: 1px solid rgba(218,225,255,0.14); outline: 0; background: transparent; color: var(--ink); font: 10px "Manrope", sans-serif; }
 .comment-form input:focus { border-color: var(--cyan); }
