@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=home-mood-20261022" />
+    <link rel="stylesheet" href="./styles.css?v=notifications-top-20261106" />
   </head>
   <body class="home-page has-site-nav">
     <div class="aurora aurora-one" aria-hidden="true"></div>
@@ -24,6 +24,7 @@
           <a class="home-nav-link is-active" href="./home.html">Home</a>
           <a class="home-nav-link" href="./profile.html">Profile</a>
           <a class="home-nav-link" href="./messages.html">Messages</a>
+          <a class="notification-menu notification-menu-link" href="./profile.html" aria-label="Open notifications"><span class="notification-trigger" aria-hidden="true"><span class="notification-bell">◌</span><span class="notification-badge" id="notification-badge" hidden>0</span></span></a>
           <span class="nav-avatar home-avatar-small" data-current-user-initials aria-label="Signed in as pseudonymous member">OM</span>
         </nav>
       </header>
@@ -106,7 +107,7 @@
   <a href="./profile.html"><span class="nav-glyph" aria-hidden="true">◍</span><span data-menu-key="profile">Profile</span></a>
 </nav>
     <div class="toast" role="status" aria-live="polite" aria-atomic="true"><span class="toast-icon" aria-hidden="true">✦</span><span class="toast-message"></span></div>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-client.js"></script><script src="./auth-guard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-client.js"></script><script src="./auth-guard.js"></script><script src="./notifications-widget.js?v=20261106"></script>
     <script src="./i18n-data.js?v=20261022-global"></script>
   <script src="./language.js?v=20261022-global"></script>
     <script src="./home.js"></script>
