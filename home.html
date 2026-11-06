@@ -24,7 +24,15 @@
           <a class="home-nav-link is-active" href="./home.html">Home</a>
           <a class="home-nav-link" href="./profile.html">Profile</a>
           <a class="home-nav-link" href="./messages.html">Messages</a>
-          <a class="notification-menu notification-menu-link" href="./profile.html" aria-label="Open notifications"><span class="notification-trigger" aria-hidden="true"><span class="notification-bell">◌</span><span class="notification-badge" id="notification-badge" hidden>0</span></span></a>
+          <div class="notification-menu" id="notification-menu">
+            <button class="notification-trigger" id="notification-trigger" type="button" aria-label="Open notifications" aria-expanded="false" aria-controls="notification-popover">
+              <span class="notification-bell" aria-hidden="true">◌</span><span class="notification-badge" id="notification-badge" hidden>0</span>
+            </button>
+            <div class="notification-popover" id="notification-popover" hidden>
+              <div class="notification-popover-heading"><strong>Notifications</strong><button id="popover-mark-read" type="button">Mark read</button></div>
+              <div class="notification-popover-list" id="notification-popover-list"><p class="sidebar-note">No new notifications.</p></div>
+            </div>
+          </div>
           <span class="nav-avatar home-avatar-small" data-current-user-initials aria-label="Signed in as pseudonymous member">OM</span>
         </nav>
       </header>
