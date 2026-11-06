@@ -98,17 +98,17 @@
       const card = document.createElement('article');
       card.className = 'profile-gift-item';
 
-      const art = document.createElement('span');
+      const art = document.createElement('img');
       art.className = 'profile-gift-art';
-      art.setAttribute('aria-hidden', 'true');
-      art.textContent = '✦';
+      art.src = gift.asset_path || `./assets/gifts/${gift.icon_asset_ref}.svg`;
+      art.alt = String(gift[language === 'ar' ? 'name_ar' : 'name_en'] || gift.name || gift.gift_code || text.gifts.fallbackName);
 
       const details = document.createElement('div');
       details.className = 'profile-gift-copy';
       const name = document.createElement('h4');
-      name.textContent = String(gift.name || gift.gift_code || text.gifts.fallbackName);
+      name.textContent = art.alt;
       const category = document.createElement('p');
-      category.textContent = String(gift.category || text.gifts.fallbackCategory);
+      category.textContent = `${String(gift.category || text.gifts.fallbackCategory)} · $${Number(gift.usd_value || 0).toFixed(2)}`;
       details.append(name, category);
 
       const offer = document.createElement('div');

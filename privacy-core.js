@@ -219,10 +219,22 @@
       return [];
     },
     async listGifts() {
-      try { const client = await database(); if (client) { const { data, error } = await client.from('vip_gifts').select('id,gift_code,name,category,icon_asset_ref,price_coins').eq('is_active', true).order('sort_order').limit(100); if (error) throw error; return data || []; } } catch (error) { console.warn('Gift catalog could not be loaded.', error); }
+      try { const client = await database(); if (client) { const { data, error } = await client.from('vip_gifts').select('id,gift_code,name,name_en,name_ar,category,description_en,description_ar,icon_asset_ref,asset_path,price_coins,usd_value,gift_level,animation_type,animation_level').eq('is_active', true).order('sort_order').limit(100); if (error) throw error; return data || []; } } catch (error) { console.warn('Gift catalog could not be loaded.', error); }
       return [];
     },
-    async sendGift() { throw new Error('Gift sending is disabled until a verified server-side integration is connected.'); },
+    async sendGift({ liveSessionId, giftId, quantity = 1, idempotencyKey, message = null } = {}) {
+      const client = await database();
+      if (!client) throw new Error('Gift service unavailable');
+      const { data, error } = await client.rpc('iqzodiac_send_live_gift', {
+        p_live_session_id: liveSessionId,
+        p_gift_id: giftId,
+        p_quantity: quantity,
+        p_idempotency_key: idempotencyKey || crypto.randomUUID(),
+        p_message: message,
+      });
+      if (error) throw error;
+      return data;
+    },
     async receiveGift() { throw new Error('Gift settlement is disabled until a verified server-side integration is connected.'); },
     async convertReceivedCoins() { throw new Error('Earnings conversion is disabled until a payout policy and provider are connected.'); },
     async createCoinCheckout() { return { status: 'checkout_not_connected', message: 'Coin purchases are disabled; no payment order was created.' }; },

@@ -36,6 +36,12 @@
         <p id="vip-stream-status" class="vip-status">No live video provider is configured.</p>
       </div>
       <div id="vip-live-sessions" class="vip-live-sessions" aria-live="polite"></div>
+      <section id="vip-gift-panel" class="vip-gift-panel" hidden aria-labelledby="vip-gift-title">
+        <div class="vip-gift-panel-heading"><div><p class="card-kicker">LIVE GIFTS</p><h2 id="vip-gift-title">Send a gift</h2></div><span id="vip-gift-balance" class="vip-gift-balance">— coins</span></div>
+        <p id="vip-gift-status" class="vip-status" role="status" aria-live="polite">Select a gift to preview the exact coin amount.</p>
+        <div id="vip-gift-levels" class="vip-gift-levels" role="list"></div>
+        <div class="vip-gift-actions"><label for="vip-gift-quantity">Quantity</label><select id="vip-gift-quantity"><option value="1">1</option><option value="5">5</option><option value="10">10</option><option value="20">20</option></select><button id="vip-send-gift" class="button button-primary" type="button" disabled>Send gift</button></div>
+      </section>
       <div class="vip-live-actions">
         <button id="vip-start-broadcast" class="button button-primary" type="button" disabled aria-disabled="true">Start broadcast · unavailable</button>
         <a class="vip-secondary-link" href="./wallet.html">Wallet status</a>
@@ -53,7 +59,7 @@
     <a href="./rooms.html"><span class="nav-glyph" aria-hidden="true">◉</span><span data-menu-key="rooms">Rooms</span></a>
     <a href="./profile.html"><span class="nav-glyph" aria-hidden="true">◍</span><span data-menu-key="profile">Profile</span></a>
   </nav>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-client.js"></script><script src="./auth-guard.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-client.js"></script><script src="./auth-guard.js"></script><script src="./privacy-core.js"></script>
     <script src="./i18n-data.js?v=20261022-global"></script>
   <script src="./language.js?v=20261022-global"></script>
   <script src="./vip-data.js?v=vip-live-20261025"></script>

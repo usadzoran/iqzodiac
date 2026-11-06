@@ -30,6 +30,9 @@
   };
   const t = messages[language];
   const byId = (id) => document.getElementById(id);
+  let selectedSessionId = null;
+  let selectedGift = null;
+  let availableCoins = null;
   const setStatus = (id, message, state) => {
     const element = byId(id);
     if (!element) return;
@@ -54,10 +57,47 @@
       title.textContent = String(session.title || 'VIP live session');
       const description = document.createElement('p');
       description.textContent = String(session.description || '');
-      card.append(title, description);
+      const choose = document.createElement('button');
+      choose.type = 'button'; choose.className = 'vip-gift-session-button'; choose.textContent = 'Open gift picker';
+      choose.addEventListener('click', () => { selectedSessionId = session.id; loadGiftPicker(); });
+      card.append(title, description, choose);
       container.append(card);
     });
   }
+
+  function renderGifts(gifts) {
+    const levels = byId('vip-gift-levels');
+    if (!levels) return;
+    levels.replaceChildren();
+    const language = window.IQZodiacLanguage?.language === 'ar' ? 'ar' : 'en';
+    gifts.forEach((gift) => {
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'vip-gift-choice'; button.setAttribute('role', 'listitem');
+      const image = document.createElement('img'); image.src = gift.asset_path || `./assets/gifts/${gift.icon_asset_ref}.svg`; image.alt = gift[language === 'ar' ? 'name_ar' : 'name_en'] || gift.name;
+      const name = document.createElement('strong'); name.textContent = image.alt;
+      const price = document.createElement('small'); price.textContent = `${gift.price_coins} coins · $${Number(gift.usd_value || 0).toFixed(2)}`;
+      button.append(image, name, price); button.addEventListener('click', () => { selectedGift = gift; levels.querySelectorAll('.vip-gift-choice').forEach((item) => item.classList.remove('is-selected')); button.classList.add('is-selected'); updateGiftTotal(); }); levels.append(button);
+    });
+  }
+  function updateGiftTotal() {
+    const quantity = Number(byId('vip-gift-quantity')?.value || 1); const total = selectedGift ? Number(selectedGift.price_coins) * quantity : 0;
+    setStatus('vip-gift-status', selectedGift ? `You are about to send ${quantity} × ${selectedGift.name_en || selectedGift.name} for ${total} coins.` : 'Select a gift to preview the exact coin amount.', selectedGift && (availableCoins === null || availableCoins >= total) ? 'ok' : 'pending');
+    const send = byId('vip-send-gift'); if (send) send.disabled = !selectedGift || !selectedSessionId || availableCoins !== null && availableCoins < total;
+  }
+  async function loadGiftPicker() {
+    const panel = byId('vip-gift-panel'); if (!panel) return; panel.hidden = false;
+    try {
+      const [gifts, client] = await Promise.all([window.IQZodiacData.adapter.listGifts(), window.IQZodiacSupabase.ready]);
+      const { data } = await client.from('vip_wallets').select('spendable_coins').maybeSingle(); availableCoins = data ? Number(data.spendable_coins) : 0;
+      byId('vip-gift-balance').textContent = `${availableCoins.toLocaleString()} coins`; renderGifts(gifts); updateGiftTotal();
+    } catch { setStatus('vip-gift-status', 'Gift catalog is unavailable. No coins were deducted.', 'error'); }
+  }
+  byId('vip-gift-quantity')?.addEventListener('change', updateGiftTotal);
+  byId('vip-send-gift')?.addEventListener('click', async () => {
+    if (!selectedGift || !selectedSessionId) return;
+    const send = byId('vip-send-gift'); send.disabled = true;
+    try { await window.IQZodiacData.adapter.sendGift({ liveSessionId: selectedSessionId, giftId: selectedGift.id, quantity: Number(byId('vip-gift-quantity').value), idempotencyKey: crypto.randomUUID() }); setStatus('vip-gift-status', 'Gift sent successfully. The live notification will appear for viewers.', 'ok'); await loadGiftPicker(); }
+    catch (error) { setStatus('vip-gift-status', error?.message === 'insufficient_coins' ? 'Insufficient coins. Visit My Wallet to buy coins when purchasing is enabled.' : 'Gift was not sent. No balance was deducted.', 'error'); updateGiftTotal(); }
+  });
 
   async function initialize() {
     setStatus('vip-db-status', t.dbChecking, 'pending');
