@@ -26,7 +26,7 @@
     <p id="wallet-db-status" class="wallet-status" aria-live="polite">Checking secure wallet status…</p>
     <section class="balance-grid" aria-label="Wallet balances">
       <article class="balance-card coin-balance-card"><p class="card-kicker">SPENDABLE COINS</p><strong id="wallet-coins">—</strong><span>No verified wallet balance is available.</span></article>
-      <article class="balance-card cash-balance-card"><p class="card-kicker">CREATOR EARNINGS</p><strong id="wallet-cash">—</strong><span>Pending and withdrawable earnings are not available yet.</span></article>
+      <article class="balance-card cash-balance-card"><p class="card-kicker">CREATOR EARNINGS · USD</p><strong id="wallet-cash">—</strong><span>Available verified USD earnings. This is separate from coins.</span></article>
     </section>
 
     <section id="top-up" class="wallet-section" data-i18n-skip>
@@ -42,6 +42,19 @@
       <a id="wallet-purchase-link" href="./profile.html#coin-wallet" class="button button-primary">Open Profile wallet</a>
     </section>
 
+    <section class="wallet-section" id="cash-earnings" data-i18n-skip>
+      <div class="section-heading"><div><p class="card-kicker">02 / VERIFIED CASH LEDGER</p><h2 id="cash-title">Creator earnings · USD</h2><p id="cash-note">Cash earnings are recorded only from verified cash events. Coin gifts are not converted into USD.</p></div><span class="secure-note">USD · SEPARATE LEDGER</span></div>
+      <div class="balance-grid cash-ledger-summary" aria-label="Creator USD balances">
+        <article class="balance-card"><p id="cash-label-lifetime" class="card-kicker">Lifetime creator share</p><strong id="cash-lifetime">—</strong></article>
+        <article class="balance-card"><p id="cash-label-available" class="card-kicker">Available</p><strong id="cash-available">—</strong></article>
+        <article class="balance-card"><p id="cash-label-pending" class="card-kicker">Pending</p><strong id="cash-pending">—</strong></article>
+        <article class="balance-card"><p id="cash-label-reserved" class="card-kicker">Reserved for withdrawal</p><strong id="cash-reserved">—</strong></article>
+        <article class="balance-card"><p id="cash-label-withdrawn" class="card-kicker">Paid out</p><strong id="cash-withdrawn">—</strong></article>
+      </div>
+      <h3 id="cash-history-title">Recent USD ledger entries</h3>
+      <div id="cash-transaction-list" class="transaction-list" aria-live="polite"><p class="wallet-status">No verified USD earnings are available.</p></div>
+    </section>
+
     <section id="withdraw" class="wallet-section withdraw-section">
       <div class="section-heading"><div><p class="card-kicker">02 / Creator payouts</p><h2>Withdraw earnings</h2><p>A withdrawal request is not a payment. Payouts stay disabled until a provider, financial policy, and server-side review flow are connected.</p></div><span class="secure-note">NOT CONNECTED</span></div>
       <p id="withdraw-status" class="wallet-status" aria-live="polite">No withdrawal form is active; no request has been submitted.</p>
@@ -49,7 +62,7 @@
     </section>
 
     <section class="wallet-section">
-      <div class="section-heading"><div><p class="card-kicker">03 / Activity</p><h2>Transaction ledger</h2></div></div>
+      <div class="section-heading"><div><p class="card-kicker">03 / COIN ACTIVITY</p><h2 id="coin-history-title">Coin activity</h2></div></div>
       <div id="transaction-list" class="transaction-list" aria-live="polite"><p class="wallet-status">No transaction rows are available.</p></div>
     </section>
     <footer class="footer"><span>© 2026 IQZodiac</span><span>Only server-verified ledger entries will be shown here.</span></footer>
@@ -67,7 +80,7 @@
     <script src="./i18n-data.js?v=20261022-global"></script>
   <script src="./language.js?v=20261022-global"></script>
   <script src="./vip-data.js?v=wallet-20261025"></script>
-  <script src="./wallet.js?v=coins-profile-20261106"></script>
+  <script src="./wallet.js?v=usd-ledger-20261106"></script>
     <script src="./nav-performance.js" defer></script>
   </body>
 </html>

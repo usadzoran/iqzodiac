@@ -129,3 +129,11 @@
 - [x] Deploy the assistant backend as a Supabase Edge Function with JWT verification; VIP backend and account production wiring remain separate.
 - [ ] Integrate real streaming, realtime chat, payments, and payouts before enabling any feature flags.
 - [x] Kept PayPal/Visa/Mastercard actions as server-side integration contracts only; no card data or real money is collected in the prototype.
+
+## USD creator earnings and safe wallet reporting
+- [x] Keep cash earnings in a dedicated USD ledger and balance view; do not convert gift Coins or coin-denominated revenue into USD implicitly.
+- [x] Record creator USD earnings only from verified cash revenue events, atomically with the ledger row, share snapshot, and idempotency check; only a trusted service-role caller can invoke the function, and feature-readiness flags must be enabled.
+- [x] Reserve withdrawal amounts atomically with per-user serialization, available-balance checks, and idempotency; reject the request unless payouts and a payout provider are marked ready.
+- [x] Show available, lifetime, pending, reserved, and paid USD totals and recent USD entries separately from coin balance/history.
+- [x] Leave payment/payout provider API URLs, secrets, and credentials unset; keep coin purchases, gift sending, and payouts disabled until real providers and server-side flows are configured.
+- [ ] Integrate and verify payment and payout providers, moderation/review, and the production financial policy before enabling any feature flags.
