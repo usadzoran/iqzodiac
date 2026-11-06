@@ -23,7 +23,18 @@
           <span class="mini-mark-orbit" aria-hidden="true"></span>
           <span>IQZ</span>
         </a>
-        <a class="back-link" href="./"><span aria-hidden="true">←</span> Back to home</a>
+        <div class="profile-topbar-actions">
+          <div class="notification-menu" id="notification-menu">
+            <button class="notification-trigger" id="notification-trigger" type="button" aria-label="Open notifications" aria-expanded="false" aria-controls="notification-popover">
+              <span class="notification-bell" aria-hidden="true">◌</span><span class="notification-badge" id="notification-badge" hidden>0</span>
+            </button>
+            <div class="notification-popover" id="notification-popover" hidden>
+              <div class="notification-popover-heading"><strong>Notifications</strong><button id="popover-mark-read" type="button">Mark read</button></div>
+              <div class="notification-popover-list" id="notification-popover-list"><p class="sidebar-note">No new notifications.</p></div>
+            </div>
+          </div>
+          <a class="back-link" href="./"><span aria-hidden="true">←</span> Back to home</a>
+        </div>
       </header>
 
       <section class="profile-heading" aria-labelledby="profile-title">
