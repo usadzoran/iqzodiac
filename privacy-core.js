@@ -252,13 +252,58 @@
       try { const client = await database(); if (client) { const { data, error } = await client.rpc('get_my_matches'); if (error) throw error; return (data || []).map((item) => ({ id: item.other_user_id, otherUserId: item.other_user_id, displayName: item.display_name, pseudonym: item.display_name, handle: item.handle, publicHandle: item.handle, compatibilityScore: null, matchId: item.match_id, createdAt: item.created_at })); } } catch (error) { console.warn('Matches could not be loaded.', error); }
       return [];
     },
-    async getRevealState(matchId) { const states = safeRead(keys.reveals, {}); return states[matchId] || { mine: false, partner: false }; },
+    async getRevealState(matchId) {
+      try {
+        const { client, user } = await sessionUser();
+        if (client && user && matchId) {
+          const { data, error } = await client.from('face_reveal_consents').select('user_id').eq('conversation_id', matchId).limit(10);
+          if (error) throw error;
+          return { mine: (data || []).some((row) => row.user_id === user.id), partner: (data || []).some((row) => row.user_id !== user.id) };
+        }
+      } catch (error) { console.warn('Reveal consent state could not be loaded.', error); }
+      const states = safeRead(keys.reveals, {}); return states[matchId] || { mine: false, partner: false };
+    },
     async requestReveal(matchId) { return this.setOwnRevealConsent(matchId, true); },
-    async setOwnRevealConsent(matchId, value) { const states = safeRead(keys.reveals, {}); states[matchId] = { ...(states[matchId] || {}), mine: Boolean(value) }; write(keys.reveals, states); return states[matchId]; },
-    async setPartnerRevealConsent(matchId, value) { const states = safeRead(keys.reveals, {}); states[matchId] = { ...(states[matchId] || {}), partner: Boolean(value) }; write(keys.reveals, states); return states[matchId]; },
+    async setOwnRevealConsent(matchId, value) {
+      try {
+        const { client, user } = await sessionUser();
+        if (client && user && matchId) {
+          if (value) {
+            const { error } = await client.from('face_reveal_consents').upsert({ conversation_id: matchId, user_id: user.id }, { onConflict: 'conversation_id,user_id' });
+            if (error) throw error;
+          } else {
+            const { error } = await client.from('face_reveal_consents').delete().eq('conversation_id', matchId).eq('user_id', user.id);
+            if (error) throw error;
+          }
+          return this.getRevealState(matchId);
+        }
+      } catch (error) { console.warn('Reveal consent could not be saved.', error); }
+      const states = safeRead(keys.reveals, {}); states[matchId] = { ...(states[matchId] || {}), mine: Boolean(value) }; write(keys.reveals, states); return states[matchId];
+    },
+    async setPartnerRevealConsent(matchId) { return this.getRevealState(matchId); },
     canRevealFace(state) { return Boolean(state && state.mine && state.partner); },
-    async getConversation(matchId) { const all = safeRead(keys.messages, {}); return all[matchId] || []; },
-    async appendMessage(matchId, message) { const all = safeRead(keys.messages, {}); all[matchId] = [...(all[matchId] || []), message]; write(keys.messages, all); return all[matchId]; },
+    async getConversation(matchId) {
+      try {
+        const { client, user } = await sessionUser();
+        if (client && user && matchId) {
+          const { data, error } = await client.from('messages').select('id,conversation_id,sender_id,body,created_at').eq('conversation_id', matchId).order('created_at', { ascending: true }).limit(200);
+          if (error) throw error;
+          return data || [];
+        }
+      } catch (error) { console.warn('Conversation could not be loaded.', error); }
+      const all = safeRead(keys.messages, {}); return all[matchId] || [];
+    },
+    async appendMessage(matchId, message) {
+      try {
+        const { client, user } = await sessionUser();
+        if (client && user && matchId && message?.body) {
+          const { error } = await client.from('messages').insert({ conversation_id: matchId, sender_id: user.id, body: String(message.body).trim().slice(0, 600) });
+          if (error) throw error;
+          return this.getConversation(matchId);
+        }
+      } catch (error) { console.warn('Conversation message could not be saved.', error); }
+      const all = safeRead(keys.messages, {}); all[matchId] = [...(all[matchId] || []), message]; write(keys.messages, all); return all[matchId];
+    },
   };
 
   window.IQZodiacData = { adapter, keys, currentUser, toPublicProfile };

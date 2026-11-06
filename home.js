@@ -44,11 +44,14 @@ const createCommentElement = (comment) => {
   element.append(avatar, copy);
   return element;
 };
-document.querySelectorAll('[data-current-user-name]').forEach((node) => { node.textContent = currentPublicIdentity.displayName; });
-document.querySelectorAll('[data-current-user-handle]').forEach((node) => { node.textContent = currentPublicIdentity.handle; });
-document.querySelectorAll('[data-current-user-short]').forEach((node) => { node.textContent = currentPublicIdentity.displayName.split(/[\s-]+/)[0] || 'Orbit'; });
-document.querySelectorAll('[data-current-user-initials]').forEach((node) => { node.textContent = currentPublicIdentity.initials; });
-document.querySelectorAll('.nav-avatar[data-current-user-initials]').forEach((node) => { node.setAttribute('aria-label', `Signed in as ${currentPublicIdentity.displayName}`); });
+const applyCurrentIdentity = () => {
+  document.querySelectorAll('[data-current-user-name]').forEach((node) => { node.textContent = currentPublicIdentity.displayName; });
+  document.querySelectorAll('[data-current-user-handle]').forEach((node) => { node.textContent = currentPublicIdentity.handle; });
+  document.querySelectorAll('[data-current-user-short]').forEach((node) => { node.textContent = currentPublicIdentity.displayName.split(/[\s-]+/)[0] || 'Orbit'; });
+  document.querySelectorAll('[data-current-user-initials]').forEach((node) => { node.textContent = currentPublicIdentity.initials; });
+  document.querySelectorAll('.nav-avatar[data-current-user-initials]').forEach((node) => { node.setAttribute('aria-label', `Signed in as ${currentPublicIdentity.displayName}`); });
+};
+applyCurrentIdentity();
 
 const createMediaPreview = (file, target, className = 'composer-preview-media') => {
   const isVideo = file.type.startsWith('video/');
@@ -273,6 +276,13 @@ if ('IntersectionObserver' in window && !reduceMotion) {
     const { data: sessionData } = await client.auth.getSession();
     if (!sessionData.session?.user?.id) return;
     authenticatedUserId = sessionData.session.user.id;
+    const { data: accountProfile } = await client.from('profiles').select('display_name,handle').eq('user_id', authenticatedUserId).maybeSingle();
+    if (accountProfile) {
+      currentPublicIdentity.displayName = String(accountProfile.display_name || currentPublicIdentity.displayName).slice(0, 32);
+      currentPublicIdentity.handle = /^@[a-z0-9._-]{1,24}$/i.test(accountProfile.handle || '') ? accountProfile.handle : currentPublicIdentity.handle;
+      currentPublicIdentity.initials = currentPublicIdentity.displayName.split(/[\s-]+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'OM';
+      applyCurrentIdentity();
+    }
     const { data: feed, error } = await client.rpc('get_home_feed', { p_limit: 30 });
     if (error) throw error;
     const feedList = document.querySelector('#feed-list');
