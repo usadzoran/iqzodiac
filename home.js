@@ -2,6 +2,8 @@ const toast = document.querySelector('.toast');
 const toastMessage = document.querySelector('.toast-message');
 let toastTimer;
 let composerMedia = null;
+const maxImageBytes = 15 * 1024 * 1024;
+const maxVideoBytes = 50 * 1024 * 1024;
 
 const showToast = (message) => {
   toastMessage.textContent = message;
@@ -60,6 +62,35 @@ const createMediaPreview = (file, target, className = 'composer-preview-media') 
   }
   target.replaceChildren(media);
   target.hidden = false;
+};
+
+const clearComposerMedia = () => {
+  const preview = document.querySelector('#composer-media-preview');
+  const input = document.querySelector('#post-media-input');
+  composerMedia = null;
+  if (preview) { preview.replaceChildren(); preview.hidden = true; }
+  if (input) input.value = '';
+};
+
+const setComposerMedia = (file) => {
+  composerMedia = file;
+  const preview = document.querySelector('#composer-media-preview');
+  createMediaPreview(file, preview);
+  const remove = document.createElement('button');
+  remove.className = 'composer-media-remove';
+  remove.type = 'button';
+  remove.setAttribute('aria-label', 'Remove selected media');
+  remove.textContent = '×';
+  remove.addEventListener('click', clearComposerMedia);
+  preview.append(remove);
+};
+
+const createPostMedia = (item, url) => {
+  if (!url || !item.media_type) return '';
+  const safeUrl = escapeHTML(url);
+  return item.media_type === 'video'
+    ? `<div class="post-media-slot"><video class="post-uploaded-media" src="${safeUrl}" controls preload="metadata"></video></div>`
+    : `<div class="post-media-slot"><img class="post-uploaded-media" src="${safeUrl}" alt="Shared photo" loading="lazy" /></div>`;
 };
 
 const bindPost = (post) => {
@@ -249,13 +280,19 @@ if ('IntersectionObserver' in window && !reduceMotion) {
     if (!Array.isArray(feed) || !feed.length) {
       feedList.innerHTML = '<p class="match-empty">No real posts have been published yet.</p>';
     } else {
-      feed.forEach((item) => {
+      for (const item of feed) {
         const post = document.createElement('article');
         post.className = 'post-card'; post.dataset.postId = item.post_id; post.dataset.author = String(item.handle || '').replace(/^@/, ''); post.dataset.authorId = item.author_id;
         const liked = Boolean(item.liked_by_me);
-        post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">${escapeHTML(String(item.display_name || 'OM').slice(0, 1))}</div><div class="post-author"><strong>${escapeHTML(item.display_name || 'Orbit Member')}</strong><span>${escapeHTML(item.handle || '@member')} · ${escapeHTML(formatDateTime(item.created_at))}</span></div></header><p class="post-body">${escapeHTML(item.body)}</p><div class="post-meta"><span class="like-count">${formatCount(Number(item.like_count || 0))} likes</span><span class="comment-count">${formatCount(Number(item.comment_count || 0))} comments</span></div><div class="post-actions"><button class="post-action like-button ${liked ? 'is-liked' : ''}" type="button" data-like="${liked}"><span class="action-icon">${liked ? '♥' : '♡'}</span><span>${liked ? 'Liked' : 'Like'}</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment" /><button type="submit" aria-label="Post comment">↗</button></form>`;
+        let mediaUrl = '';
+        if (item.media_path) {
+          const { data: signed } = await client.storage.from('iqzodiac-media').createSignedUrl(item.media_path, 3600);
+          mediaUrl = signed?.signedUrl || '';
+        }
+        const bodyMarkup = item.body ? `<p class="post-body">${escapeHTML(item.body)}</p>` : '';
+        post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">${escapeHTML(String(item.display_name || 'OM').slice(0, 1))}</div><div class="post-author"><strong>${escapeHTML(item.display_name || 'Orbit Member')}</strong><span>${escapeHTML(item.handle || '@member')} · ${escapeHTML(formatDateTime(item.created_at))}</span></div></header>${bodyMarkup}${createPostMedia(item, mediaUrl)}<div class="post-meta"><span class="like-count">${formatCount(Number(item.like_count || 0))} likes</span><span class="comment-count">${formatCount(Number(item.comment_count || 0))} comments</span></div><div class="post-actions"><button class="post-action like-button ${liked ? 'is-liked' : ''}" type="button" data-like="${liked}"><span class="action-icon">${liked ? '♥' : '♡'}</span><span>${liked ? 'Liked' : 'Like'}</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment" /><button type="submit" aria-label="Post comment">↗</button></form>`;
         feedList.append(post); bindPost(post);
-      });
+      }
     }
     const postIds = (feed || []).map((item) => item.post_id).filter(Boolean);
     if (postIds.length) {
@@ -275,12 +312,48 @@ if ('IntersectionObserver' in window && !reduceMotion) {
     if (mood?.mood && moodCopy[mood.mood]) selectMood(mood.mood);
     const publishButton = document.querySelector('#publish-post');
     const cleanButton = publishButton.cloneNode(true); publishButton.replaceWith(cleanButton);
+    const mediaInput = document.querySelector('#post-media-input');
+    const addMediaButton = document.querySelector('#add-post-media');
+    addMediaButton.addEventListener('click', () => mediaInput.click());
+    mediaInput.addEventListener('change', () => {
+      const [file] = mediaInput.files || [];
+      if (!file) return;
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+      const maxBytes = isVideo ? maxVideoBytes : maxImageBytes;
+      if ((!isImage && !isVideo) || file.size > maxBytes) {
+        clearComposerMedia();
+        showToast(isVideo ? 'Video must be 50 MB or smaller.' : 'Choose an image or video within the size limit.');
+        return;
+      }
+      setComposerMedia(file);
+    });
     cleanButton.addEventListener('click', async () => {
       const body = escapeText(document.querySelector('#post-text').value);
-      if (!body) { showToast('Write something before publishing.'); return; }
-      const { error: insertError } = await client.from('posts').insert({ author_id: authenticatedUserId, body });
-      if (insertError) { showToast('Your post could not be saved.'); return; }
-      document.querySelector('#post-text').value = ''; showToast('Your post is saved to the shared feed.'); window.setTimeout(() => window.location.reload(), 400);
+      if (!body && !composerMedia) { showToast('Write something or add a photo/video before publishing.'); return; }
+      cleanButton.disabled = true;
+      let mediaPath = null;
+      try {
+        const mediaType = composerMedia?.type.startsWith('video/') ? 'video' : (composerMedia ? 'image' : null);
+        const mediaMime = composerMedia?.type || null;
+        if (composerMedia) {
+          const extension = (composerMedia.name.match(/\.([a-z0-9]+)$/i)?.[1] || (mediaType === 'video' ? 'mp4' : 'jpg')).toLowerCase();
+          mediaPath = `${authenticatedUserId}/posts/${crypto.randomUUID()}.${extension}`;
+          const { error: uploadError } = await client.storage.from('iqzodiac-media').upload(mediaPath, composerMedia, { contentType: composerMedia.type, cacheControl: '3600', upsert: false });
+          if (uploadError) throw uploadError;
+        }
+        const { error: insertError } = await client.from('posts').insert({ author_id: authenticatedUserId, body, media_type: mediaType, media_path: mediaPath, media_mime: mediaMime, media_size_bytes: composerMedia?.size || null });
+        if (insertError) throw insertError;
+        document.querySelector('#post-text').value = '';
+        clearComposerMedia();
+        showToast('Your post is saved to the shared feed.');
+        window.setTimeout(() => window.location.reload(), 400);
+      } catch (error) {
+        if (mediaPath) await client.storage.from('iqzodiac-media').remove([mediaPath]);
+        console.warn('Post could not be published.', error);
+        showToast('Your post could not be saved.');
+        cleanButton.disabled = false;
+      }
     });
   } catch (error) {
     console.warn('Home feed could not be loaded from Supabase.', error);
