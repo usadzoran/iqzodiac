@@ -287,6 +287,20 @@ h1 {
 .profile-heading h1 { font-size: clamp(44px, 6vw, 76px); letter-spacing: -0.08em; }
 .profile-heading h1 span { color: var(--cyan); }
 .profile-heading p { max-width: 455px; margin: 18px 0 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+.profile-shortcuts { position: sticky; top: max(8px, env(safe-area-inset-top, 0px)); z-index: 18; display: flex; align-items: center; gap: 10px; width: min(100%, 1040px); margin: -18px auto 28px; padding: 8px 10px; border: 1px solid rgba(131,229,232,.2); border-radius: 15px; background: rgba(7,12,26,.92); box-shadow: 0 14px 38px rgba(0,0,0,.28); backdrop-filter: blur(18px); }
+.profile-shortcuts-label { flex: none; padding-inline: 7px; color: var(--cyan); font: 9px "DM Mono", monospace; letter-spacing: .08em; text-transform: uppercase; }
+.profile-shortcuts-list { display: flex; flex: 1; min-width: 0; gap: 6px; overflow-x: auto; padding: 2px; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.profile-shortcuts-list::-webkit-scrollbar { display: none; }
+.profile-shortcut { display: inline-flex; flex: none; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 0 12px; border: 1px solid rgba(218,225,255,.12); border-radius: 10px; color: var(--muted); font: 9px "DM Mono", monospace; letter-spacing: .02em; text-decoration: none; white-space: nowrap; transition: color 180ms ease, background 180ms ease, border-color 180ms ease, transform 180ms ease; }
+.profile-shortcut:hover, .profile-shortcut:focus-visible { border-color: rgba(131,229,232,.35); background: rgba(131,229,232,.08); color: var(--ink); outline: none; transform: translateY(-1px); }
+.profile-shortcut-number { color: var(--cyan); font-size: 8px; }
+.profile-card:target, .profile-card :target { scroll-margin-top: 100px; }
+@media (max-width: 620px) {
+  .profile-shortcuts { top: max(7px, env(safe-area-inset-top, 0px)); gap: 6px; margin: -12px 0 22px; padding: 7px; border-radius: 12px; }
+  .profile-shortcuts-label { padding-inline: 3px; font-size: 8px; letter-spacing: .03em; }
+  .profile-shortcuts-list { gap: 5px; }
+  .profile-shortcut { min-height: 38px; gap: 5px; padding: 0 9px; font-size: 8px; }
+}
 .profile-grid { display: grid; grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr); gap: 17px; }
 .profile-card { border: 1px solid var(--line); border-radius: 4px; background: linear-gradient(145deg, rgba(24, 31, 57, 0.76), rgba(12, 17, 32, 0.64)); box-shadow: 0 20px 70px rgba(0,0,0,0.17); }
 .identity-card { padding: clamp(22px, 3vw, 34px); }
