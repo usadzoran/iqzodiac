@@ -26,23 +26,36 @@ const currentPublicIdentity = {
   handle: hasPseudonymousProfile && /^@[a-z0-9._-]{1,24}$/i.test(savedProfile.handle || '') ? savedProfile.handle : '@orbit-member',
   initials: String(hasPseudonymousProfile ? (savedProfile.initials || 'OM') : 'OM').slice(0, 2).toUpperCase(),
 };
-const createCommentElement = (comment) => {
-  const element = document.createElement('div');
-  element.className = 'comment';
-  const avatar = document.createElement('span');
-  avatar.className = 'comment-avatar home-avatar-small';
-  avatar.textContent = String(comment.display_name || comment.handle || 'OM').replace(/^@/, '').slice(0, 1).toUpperCase();
-  const copy = document.createElement('p');
-  const author = document.createElement('strong');
-  author.textContent = comment.handle || comment.display_name || '@member';
-  const body = document.createElement('span');
-  body.textContent = ` ${comment.body || ''}`;
-  const time = document.createElement('small');
-  time.className = 'comment-time';
-  time.textContent = formatDateTime(comment.created_at);
-  copy.append(author, body, time);
-  element.append(avatar, copy);
-  return element;
+const createCommentElement = (comment, post, childrenByParent = {}, submitReply = null) => {
+  const wrapper = document.createElement('div'); wrapper.className = 'comment-thread';
+  const element = document.createElement('div'); element.className = 'comment'; element.dataset.commentId = comment.comment_id || comment.id || '';
+  const avatar = document.createElement('span'); avatar.className = 'comment-avatar home-avatar-small'; avatar.textContent = String(comment.display_name || comment.handle || 'OM').replace(/^@/, '').slice(0, 2).toUpperCase();
+  const content = document.createElement('div'); content.className = 'comment-content';
+  const copy = document.createElement('p'); const author = document.createElement('strong'); author.textContent = comment.handle || comment.display_name || '@member';
+  const body = document.createElement('span'); body.textContent = ` ${comment.body || ''}`;
+  const time = document.createElement('small'); time.className = 'comment-time'; time.textContent = formatDateTime(comment.created_at); copy.append(author, body, time);
+  const replyButton = document.createElement('button'); replyButton.type = 'button'; replyButton.className = 'comment-reply-button'; replyButton.textContent = 'Reply';
+  const replyForm = document.createElement('form'); replyForm.className = 'comment-form comment-reply-form'; replyForm.hidden = true; replyForm.innerHTML = '<input type="text" maxlength="180" placeholder="Write a reply..." aria-label="Write a reply" /><button type="submit" aria-label="Post reply">↗</button>';
+  replyButton.addEventListener('click', () => { replyForm.hidden = !replyForm.hidden; if (!replyForm.hidden) replyForm.querySelector('input').focus(); });
+  replyForm.addEventListener('submit', async (event) => { event.preventDefault(); const input = replyForm.querySelector('input'); const value = escapeText(input.value); if (!value || !submitReply) return; if (await submitReply(comment.comment_id || comment.id, value)) { input.value = ''; replyForm.hidden = true; } });
+  content.append(copy, replyButton, replyForm); element.append(avatar, content); wrapper.append(element);
+  const children = document.createElement('div'); children.className = 'comment-replies'; (childrenByParent[comment.comment_id || comment.id] || []).forEach((child) => children.append(createCommentElement(child, post, childrenByParent, submitReply))); wrapper.append(children);
+  return wrapper;
+};
+const renderComments = (post, rows) => {
+  const list = post.querySelector('.comment-list'); list.replaceChildren(); post._commentRows = rows; const byParent = {};
+  rows.forEach((row) => { (byParent[row.parent_comment_id || 'root'] ||= []).push(row); });
+  const submitReply = async (parentCommentId, body) => {
+    const client = await database(); if (!client || !authenticatedUserId) { showToast('Sign in to reply to comments.'); return false; }
+    const { data, error } = await client.from('comments').insert({ post_id: post.dataset.postId, author_id: authenticatedUserId, parent_comment_id: parentCommentId, body }).select('id,post_id,author_id,parent_comment_id,body,created_at').single();
+    if (error) { showToast('Reply could not be saved.'); return false; }
+    const reply = { ...data, display_name: currentPublicIdentity.displayName, handle: currentPublicIdentity.handle, comment_id: data.id };
+    post._commentRows = [...(post._commentRows || []), reply];
+    const target = list.querySelector(`[data-comment-id="${CSS.escape(parentCommentId)}"]`)?.closest('.comment-thread')?.querySelector('.comment-replies');
+    if (target) target.append(createCommentElement(reply, post, {}, submitReply));
+    const count = post.querySelector('.comment-count'); count.textContent = `${formatCount(Number(count.textContent.replace(/[^0-9]/g, '')) + 1)} comments`; showToast('Reply added.'); return true;
+  };
+  (byParent.root || []).forEach((comment) => list.append(createCommentElement(comment, post, byParent, submitReply)));
 };
 const applyCurrentIdentity = () => {
   document.querySelectorAll('[data-current-user-name]').forEach((node) => { node.textContent = currentPublicIdentity.displayName; });
@@ -135,10 +148,10 @@ const bindPost = (post) => {
     if (!value) return;
     const client = await database();
     if (!client || !authenticatedUserId || !/^[0-9a-f-]{36}$/i.test(post.dataset.postId || '')) { showToast('Sign in to comment on shared posts.'); return; }
-    const { error } = await client.from('comments').insert({ post_id: post.dataset.postId, author_id: authenticatedUserId, body: value });
+    const { data, error } = await client.from('comments').insert({ post_id: post.dataset.postId, author_id: authenticatedUserId, body: value }).select('id,post_id,author_id,parent_comment_id,body,created_at').single();
     if (error) { showToast('Comment could not be saved.'); return; }
-    const comment = createCommentElement({ display_name: currentPublicIdentity.displayName, handle: currentPublicIdentity.handle, body: value, created_at: new Date().toISOString() });
-    commentList.append(comment);
+    const comment = { ...data, comment_id: data.id, display_name: currentPublicIdentity.displayName, handle: currentPublicIdentity.handle };
+    renderComments(post, [...(post._commentRows || []), comment]);
     const count = Number(commentCount.textContent.replace(/[^0-9]/g, '')) + 1;
     commentCount.textContent = `${formatCount(count)} comments`;
     commentInput.value = '';
@@ -315,7 +328,7 @@ if ('IntersectionObserver' in window && !reduceMotion) {
         if (basicCommentsError) throw basicCommentsError;
         comments = (basicComments || []).map((comment) => ({ ...comment, handle: comment.author_id === authenticatedUserId ? currentPublicIdentity.handle : '@member' }));
       }
-      comments.forEach((comment) => document.querySelector(`.post-card[data-post-id="${CSS.escape(comment.post_id)}"] .comment-list`)?.append(createCommentElement(comment)));
+      document.querySelectorAll('#feed-list .post-card').forEach((post) => renderComments(post, comments.filter((comment) => comment.post_id === post.dataset.postId)));
     }
     const today = new Date().toLocaleDateString('en-CA');
     const { data: mood } = await client.from('daily_moods').select('mood').eq('mood_date', today).maybeSingle();
