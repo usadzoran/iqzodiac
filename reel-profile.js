@@ -6,6 +6,21 @@
   const initials = (value) => String(value || 'Orbit Member').replace(/^@/, '').split(/[\s_-]+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'OM';
   const formatDate = (value) => { try { return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(value)); } catch { return ''; } };
   const clientReady = () => window.IQZodiacSupabase?.ready;
+  const shareUrl = (row) => new URL(`./reel.html?reel=${encodeURIComponent(row.id)}`, document.baseURI).href;
+  const openShareMenu = (card, row) => {
+    const existing = card.querySelector('.profile-share-menu'); if (existing) { existing.remove(); return; }
+    const url = shareUrl(row); const text = 'Watch this Reel on IQZodiac';
+    const menu = document.createElement('div'); menu.className = 'profile-share-menu'; menu.setAttribute('role', 'menu');
+    const options = [
+      ['WhatsApp', `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`],
+      ['Telegram', `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`],
+      ['X', `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`],
+      ['Facebook', `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`],
+    ];
+    options.forEach(([label, href]) => { const link = document.createElement('a'); link.className = 'profile-share-option'; link.href = href; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = label; menu.append(link); });
+    const copy = document.createElement('button'); copy.className = 'profile-share-option'; copy.type = 'button'; copy.textContent = 'Copy link'; copy.addEventListener('click', async () => { try { await navigator.clipboard.writeText(url); status.textContent = 'Link copied.'; } catch { window.prompt('Copy Reel link', url); } menu.remove(); }); menu.append(copy); card.append(menu);
+  };
+  const shareReel = async (card, row) => { const url = shareUrl(row); if (navigator.share) { try { await navigator.share({ title: 'Share this Reel', text: 'Watch this Reel on IQZodiac', url }); return; } catch (error) { if (error?.name === 'AbortError') return; } } openShareMenu(card, row); };
   const lazyVideos = new IntersectionObserver((entries, observer) => { entries.forEach((entry) => { if (!entry.isIntersecting) return; const video = entry.target; if (video.dataset.src) { video.src = video.dataset.src; video.removeAttribute('data-src'); } observer.unobserve(video); }); }, { rootMargin: '240px 0px' });
 
   const setProfile = (profile) => { const name = profile?.display_name || profile?.handle || 'Orbit Member'; document.getElementById('member-name').textContent = name; document.getElementById('member-handle').textContent = profile?.handle || '@orbit-member'; document.getElementById('member-avatar').textContent = initials(name); };
@@ -13,7 +28,7 @@
     grid.replaceChildren(); document.getElementById('reel-total').textContent = rows.length; document.getElementById('reel-likes-total').textContent = rows.reduce((sum, row) => sum + Number(row.like_count || 0), 0); status.textContent = `${rows.length} ${rows.length === 1 ? 'Reel' : 'Reels'}`;
     if (!rows.length) { grid.innerHTML = '<p class="profile-reel-empty">No published Reels yet.</p>'; return; }
     const signedUrls = await Promise.all(rows.map(async (row) => { try { const { data } = await client.storage.from('iqzodiac-media').createSignedUrl(row.media_path, 900); return data?.signedUrl || ''; } catch { return ''; } }));
-    rows.forEach((row, index) => { const card = document.createElement('article'); card.className = 'profile-reel-card'; const video = document.createElement('video'); video.controls = true; video.playsInline = true; video.preload = 'none'; video.muted = true; video.dataset.src = signedUrls[index]; video.setAttribute('aria-label', 'Published Reel'); const copy = document.createElement('div'); copy.className = 'profile-reel-card-copy'; copy.innerHTML = `<p class="profile-reel-date">${escapeHTML(formatDate(row.created_at))} · ${Number(row.duration_seconds || 0).toFixed(0)}s · ${Number(row.like_count || 0)} likes</p>${row.caption ? `<p class="profile-reel-caption">${escapeHTML(row.caption)}</p>` : ''}`; card.append(video, copy); grid.append(card); lazyVideos.observe(video); });
+    rows.forEach((row, index) => { const card = document.createElement('article'); card.className = 'profile-reel-card'; const video = document.createElement('video'); video.controls = true; video.playsInline = true; video.preload = 'none'; video.muted = true; video.dataset.src = signedUrls[index]; video.setAttribute('aria-label', 'Published Reel'); const copy = document.createElement('div'); copy.className = 'profile-reel-card-copy'; copy.innerHTML = `<p class="profile-reel-date">${escapeHTML(formatDate(row.created_at))} · ${Number(row.duration_seconds || 0).toFixed(0)}s · ${Number(row.like_count || 0)} likes</p>${row.caption ? `<p class="profile-reel-caption">${escapeHTML(row.caption)}</p>` : ''}`; const share = document.createElement('button'); share.className = 'profile-reel-share'; share.type = 'button'; share.textContent = '↗ Share'; share.addEventListener('click', () => { void shareReel(card, row); }); copy.append(share); card.append(video, copy); grid.append(card); lazyVideos.observe(video); });
   };
 
   (async () => {

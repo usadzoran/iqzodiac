@@ -20,10 +20,10 @@
   const language = () => window.IQZodiacLanguage?.language === 'ar' ? 'ar' : 'en';
   const copy = {
     en: {
-      choose: 'Choose a video', selected: 'Video selected', invalidType: 'Choose a video file.', tooLarge: 'Video must be 50 MB or smaller.', tooLong: 'Reels can be no longer than 6 minutes.', checking: 'Checking video duration…', ready: 'Ready to publish.', publishing: 'Publishing your Reel…', saved: 'Your Reel is now in your orbit.', failed: 'Your Reel could not be published. Try again.', empty: 'No Reels have been published yet. Be the first to share one.', unavailable: 'Reels are temporarily unavailable.', count: (n) => `${n} ${n === 1 ? 'Reel' : 'Reels'}`, duration: (n) => `${Math.round(n)}s`, like: 'Like', liked: 'Liked', comments: (n) => `${n} ${n === 1 ? 'comment' : 'comments'}`, writeComment: 'Write a comment…', postComment: 'Post comment', commentSaved: 'Comment added.', commentFailed: 'Comment could not be saved.', likeFailed: 'Like could not be saved.', signInToInteract: 'Sign in to interact with Reels.', noComments: 'No comments yet. Start the conversation.', commentBy: (name) => `Comment by ${name}`,
+      choose: 'Choose a video', selected: 'Video selected', invalidType: 'Choose a video file.', tooLarge: 'Video must be 50 MB or smaller.', tooLong: 'Reels can be no longer than 6 minutes.', checking: 'Checking video duration…', ready: 'Ready to publish.', publishing: 'Publishing your Reel…', saved: 'Your Reel is now in your orbit.', failed: 'Your Reel could not be published. Try again.', empty: 'No Reels have been published yet. Be the first to share one.', unavailable: 'Reels are temporarily unavailable.', count: (n) => `${n} ${n === 1 ? 'Reel' : 'Reels'}`, duration: (n) => `${Math.round(n)}s`, like: 'Like', liked: 'Liked', comments: (n) => `${n} ${n === 1 ? 'comment' : 'comments'}`, writeComment: 'Write a comment…', postComment: 'Post comment', commentSaved: 'Comment added.', commentFailed: 'Comment could not be saved.', likeFailed: 'Like could not be saved.', signInToInteract: 'Sign in to interact with Reels.', noComments: 'No comments yet. Start the conversation.', commentBy: (name) => `Comment by ${name}`, share: 'Share', copied: 'Link copied.', shareTitle: 'Share this Reel', shareText: 'Watch this Reel on IQZodiac',
     },
     ar: {
-      choose: 'اختر فيديو', selected: 'تم اختيار الفيديو', invalidType: 'اختر ملف فيديو.', tooLarge: 'يجب ألا يتجاوز الفيديو ٥٠ ميغابايت.', tooLong: 'يجب ألا تتجاوز مدة الـ Reel ست دقائق.', checking: 'جارٍ التحقق من مدة الفيديو (حتى 6 دقائق)…', ready: 'الفيديو جاهز للنشر.', publishing: 'جارٍ نشر الـ Reel…', saved: 'تم نشر الـ Reel في مدارك.', failed: 'تعذّر نشر الـ Reel. حاول مجددًا.', empty: 'لا توجد Reels منشورة بعد. كن أول من يشارك واحدة.', unavailable: 'Reels غير متاحة مؤقتًا.', count: (n) => `${n} ${n === 1 ? 'Reel' : 'Reels'}`, duration: (n) => `${Math.round(n)} ث`, like: 'إعجاب', liked: 'أعجبني', comments: (n) => `${n} ${n === 1 ? 'تعليق' : 'تعليقات'}`, writeComment: 'اكتب تعليقًا…', postComment: 'نشر التعليق', commentSaved: 'تمت إضافة التعليق.', commentFailed: 'تعذّر حفظ التعليق.', likeFailed: 'تعذّر حفظ الإعجاب.', signInToInteract: 'سجّل الدخول للتفاعل مع Reels.', noComments: 'لا توجد تعليقات بعد. ابدأ الحوار.', commentBy: (name) => `تعليق من ${name}`,
+      choose: 'اختر فيديو', selected: 'تم اختيار الفيديو', invalidType: 'اختر ملف فيديو.', tooLarge: 'يجب ألا يتجاوز الفيديو ٥٠ ميغابايت.', tooLong: 'يجب ألا تتجاوز مدة الـ Reel ست دقائق.', checking: 'جارٍ التحقق من مدة الفيديو (حتى 6 دقائق)…', ready: 'الفيديو جاهز للنشر.', publishing: 'جارٍ نشر الـ Reel…', saved: 'تم نشر الـ Reel في مدارك.', failed: 'تعذّر نشر الـ Reel. حاول مجددًا.', empty: 'لا توجد Reels منشورة بعد. كن أول من يشارك واحدة.', unavailable: 'Reels غير متاحة مؤقتًا.', count: (n) => `${n} ${n === 1 ? 'Reel' : 'Reels'}`, duration: (n) => `${Math.round(n)} ث`, like: 'إعجاب', liked: 'أعجبني', comments: (n) => `${n} ${n === 1 ? 'تعليق' : 'تعليقات'}`, writeComment: 'اكتب تعليقًا…', postComment: 'نشر التعليق', commentSaved: 'تمت إضافة التعليق.', commentFailed: 'تعذّر حفظ التعليق.', likeFailed: 'تعذّر حفظ الإعجاب.', signInToInteract: 'سجّل الدخول للتفاعل مع Reels.', noComments: 'لا توجد تعليقات بعد. ابدأ الحوار.', commentBy: (name) => `تعليق من ${name}`, share: 'مشاركة', copied: 'تم نسخ الرابط.', shareTitle: 'مشاركة هذا الـ Reel', shareText: 'شاهد هذا الـ Reel على IQZodiac',
     },
   };
   const t = (key, ...args) => typeof copy[language()][key] === 'function' ? copy[language()][key](...args) : copy[language()][key];
@@ -33,6 +33,23 @@
   const formatDate = (value) => { try { return new Intl.DateTimeFormat(language() === 'ar' ? 'ar' : 'en', { dateStyle: 'medium' }).format(new Date(value)); } catch { return ''; } };
   const initials = (value) => String(value || 'OM').replace(/^@/, '').split(/[\s_-]+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'OM';
   const toCount = (value) => Number.isFinite(Number(value)) ? Number(value) : 0;
+  const shareUrl = (row) => new URL(`./reel.html?reel=${encodeURIComponent(row.id)}`, document.baseURI).href;
+  const copyShareLink = async (row) => { try { await navigator.clipboard.writeText(shareUrl(row)); showToast(t('copied')); } catch { window.prompt(t('shareTitle'), shareUrl(row)); } };
+  const openShareMenu = (card, row) => {
+    const existing = card.querySelector('.reel-share-menu');
+    if (existing) { existing.remove(); return; }
+    const url = shareUrl(row); const title = t('shareTitle'); const text = t('shareText');
+    const menu = document.createElement('div'); menu.className = 'reel-share-menu'; menu.setAttribute('role', 'menu');
+    const options = [
+      { label: 'WhatsApp', href: `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}` },
+      { label: 'Telegram', href: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}` },
+      { label: 'X', href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}` },
+      { label: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}` },
+    ];
+    options.forEach(({ label, href }) => { const link = document.createElement('a'); link.className = 'reel-share-option'; link.href = href; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = label; link.setAttribute('role', 'menuitem'); menu.append(link); });
+    const copy = document.createElement('button'); copy.className = 'reel-share-option'; copy.type = 'button'; copy.textContent = 'Copy link'; copy.addEventListener('click', () => { void copyShareLink(row); menu.remove(); }); menu.append(copy); card.append(menu);
+  };
+  const shareReel = async (card, row) => { if (navigator.share) { try { await navigator.share({ title: t('shareTitle'), text: t('shareText'), url: shareUrl(row) }); return; } catch (error) { if (error?.name === 'AbortError') return; } } openShareMenu(card, row); };
 
   const updateCaptionCount = () => { const value = byId('reel-caption').value.length; byId('reel-caption-count').textContent = `${value} / 280`; };
   byId('reel-caption').addEventListener('input', updateCaptionCount);
@@ -76,6 +93,8 @@
   const updateLikeButton = (card, liked, count) => { const button = card.querySelector('.reel-like-button'); button.classList.toggle('is-liked', liked); button.dataset.liked = String(liked); button.querySelector('.reel-like-icon').textContent = liked ? '♥' : '♡'; button.querySelector('.reel-like-label').textContent = liked ? t('liked') : t('like'); const countNode = card.querySelector('.reel-like-count'); countNode.dataset.count = String(Math.max(0, count)); countNode.textContent = String(Math.max(0, count)); };
   const bindInteractions = (card, row, client, comments) => {
     const likeButton = card.querySelector('.reel-like-button');
+    const shareButton = card.querySelector('.reel-share-button');
+    shareButton.addEventListener('click', () => { void shareReel(card, row); });
     likeButton.addEventListener('click', async () => {
       if (!authenticatedUserId) { showToast(t('signInToInteract')); return; }
       const currentlyLiked = likeButton.dataset.liked === 'true'; likeButton.disabled = true;
@@ -111,7 +130,7 @@
       const card = document.createElement('article'); card.className = 'reel-card';
       const video = document.createElement('video'); video.className = 'reel-card-video'; video.controls = true; video.playsInline = true; video.preload = 'none'; video.muted = true; video.dataset.src = signedUrls[index]; video.setAttribute('aria-label', 'Reel video'); reelVideoObserver.observe(video);
       const copyNode = document.createElement('div'); copyNode.className = 'reel-card-copy'; copyNode.innerHTML = `<div class="reel-card-author"><span class="reel-card-avatar">${escapeHTML(initials(row.display_name || row.handle))}</span><a class="reel-card-author-link" href="./reel-profile.html?user=${encodeURIComponent(row.author_id)}">${escapeHTML(row.display_name || row.handle || 'Orbit Member')}</a></div><p class="reel-card-meta">${escapeHTML(formatDate(row.created_at))} · ${escapeHTML(t('duration', Number(row.duration_seconds || 0)))}</p>${row.caption ? `<p class="reel-card-caption">${escapeHTML(row.caption)}</p>` : ''}`;
-      const actions = document.createElement('div'); actions.className = 'reel-actions'; actions.innerHTML = `<button type="button" class="reel-action reel-like-button" data-liked="${Boolean(row.liked_by_me)}"><span class="reel-like-icon">${row.liked_by_me ? '♥' : '♡'}</span><span class="reel-like-label">${escapeHTML(row.liked_by_me ? t('liked') : t('like'))}</span><b class="reel-like-count" data-count="${toCount(row.like_count)}">${toCount(row.like_count)}</b></button><span class="reel-comment-count" data-count="${toCount(row.comment_count)}">${escapeHTML(t('comments', toCount(row.comment_count)))}</span>`;
+      const actions = document.createElement('div'); actions.className = 'reel-actions'; actions.innerHTML = `<button type="button" class="reel-action reel-like-button" data-liked="${Boolean(row.liked_by_me)}"><span class="reel-like-icon">${row.liked_by_me ? '♥' : '♡'}</span><span class="reel-like-label">${escapeHTML(row.liked_by_me ? t('liked') : t('like'))}</span><b class="reel-like-count" data-count="${toCount(row.like_count)}">${toCount(row.like_count)}</b></button><button type="button" class="reel-action reel-share-button"><span class="reel-share-icon">↗</span><span>${escapeHTML(t('share'))}</span></button><span class="reel-comment-count" data-count="${toCount(row.comment_count)}">${escapeHTML(t('comments', toCount(row.comment_count)))}</span>`;
       const commentsPanel = document.createElement('div'); commentsPanel.className = 'reel-comments-panel'; commentsPanel.innerHTML = `<ul class="reel-comments-list"></ul><form class="reel-comment-form"><input type="text" maxlength="180" placeholder="${escapeHTML(t('writeComment'))}" aria-label="${escapeHTML(t('writeComment'))}" /><button type="submit" aria-label="${escapeHTML(t('postComment'))}">↗</button></form>`;
       card.append(video, copyNode, actions, commentsPanel); feed.append(card); bindInteractions(card, row, client, row.comments || []);
     });
@@ -121,6 +140,11 @@
     const { data, error } = await client.from('reels').select('id,author_id,caption,media_path,duration_seconds,created_at').order('created_at', { ascending: false }).limit(12);
     if (error) throw error;
     let rows = data || [];
+    const sharedReelId = new URLSearchParams(window.location.search).get('reel');
+    if (sharedReelId && !rows.some((row) => row.id === sharedReelId)) {
+      const shared = await client.from('reels').select('id,author_id,caption,media_path,duration_seconds,created_at').eq('id', sharedReelId).maybeSingle();
+      if (shared.data) rows = [shared.data, ...rows];
+    }
     const reelIds = rows.map((row) => row.id).filter(Boolean);
     if (reelIds.length) {
       const [{ data: likes }, { data: comments }] = await Promise.all([
