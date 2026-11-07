@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="See views and interactions on your IQZodiac Reels." />
+  <title>Reel analytics — IQZodiac</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css?v=reel-analytics-20261107" />
+  <link rel="stylesheet" href="./reel-stats.css?v=reel-analytics-20261107" />
+</head>
+<body class="has-site-nav reel-stats-page">
+  <div class="aurora aurora-one" aria-hidden="true"></div><div class="aurora aurora-two" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
+  <main class="reel-stats-shell" data-i18n-skip>
+    <header class="reel-stats-topbar">
+      <a class="mini-mark" href="./home.html" aria-label="IQZodiac home"><span class="mini-mark-orbit" aria-hidden="true"></span><span>IQZ</span></a>
+      <a class="back-link" href="./reel.html" id="stats-back-link">← Back to Reels</a>
+    </header>
+
+    <section class="reel-stats-hero" aria-labelledby="stats-title">
+      <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span><span id="stats-kicker">YOUR CREATOR DASHBOARD</span></p>
+      <h1 id="stats-title">Your Reels, <span>in numbers.</span></h1>
+      <p id="stats-intro">See how your videos are reaching your orbit. A view is counted once per signed-in viewer after at least three seconds of playback.</p>
+      <a class="button button-secondary" href="./profile.html" id="stats-profile-link">Back to profile <span class="button-arrow" aria-hidden="true">↗</span></a>
+    </section>
+
+    <section class="reel-stats-summary" aria-label="Reel overview">
+      <article class="reel-stat-card reel-stat-card-views"><span id="stats-total-views-label">Unique views</span><strong id="stats-total-views">—</strong><small id="stats-total-views-note">Across all your Reels</small></article>
+      <article class="reel-stat-card reel-stat-card-likes"><span id="stats-total-likes-label">Likes</span><strong id="stats-total-likes">—</strong><small id="stats-total-likes-note">People who liked your videos</small></article>
+      <article class="reel-stat-card reel-stat-card-comments"><span id="stats-total-comments-label">Comments</span><strong id="stats-total-comments">—</strong><small id="stats-total-comments-note">Conversations started</small></article>
+      <article class="reel-stat-card reel-stat-card-interactions"><span id="stats-total-interactions-label">Total interactions</span><strong id="stats-total-interactions">—</strong><small id="stats-total-interactions-note">Likes and comments combined</small></article>
+    </section>
+
+    <section class="reel-stats-list-section" aria-labelledby="stats-list-title">
+      <div class="reel-stats-list-heading"><div><p class="card-kicker" id="stats-list-kicker">PERFORMANCE BY VIDEO</p><h2 id="stats-list-title">Your published Reels</h2></div><span id="stats-reel-count" class="reel-stats-count"></span></div>
+      <div id="reel-stats-list" class="reel-stats-list" aria-live="polite"><p class="reel-stats-message" id="stats-loading">Loading your Reel analytics…</p></div>
+    </section>
+
+    <footer class="footer reel-stats-footer"><span>© 2026 IQZodiac</span><span class="footer-orbit" aria-hidden="true"><i></i><i></i><i></i></span><span id="stats-footer-tagline">Look inward. Move forward.</span><button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>
+  </main>
+
+  <nav class="site-nav" aria-label="Main navigation">
+    <a href="./home.html"><span class="nav-glyph" aria-hidden="true">⌂</span><span data-menu-key="home">Home</span></a>
+    <a href="./match.html"><span class="nav-glyph" aria-hidden="true">♡</span><span data-menu-key="match">Match</span></a>
+    <a href="./daily.html"><span class="nav-glyph" aria-hidden="true">◌</span><span data-menu-key="daily">Daily</span></a>
+    <a href="./discover.html"><span class="nav-glyph" aria-hidden="true">✦</span><span data-menu-key="discover">Discover</span></a>
+    <a href="./reel.html"><span class="nav-glyph" aria-hidden="true">◉</span><span data-menu-key="reel">Reel</span></a>
+    <a href="./profile.html"><span class="nav-glyph" aria-hidden="true">◍</span><span data-menu-key="profile">Profile</span></a>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="./supabase-client.js" defer></script>
+  <script src="./auth-guard.js" defer></script>
+  <script src="./i18n-data.js?v=reel-analytics-20261107" defer></script>
+  <script src="./language.js?v=reel-analytics-20261107" defer></script>
+  <script src="./reel-stats.js?v=reel-analytics-20261107" defer></script>
+  <script src="./nav-performance.js" defer></script>
+</body>
+</html>

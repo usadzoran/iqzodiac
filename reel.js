@@ -27,6 +27,8 @@
     },
   };
   const t = (key, ...args) => typeof copy[language()][key] === 'function' ? copy[language()][key](...args) : copy[language()][key];
+  const updateStatsShortcutLabel = () => { const label = byId('reel-stats-shortcut-label'); if (label) label.textContent = language() === 'ar' ? 'إحصاءات Reels الخاصة بي' : 'My Reel statistics'; };
+  updateStatsShortcutLabel();
   const setStatus = (message, state = '') => { status.textContent = message; status.dataset.state = state; };
   const showToast = (message) => { if (!toast || !toastMessage) return; toastMessage.textContent = message; toast.classList.add('is-visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2800); };
   const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -95,6 +97,26 @@
     const likeButton = card.querySelector('.reel-like-button');
     const shareButton = card.querySelector('.reel-share-button');
     shareButton.addEventListener('click', () => { void shareReel(card, row); });
+    const video = card.querySelector('.reel-card-video');
+    let viewRequestPending = false;
+    const recordReelView = async (finished = false) => {
+      if (!authenticatedUserId || viewRequestPending || card.dataset.viewRecorded === 'true') return;
+      if (!finished && video.paused) return;
+      const duration = Number(video.duration);
+      const threshold = Number.isFinite(duration) && duration > 0 ? Math.min(3, duration) : 3;
+      if (video.currentTime < threshold) return;
+      viewRequestPending = true; card.dataset.viewRecorded = 'pending';
+      try {
+        const { error } = await client.rpc('record_reel_view', { p_reel_id: row.id });
+        if (error) throw error;
+        card.dataset.viewRecorded = 'true';
+      } catch (error) {
+        delete card.dataset.viewRecorded;
+        console.warn('Reel view could not be recorded.', error);
+      } finally { viewRequestPending = false; }
+    };
+    video.addEventListener('timeupdate', () => { void recordReelView(); });
+    video.addEventListener('ended', () => { void recordReelView(true); });
     likeButton.addEventListener('click', async () => {
       if (!authenticatedUserId) { showToast(t('signInToInteract')); return; }
       const currentlyLiked = likeButton.dataset.liked === 'true'; likeButton.disabled = true;
@@ -178,6 +200,6 @@
     } catch (error) { if (mediaPath) await client.storage.from('iqzodiac-media').remove([mediaPath]); console.warn('Reel could not be published.', error); setStatus(t('failed'), 'error'); } finally { publishButton.disabled = false; }
   });
 
-  document.addEventListener('iqzodiac:languagechange', () => { if (!selectedFile) byId('reel-file-label').textContent = t('choose'); updateCaptionCount(); });
+  document.addEventListener('iqzodiac:languagechange', () => { if (!selectedFile) byId('reel-file-label').textContent = t('choose'); updateCaptionCount(); updateStatsShortcutLabel(); });
   (async () => { try { const client = await database(); if (!client) throw new Error('missing-client'); const { data } = await client.auth.getSession(); authenticatedUserId = data.session?.user?.id || null; await loadReels(client); } catch (error) { console.warn('Reels could not be loaded.', error); feed.innerHTML = `<p class="reel-empty">${escapeHTML(t('unavailable'))}</p>`; } })();
 })();
