@@ -16,10 +16,12 @@
   <div class="aurora aurora-one" aria-hidden="true"></div><div class="aurora aurora-two" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
   <main class="rooms-shell">
     <header class="rooms-header">
-      <div><div class="rooms-kicker">IQZODIAC / LIVE SESSIONS</div><h1>الغرف المباشرة</h1><p>تظهر هنا الجلسات المنشورة فعليًا من قاعدة البيانات. لا توجد غرف أو رسائل افتراضية داخل الواجهة.</p></div>
+      <div><div class="rooms-kicker">IQZODIAC / LIVE SPACES</div><h1>البث والغرف الصوتية</h1><p>اختر فئة لتجد البثوث المباشرة والغرف الصوتية المفتوحة داخلها.</p></div>
       <div class="rooms-controls"><label for="rooms-category-filter">الفئة</label><select id="rooms-category-filter"><option value="all">كل الفئات</option></select><div id="rooms-status" class="rooms-status">جاري الاتصال...</div></div>
     </header>
-    <section id="rooms-list" class="rooms-grid" aria-live="polite"><p class="rooms-empty">جاري تحميل الجلسات المنشورة...</p></section>
+    <section class="audio-create-card"><div><div class="rooms-kicker">AUDIO ROOM</div><h2>افتح غرفة صوتية</h2><p>اختر الفئة التي ستظهر فيها غرفتك.</p></div><form id="audio-room-form"><input id="audio-room-title" maxlength="120" required placeholder="اسم الغرفة" aria-label="اسم الغرفة" /><textarea id="audio-room-description" maxlength="500" rows="2" placeholder="وصف مختصر (اختياري)" aria-label="وصف الغرفة"></textarea><select id="audio-room-category" aria-label="فئة الغرفة"><option>Music</option><option>Talk &amp; Advice</option><option>Gaming</option><option>Education</option><option>Sports</option><option>Beauty &amp; Lifestyle</option><option>General</option></select><button class="button button-primary" type="submit">فتح الغرفة</button><p id="audio-room-form-status" class="rooms-form-status" role="status"></p></form></section>
+    <section><div class="rooms-section-heading"><h2>الغرف الصوتية</h2><span id="audio-rooms-status"></span></div><div id="audio-rooms-list" class="rooms-grid" aria-live="polite"><p class="rooms-empty">جاري تحميل الغرف الصوتية...</p></div></section>
+    <section><div class="rooms-section-heading"><h2>البث المباشر</h2><span>LIVE</span></div><div id="rooms-list" class="rooms-grid" aria-live="polite"><p class="rooms-empty">جاري تحميل الجلسات المنشورة...</p></div></section>
   </main>
   <nav class="site-nav" aria-label="Main navigation">
     <a href="./home.html"><span class="nav-glyph" aria-hidden="true">⌂</span><span data-menu-key="home">الرئيسية</span></a>
@@ -33,3 +35,4 @@
     <script src="./nav-performance.js" defer></script>
   </body>
 </html>
+.rooms-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:32px 0 14px}.rooms-section-heading h2{margin:0;color:#eef1ff;font-size:23px}.rooms-section-heading span{color:#83e5e8;font:10px "DM Mono",monospace}.audio-create-card{display:grid;grid-template-columns:1fr 1.3fr;gap:22px;margin:22px 0;padding:22px;border:1px solid rgba(131,229,232,.2);border-radius:14px;background:rgba(16,25,47,.72)}.audio-create-card h2{margin:8px 0;color:#eef1ff}.audio-create-card p{color:#9ba7c2;font-size:12px;line-height:1.7}.audio-create-card form{display:grid;gap:9px}.audio-create-card input,.audio-create-card textarea,.audio-create-card select{width:100%;padding:11px;border:1px solid rgba(218,225,255,.14);border-radius:4px;background:#10172d;color:#eef1ff;font:12px Manrope,sans-serif}.audio-create-card button{justify-self:start}.rooms-form-status{min-height:16px;margin:0!important;color:#83e5e8!important}.audio-room-card{min-height:190px}.audio-room-card .room-host{color:#c9d1e7;font-size:11px}@media(max-width:640px){.audio-create-card{grid-template-columns:1fr}}
