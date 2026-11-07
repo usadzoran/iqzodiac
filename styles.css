@@ -1038,3 +1038,8 @@ html.has-scroll-reveal .home-page [data-scroll-reveal].is-revealed { opacity: 1;
 .vip-access-row strong { color: var(--ink); font-size: 12px; }
 .vip-access-row small { max-width: 490px; margin-top: 6px; color: var(--dim); font-size: 10px; line-height: 1.5; }
 @media (max-width: 620px) { .compatibility-fields { grid-template-columns: 1fr; } .signup-field-wide { grid-column: auto; } .vip-access-row { align-items: flex-start; flex-direction: column; } .vip-access-row .button { width: 100%; } }
+
+.reel-profile-link-card { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 17px; padding: clamp(20px, 3vw, 30px); }
+.reel-profile-link-card .section-intro { margin-bottom: 0; }
+.reel-profile-link-card h2 { margin: 0; color: var(--ink); font-size: 22px; letter-spacing: -0.045em; }
+@media (max-width: 600px) { .reel-profile-link-card { align-items: stretch; flex-direction: column; gap: 8px; } }

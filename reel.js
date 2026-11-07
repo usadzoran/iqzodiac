@@ -94,15 +94,23 @@
     const list = card.querySelector('.reel-comments-list'); if (!comments.length) { const empty = document.createElement('li'); empty.className = 'reel-comments-empty'; empty.textContent = t('noComments'); list.append(empty); } else comments.forEach((comment) => list.append(makeComment(comment, client, card)));
   };
 
-  const renderReels = (rows, client) => {
+  const reelVideoObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      const video = entry.target;
+      if (video.dataset.src) { video.src = video.dataset.src; video.removeAttribute('data-src'); }
+      observer.unobserve(video);
+    });
+  }, { rootMargin: '320px 0px' });
+
+  const renderReels = async (rows, client) => {
     feed.replaceChildren(); byId('reel-count').textContent = t('count', rows.length);
     if (!rows.length) { feed.innerHTML = `<p class="reel-empty">${escapeHTML(t('empty'))}</p>`; return; }
-    rows.forEach(async (row) => {
-      let url = '';
-      try { const { data } = await client.storage.from('iqzodiac-media').createSignedUrl(row.media_path, 3600); url = data?.signedUrl || ''; } catch { /* Keep the card visible without a broken player. */ }
+    const signedUrls = await Promise.all(rows.map(async (row) => { try { const { data } = await client.storage.from('iqzodiac-media').createSignedUrl(row.media_path, 900); return data?.signedUrl || ''; } catch { return ''; } }));
+    rows.forEach((row, index) => {
       const card = document.createElement('article'); card.className = 'reel-card';
-      const video = document.createElement('video'); video.className = 'reel-card-video'; video.controls = true; video.playsInline = true; video.preload = 'metadata'; video.muted = true; video.src = url; video.setAttribute('aria-label', 'Reel video');
-      const copyNode = document.createElement('div'); copyNode.className = 'reel-card-copy'; copyNode.innerHTML = `<div class="reel-card-author"><span class="reel-card-avatar">${escapeHTML(initials(row.display_name || row.handle))}</span><strong>${escapeHTML(row.display_name || row.handle || 'Orbit Member')}</strong></div><p class="reel-card-meta">${escapeHTML(formatDate(row.created_at))} · ${escapeHTML(t('duration', Number(row.duration_seconds || 0)))}</p>${row.caption ? `<p class="reel-card-caption">${escapeHTML(row.caption)}</p>` : ''}`;
+      const video = document.createElement('video'); video.className = 'reel-card-video'; video.controls = true; video.playsInline = true; video.preload = 'none'; video.muted = true; video.dataset.src = signedUrls[index]; video.setAttribute('aria-label', 'Reel video'); reelVideoObserver.observe(video);
+      const copyNode = document.createElement('div'); copyNode.className = 'reel-card-copy'; copyNode.innerHTML = `<div class="reel-card-author"><span class="reel-card-avatar">${escapeHTML(initials(row.display_name || row.handle))}</span><a class="reel-card-author-link" href="./reel-profile.html?user=${encodeURIComponent(row.author_id)}">${escapeHTML(row.display_name || row.handle || 'Orbit Member')}</a></div><p class="reel-card-meta">${escapeHTML(formatDate(row.created_at))} · ${escapeHTML(t('duration', Number(row.duration_seconds || 0)))}</p>${row.caption ? `<p class="reel-card-caption">${escapeHTML(row.caption)}</p>` : ''}`;
       const actions = document.createElement('div'); actions.className = 'reel-actions'; actions.innerHTML = `<button type="button" class="reel-action reel-like-button" data-liked="${Boolean(row.liked_by_me)}"><span class="reel-like-icon">${row.liked_by_me ? '♥' : '♡'}</span><span class="reel-like-label">${escapeHTML(row.liked_by_me ? t('liked') : t('like'))}</span><b class="reel-like-count" data-count="${toCount(row.like_count)}">${toCount(row.like_count)}</b></button><span class="reel-comment-count" data-count="${toCount(row.comment_count)}">${escapeHTML(t('comments', toCount(row.comment_count)))}</span>`;
       const commentsPanel = document.createElement('div'); commentsPanel.className = 'reel-comments-panel'; commentsPanel.innerHTML = `<ul class="reel-comments-list"></ul><form class="reel-comment-form"><input type="text" maxlength="180" placeholder="${escapeHTML(t('writeComment'))}" aria-label="${escapeHTML(t('writeComment'))}" /><button type="submit" aria-label="${escapeHTML(t('postComment'))}">↗</button></form>`;
       card.append(video, copyNode, actions, commentsPanel); feed.append(card); bindInteractions(card, row, client, row.comments || []);
@@ -110,7 +118,7 @@
   };
 
   const loadReels = async (client) => {
-    const { data, error } = await client.from('reels').select('id,author_id,caption,media_path,duration_seconds,created_at').order('created_at', { ascending: false }).limit(30);
+    const { data, error } = await client.from('reels').select('id,author_id,caption,media_path,duration_seconds,created_at').order('created_at', { ascending: false }).limit(12);
     if (error) throw error;
     let rows = data || [];
     const reelIds = rows.map((row) => row.id).filter(Boolean);
