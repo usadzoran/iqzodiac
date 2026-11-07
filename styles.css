@@ -57,6 +57,32 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+body.landing-page {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(5, 10, 27, 0.58), rgba(5, 10, 27, 0.78)),
+    url("./assets/iqzodiac-landing.jpg") center / cover fixed,
+    linear-gradient(135deg, #090c18 0%, #0b1020 52%, #080b15 100%);
+}
+
+body.landing-page::after {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background: radial-gradient(circle at 50% 42%, transparent 0 22%, rgba(4, 8, 20, 0.22) 68%, rgba(4, 8, 20, 0.58) 100%);
+}
+
+body.landing-page .landing-shell {
+  z-index: 1;
+}
+
+body.landing-page .aurora,
+body.landing-page .grain {
+  z-index: 2;
+}
+
 body::before {
   position: fixed;
   inset: 0;
