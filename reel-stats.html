@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css?v=reel-analytics-20261107" />
-  <link rel="stylesheet" href="./reel-stats.css?v=reel-analytics-20261107" />
+  <link rel="stylesheet" href="./reel-stats.css?v=reel-charts-20261107" />
 </head>
 <body class="has-site-nav reel-stats-page">
   <div class="aurora aurora-one" aria-hidden="true"></div><div class="aurora aurora-two" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
@@ -32,6 +32,40 @@
       <article class="reel-stat-card reel-stat-card-likes"><span id="stats-total-likes-label">Likes</span><strong id="stats-total-likes">—</strong><small id="stats-total-likes-note">People who liked your videos</small></article>
       <article class="reel-stat-card reel-stat-card-comments"><span id="stats-total-comments-label">Comments</span><strong id="stats-total-comments">—</strong><small id="stats-total-comments-note">Conversations started</small></article>
       <article class="reel-stat-card reel-stat-card-interactions"><span id="stats-total-interactions-label">Total interactions</span><strong id="stats-total-interactions">—</strong><small id="stats-total-interactions-note">Likes and comments combined</small></article>
+    </section>
+
+    <section class="reel-growth-section" aria-labelledby="activity-chart-title">
+      <div class="reel-growth-card">
+        <div class="chart-card-heading">
+          <div class="chart-heading-copy"><p class="card-kicker" id="chart-kicker">GROWTH OVER TIME</p><h2 id="activity-chart-title">Views &amp; interactions</h2><p id="chart-description">Cumulative activity during the selected period.</p></div>
+          <div class="chart-range-control" role="group" id="chart-range-control" aria-label="Choose chart period">
+            <button type="button" data-chart-days="7" aria-pressed="false">7D</button>
+            <button type="button" data-chart-days="30" aria-pressed="true">30D</button>
+            <button type="button" data-chart-days="90" aria-pressed="false">90D</button>
+          </div>
+        </div>
+        <div class="chart-toolbar">
+          <div class="chart-legend" role="group" id="chart-legend" aria-label="Toggle chart series">
+            <button type="button" data-chart-series="views" aria-pressed="true"><span class="chart-legend-swatch chart-legend-views" aria-hidden="true"></span><span id="chart-views-label">Unique views</span></button>
+            <button type="button" data-chart-series="interactions" aria-pressed="true"><span class="chart-legend-swatch chart-legend-interactions" aria-hidden="true"></span><span id="chart-interactions-label">Interactions</span></button>
+          </div>
+          <span class="chart-period-note" id="chart-period-note">Last 30 days</span>
+        </div>
+        <div class="chart-shell">
+          <svg id="reel-activity-chart" viewBox="0 0 900 330" role="img" aria-labelledby="activity-svg-title activity-svg-desc" hidden>
+            <title id="activity-svg-title">Reel views and interactions over time</title>
+            <desc id="activity-svg-desc">Cumulative unique views and interactions by day. Focus or point to a marker for details.</desc>
+            <g id="chart-grid" aria-hidden="true"></g>
+            <g id="chart-y-labels" aria-hidden="true"></g>
+            <g id="chart-x-labels" aria-hidden="true"></g>
+            <g id="chart-lines" aria-hidden="true"></g>
+            <g id="chart-points"></g>
+          </svg>
+          <div id="chart-tooltip" class="chart-tooltip" role="status" aria-live="polite" hidden></div>
+          <p id="chart-state-message" class="chart-state-message" aria-live="polite">Loading chart data…</p>
+        </div>
+        <p class="chart-footnote" id="chart-footnote">Views are unique signed-in viewers; interactions combine likes and comments.</p>
+      </div>
     </section>
 
     <section class="reel-stats-list-section" aria-labelledby="stats-list-title">
@@ -56,7 +90,7 @@
   <script src="./auth-guard.js" defer></script>
   <script src="./i18n-data.js?v=reel-analytics-20261107" defer></script>
   <script src="./language.js?v=reel-analytics-20261107" defer></script>
-  <script src="./reel-stats.js?v=reel-analytics-20261107" defer></script>
+  <script src="./reel-stats.js?v=reel-charts-20261107" defer></script>
   <script src="./nav-performance.js" defer></script>
 </body>
 </html>
