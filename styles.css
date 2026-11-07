@@ -545,6 +545,12 @@ h1 {
 .action-icon { font: 17px/0.7 Georgia, serif; }
 .comment-list { display: grid; gap: 9px; padding-top: 13px; }
 .comment { display: flex; align-items: flex-start; gap: 8px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+.comment-thread { display: grid; gap: 5px; }
+.comment-content { min-width: 0; }
+.comment-reply-button { margin: 3px 0 0; padding: 0; border: 0; background: transparent; color: var(--cyan); cursor: pointer; font: 8px "DM Mono", monospace; text-transform: uppercase; }
+.comment-reply-button:hover { color: var(--ink); }
+.comment-replies { display: grid; gap: 7px; margin-left: 30px; padding-left: 10px; border-left: 1px solid rgba(131,229,232,0.16); }
+.comment-reply-form { max-width: 360px; margin-top: 6px; }
 .comment-avatar { display: grid; flex: none; width: 22px; height: 22px; place-items: center; border-radius: 50%; color: var(--night); font-size: 8px; font-weight: 800; }
 .comment p { margin: 1px 0 0; }
 .comment p strong { margin-right: 3px; color: var(--ink); font-size: 10px; }
