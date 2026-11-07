@@ -55,12 +55,15 @@
       card.className = 'vip-live-session';
       const title = document.createElement('h3');
       title.textContent = String(session.title || 'VIP live session');
+      const category = document.createElement('span');
+      category.className = 'vip-live-session-category';
+      category.textContent = String(session.category || 'General');
       const description = document.createElement('p');
       description.textContent = String(session.description || '');
       const choose = document.createElement('button');
       choose.type = 'button'; choose.className = 'vip-gift-session-button'; choose.textContent = 'Open gift picker';
       choose.addEventListener('click', () => { selectedSessionId = session.id; loadGiftPicker(); });
-      card.append(title, description, choose);
+      card.append(category, title, description, choose);
       container.append(card);
     });
   }
@@ -92,6 +95,7 @@
     } catch { setStatus('vip-gift-status', 'Gift catalog is unavailable. No coins were deducted.', 'error'); }
   }
   byId('vip-gift-quantity')?.addEventListener('change', updateGiftTotal);
+  byId('vip-broadcast-category')?.addEventListener('change', (event) => { try { window.localStorage.setItem('iqzodiac-live-category', event.target.value); } catch { /* Keep category selection usable without storage. */ } });
   byId('vip-send-gift')?.addEventListener('click', async () => {
     if (!selectedGift || !selectedSessionId) return;
     const send = byId('vip-send-gift'); send.disabled = true;
