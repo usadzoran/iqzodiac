@@ -143,16 +143,32 @@ const zodiac = document.querySelector('#zodiac-sign'); const element = document.
   document.querySelector('#vip-access-copy').textContent = access.role === 'vip' ? 'VIP access is active. Priority matching and future private sections are enabled.' : 'VIP will unlock special sections and priority matching after checkout is connected.';
 })();
 
-document.querySelector('#save-profile').addEventListener('click', async () => {
-  saveChoice('gallery-visible', galleryVisibility.checked);
-  if (adapter) {
-    await adapter.updatePublicIdentity({ displayName: displayNameInput.value.trim(), handle: `@${usernameInput.value.trim().replace(/^@/, '')}` });
-    await adapter.updatePersonalDetails({ firstName: firstNameInput.value, lastName: lastNameInput.value, country: countryInput.options[countryInput.selectedIndex]?.textContent || '', city: cityInput.value, residenceCountry: countryInput.options[countryInput.selectedIndex]?.textContent || '', residenceCity: cityInput.value, birthCountry: birthCountryInput.options[birthCountryInput.selectedIndex]?.textContent || '', birthCity: birthCityInput.value, preferredLanguage: preferredLanguageInput.value });
-    try { window.localStorage.setItem('iqzodiac-language', preferredLanguageInput.value); } catch { /* Keep profile saving working if storage is unavailable. */ }
-    await adapter.updatePrivacyPreferences({ photosPublic: galleryVisibility.checked });
-    await adapter.updateCompatibilityProfile({ zodiac: zodiac.value, element: element.value, interests: interestsInput.value.split(',').map((item) => item.trim()).filter(Boolean) });
+const saveProfileButton = document.querySelector('#save-profile');
+saveProfileButton.addEventListener('click', async () => {
+  if (saveProfileButton.disabled) return;
+  const label = saveProfileButton.querySelector('span');
+  const originalLabel = label?.textContent || 'Save changes';
+  saveProfileButton.disabled = true;
+  if (label) label.textContent = 'Saving…';
+  try {
+    saveChoice('gallery-visible', galleryVisibility.checked);
+    if (adapter) {
+      await adapter.updatePublicIdentity({ displayName: displayNameInput.value.trim(), handle: `@${usernameInput.value.trim().replace(/^@/, '')}` });
+      await adapter.updatePersonalDetails({ firstName: firstNameInput.value, lastName: lastNameInput.value, country: countryInput.options[countryInput.selectedIndex]?.textContent || '', city: cityInput.value, residenceCountry: countryInput.options[countryInput.selectedIndex]?.textContent || '', residenceCity: cityInput.value, birthCountry: birthCountryInput.options[birthCountryInput.selectedIndex]?.textContent || '', birthCity: birthCityInput.value, preferredLanguage: preferredLanguageInput.value });
+      try { window.localStorage.setItem('iqzodiac-language', preferredLanguageInput.value); } catch { /* Keep profile saving working if storage is unavailable. */ }
+      await adapter.updatePrivacyPreferences({ photosPublic: galleryVisibility.checked });
+      await adapter.updateCompatibilityProfile({ zodiac: zodiac.value, element: element.value, interests: interestsInput.value.split(',').map((item) => item.trim()).filter(Boolean) });
+    }
+    showToast('Your information was saved successfully.');
+  } catch (error) {
+    console.error('Profile could not be saved.', error);
+    showToast(error?.message || 'Profile could not be saved. Please try again.');
+  } finally {
+    saveProfileButton.disabled = false;
+    if (label) label.textContent = originalLabel;
   }
-  showToast('Your privacy and Match preferences are saved.');
+});
+  }
 });
 
 const renderMedia = (items) => {
