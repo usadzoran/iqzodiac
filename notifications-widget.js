@@ -55,6 +55,7 @@
       const item = document.createElement('button');
       item.type = 'button';
       item.className = `notification-popover-item${row.read_at ? '' : ' is-unread'}`;
+      item.dataset.reelId = row.reel_id || '';
       const icon = document.createElement('span');
       icon.textContent = row.read_at ? '·' : '•';
       const copy = document.createElement('span');
@@ -66,6 +67,7 @@
       item.addEventListener('click', async () => {
         await markNotificationRead(row.id);
         renderPopover();
+        if (row.reel_id) window.location.href = `./reel.html?reel=${encodeURIComponent(row.reel_id)}`;
       });
       const deleteButton = document.createElement('button');
       deleteButton.type = 'button';
@@ -116,7 +118,7 @@
       userId = auth?.user?.id;
       if (!userId) return;
       const update = async () => {
-        const { data, error } = await client.from('notifications').select('id,message,read_at,created_at,post_id,comment_id').eq('recipient_id', userId).order('created_at', { ascending: false }).limit(30);
+        const { data, error } = await client.from('notifications').select('id,message,read_at,created_at,post_id,comment_id,reel_id,reel_comment_id').eq('recipient_id', userId).order('created_at', { ascending: false }).limit(30);
         if (error) throw error;
         notificationRows = data || [];
         updateBadge();

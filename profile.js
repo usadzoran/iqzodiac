@@ -8,6 +8,8 @@ let toastTimer;
 let uploadedMediaCount = 0;
 
 const showToast = (message) => { toastMessage.textContent = message; toast.classList.add('is-visible'); window.clearTimeout(toastTimer); toastTimer = window.setTimeout(() => toast.classList.remove('is-visible'), 2800); };
+const updateReelStatsLinkLanguage = () => { const link = document.querySelector('#profile-reel-stats-link'); if (link) { const label = window.IQZodiacLanguage?.language === 'ar' ? 'فتح إحصاءات Reels' : 'Open Reel statistics'; link.firstChild.textContent = `${label} `; } };
+document.addEventListener('iqzodiac:languagechange', updateReelStatsLinkLanguage); updateReelStatsLinkLanguage();
 const saveChoice = (key, value) => window.localStorage.setItem(`iqzodiac:${key}`, String(value));
 const readChoice = (key) => window.localStorage.getItem(`iqzodiac:${key}`) === 'true';
 const readNumber = (key, fallback) => Number(window.localStorage.getItem(`iqzodiac:${key}`) || fallback);
@@ -72,7 +74,7 @@ const deleteCompactNotification = async (id) => {
   const previousRows = [...notificationItems];
   notificationItems = notificationItems.filter((item) => item.dataset.notificationId !== id);
   updateNotificationCount(); updateNotificationBadge();
-  renderCompactNotifications(notificationItems.map((item) => ({ id: item.dataset.notificationId, message: item.dataset.notification, read_at: item.classList.contains('is-unread') ? null : new Date().toISOString(), created_at: new Date().toISOString() })));
+  renderCompactNotifications(notificationItems.map((item) => ({ id: item.dataset.notificationId, message: item.dataset.notification, reel_id: item.dataset.reelId, read_at: item.classList.contains('is-unread') ? null : new Date().toISOString(), created_at: new Date().toISOString() })));
   try { const client = await window.IQZodiacSupabase.ready; const { error } = await client.from('notifications').delete().eq('id', id); if (error) throw error; } catch { notificationItems = previousRows; updateNotificationCount(); updateNotificationBadge(); renderCompactNotifications([]); }
 };
 notificationItems.forEach((item) => item.addEventListener('click', () => { item.classList.remove('is-unread'); void markNotificationRead(item); updateNotificationCount(); showToast(item.dataset.notification); }));
@@ -87,9 +89,9 @@ const renderCompactNotifications = (rows) => {
   if (!visibleRows.length) { notificationPopoverList.innerHTML = '<p class="sidebar-note">No notifications.</p>'; return; }
   visibleRows.forEach((row) => {
     const entry = document.createElement('div'); entry.className = 'notification-popover-entry';
-    const item = document.createElement('button'); item.type = 'button'; item.className = `notification-popover-item${row.read_at ? '' : ' is-unread'}`; item.dataset.notificationId = row.id;
+    const item = document.createElement('button'); item.type = 'button'; item.className = `notification-popover-item${row.read_at ? '' : ' is-unread'}`; item.dataset.notificationId = row.id; item.dataset.reelId = row.reel_id || '';
     const icon = document.createElement('span'); icon.textContent = row.read_at ? '·' : '•'; const copy = document.createElement('span'); copy.textContent = row.message || 'New notification'; const time = document.createElement('small'); time.textContent = row.created_at ? new Date(row.created_at).toLocaleString() : ''; copy.append(time); item.append(icon, copy);
-    item.addEventListener('click', async () => { await markNotificationRead({ dataset: { notificationId: row.id } }); item.classList.remove('is-unread'); showToast(row.message); });
+    item.addEventListener('click', async () => { await markNotificationRead({ dataset: { notificationId: row.id } }); item.classList.remove('is-unread'); showToast(row.message); if (row.reel_id) window.location.href = `./reel.html?reel=${encodeURIComponent(row.reel_id)}`; });
     const deleteButton = document.createElement('button'); deleteButton.type = 'button'; deleteButton.className = 'notification-delete'; deleteButton.setAttribute('aria-label', 'Delete notification'); deleteButton.title = 'Delete notification'; deleteButton.textContent = '×'; deleteButton.addEventListener('click', (event) => { event.stopPropagation(); void deleteCompactNotification(row.id); });
     entry.append(item, deleteButton); notificationPopoverList.append(entry);
   });
@@ -104,17 +106,17 @@ const renderNotifications = (rows) => {
   notificationItems = [];
   if (!rows.length) { notificationList.innerHTML = '<p class="sidebar-note">No activity notifications yet.</p>'; renderCompactNotifications([]); updateNotificationCount(); updateNotificationBadge(); return; }
   rows.forEach((row) => {
-    const item = document.createElement('button'); item.type = 'button'; item.className = `notification-item${row.read_at ? '' : ' is-unread'}`; item.dataset.notificationId = row.id; item.dataset.notification = row.message;
+    const item = document.createElement('button'); item.type = 'button'; item.className = `notification-item${row.read_at ? '' : ' is-unread'}`; item.dataset.notificationId = row.id; item.dataset.notification = row.message; item.dataset.reelId = row.reel_id || '';
     const avatar = document.createElement('span'); avatar.className = 'notification-avatar'; avatar.textContent = String(row.message || 'S').trim().slice(0, 1).toUpperCase();
     const copy = document.createElement('span'); copy.className = 'notification-copy'; const strong = document.createElement('strong'); strong.textContent = row.message; const small = document.createElement('small'); small.textContent = new Date(row.created_at).toLocaleString(); copy.append(strong, small);
     const dot = document.createElement('span'); dot.className = 'notification-dot'; item.append(avatar, copy, dot); notificationList.append(item); notificationItems.push(item);
-    item.addEventListener('click', () => { item.classList.remove('is-unread'); void markNotificationRead(item); updateNotificationCount(); });
+    item.addEventListener('click', async () => { item.classList.remove('is-unread'); await markNotificationRead(item); updateNotificationCount(); if (row.reel_id) window.location.href = `./reel.html?reel=${encodeURIComponent(row.reel_id)}`; });
   });
   updateNotificationCount(); updateNotificationBadge(); renderCompactNotifications(rows);
 };
 const loadNotifications = async () => {
-  try { const client = await window.IQZodiacSupabase.ready; const { data: userData } = await client.auth.getUser(); if (!userData?.user?.id) return; const { data, error } = await client.from('notifications').select('id,notification_type,post_id,comment_id,message,read_at,created_at').eq('recipient_id', userData.user.id).order('created_at', { ascending: false }).limit(30); if (error) throw error; renderNotifications(data || []);
-    client.channel(`notifications:${userData.user.id}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `recipient_id=eq.${userData.user.id}` }, (payload) => { renderNotifications([payload.new, ...[...notificationItems].map((item) => ({ id: item.dataset.notificationId, message: item.dataset.notification, read_at: item.classList.contains('is-unread') ? null : new Date().toISOString(), created_at: new Date().toISOString() }))]); showToast(payload.new.message); }).subscribe();
+  try { const client = await window.IQZodiacSupabase.ready; const { data: userData } = await client.auth.getUser(); if (!userData?.user?.id) return; const { data, error } = await client.from('notifications').select('id,notification_type,post_id,comment_id,reel_id,reel_comment_id,message,read_at,created_at').eq('recipient_id', userData.user.id).order('created_at', { ascending: false }).limit(30); if (error) throw error; renderNotifications(data || []);
+    client.channel(`notifications:${userData.user.id}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `recipient_id=eq.${userData.user.id}` }, (payload) => { renderNotifications([payload.new, ...[...notificationItems].map((item) => ({ id: item.dataset.notificationId, message: item.dataset.notification, reel_id: item.dataset.reelId, read_at: item.classList.contains('is-unread') ? null : new Date().toISOString(), created_at: new Date().toISOString() }))]); showToast(payload.new.message); }).subscribe();
   } catch { /* Notifications remain empty if the account service is unavailable. */ }
 };
 void loadNotifications();
