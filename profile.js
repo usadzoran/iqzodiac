@@ -63,10 +63,10 @@ const updateNotificationCount = () => { const unread = notificationItems.filter(
 const updateNotificationBadge = () => { const unread = notificationItems.filter((item) => item.classList.contains('is-unread')).length; notificationBadge.hidden = unread === 0; notificationBadge.textContent = unread > 99 ? '99+' : String(unread); };
 followButton.addEventListener('click', () => { isFollowing = !isFollowing; followers += isFollowing ? 1 : -1; saveChoice('following', isFollowing); window.localStorage.setItem('iqzodiac:followers-count', String(followers)); updateSocialPreview(); showToast(isFollowing ? 'You are now following Alex.' : 'You unfollowed Alex.'); });
 likeProfile.addEventListener('click', () => { hasLiked = !hasLiked; likes += hasLiked ? 1 : -1; saveChoice('profile-liked', hasLiked); window.localStorage.setItem('iqzodiac:likes-count', String(likes)); updateSocialPreview(); showToast(hasLiked ? 'Profile liked.' : 'Like removed.'); });
-notificationItems.forEach((item) => item.addEventListener('click', () => { item.classList.remove('is-unread'); updateNotificationCount(); showToast(item.dataset.notification); }));
 const markNotificationRead = async (item) => {
-  if (!item.dataset.notificationId || !window.IQZodiacSupabase?.ready) return;
-  try { const client = await window.IQZodiacSupabase.ready; await client.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', item.dataset.notificationId); } catch { /* The local visual state still updates. */ }
+  const id = item?.dataset?.notificationId || item?.id;
+  if (!id || !window.IQZodiacSupabase?.ready) return;
+  try { const client = await window.IQZodiacSupabase.ready; await client.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id); } catch { /* Navigation remains available if marking read fails. */ }
 };
 const deleteCompactNotification = async (id) => {
   const previousRows = [...notificationItems];
@@ -75,7 +75,6 @@ const deleteCompactNotification = async (id) => {
   renderCompactNotifications(notificationItems.map((item) => ({ id: item.dataset.notificationId, message: item.dataset.notification, read_at: item.classList.contains('is-unread') ? null : new Date().toISOString(), created_at: new Date().toISOString() })));
   try { const client = await window.IQZodiacSupabase.ready; const { error } = await client.from('notifications').delete().eq('id', id); if (error) throw error; } catch { notificationItems = previousRows; updateNotificationCount(); updateNotificationBadge(); renderCompactNotifications([]); }
 };
-notificationItems.forEach((item) => item.addEventListener('click', () => { item.classList.remove('is-unread'); void markNotificationRead(item); updateNotificationCount(); showToast(item.dataset.notification); }));
 document.querySelector('#mark-all-read').addEventListener('click', async () => {
   notificationItems.forEach((item) => item.classList.remove('is-unread'));
   try { const client = await window.IQZodiacSupabase.ready; const { data } = await client.auth.getUser(); if (data?.user?.id) await client.from('notifications').update({ read_at: new Date().toISOString() }).eq('recipient_id', data.user.id).is('read_at', null); } catch { /* Keep the page usable if the network is unavailable. */ }
@@ -89,7 +88,7 @@ const renderCompactNotifications = (rows) => {
     const entry = document.createElement('div'); entry.className = 'notification-popover-entry';
     const item = document.createElement('button'); item.type = 'button'; item.className = `notification-popover-item${row.read_at ? '' : ' is-unread'}`; item.dataset.notificationId = row.id;
     const icon = document.createElement('span'); icon.textContent = row.read_at ? '·' : '•'; const copy = document.createElement('span'); copy.textContent = row.message || 'New notification'; const time = document.createElement('small'); time.textContent = row.created_at ? new Date(row.created_at).toLocaleString() : ''; copy.append(time); item.append(icon, copy);
-    item.addEventListener('click', async () => { await markNotificationRead({ dataset: { notificationId: row.id } }); item.classList.remove('is-unread'); showToast(row.message); });
+    item.addEventListener('click', async () => { await markNotificationRead(row); window.IQZodiacNotifications?.navigate(row); });
     const deleteButton = document.createElement('button'); deleteButton.type = 'button'; deleteButton.className = 'notification-delete'; deleteButton.setAttribute('aria-label', 'Delete notification'); deleteButton.title = 'Delete notification'; deleteButton.textContent = '×'; deleteButton.addEventListener('click', (event) => { event.stopPropagation(); void deleteCompactNotification(row.id); });
     entry.append(item, deleteButton); notificationPopoverList.append(entry);
   });
@@ -108,13 +107,13 @@ const renderNotifications = (rows) => {
     const avatar = document.createElement('span'); avatar.className = 'notification-avatar'; avatar.textContent = String(row.message || 'S').trim().slice(0, 1).toUpperCase();
     const copy = document.createElement('span'); copy.className = 'notification-copy'; const strong = document.createElement('strong'); strong.textContent = row.message; const small = document.createElement('small'); small.textContent = new Date(row.created_at).toLocaleString(); copy.append(strong, small);
     const dot = document.createElement('span'); dot.className = 'notification-dot'; item.append(avatar, copy, dot); notificationList.append(item); notificationItems.push(item);
-    item.addEventListener('click', () => { item.classList.remove('is-unread'); void markNotificationRead(item); updateNotificationCount(); });
+    item.addEventListener('click', async () => { item.classList.remove('is-unread'); updateNotificationCount(); await markNotificationRead(row); window.IQZodiacNotifications?.navigate(row); });
   });
   updateNotificationCount(); updateNotificationBadge(); renderCompactNotifications(rows);
 };
 const loadNotifications = async () => {
-  try { const client = await window.IQZodiacSupabase.ready; const { data: userData } = await client.auth.getUser(); if (!userData?.user?.id) return; const { data, error } = await client.from('notifications').select('id,notification_type,post_id,comment_id,message,read_at,created_at').eq('recipient_id', userData.user.id).order('created_at', { ascending: false }).limit(30); if (error) throw error; renderNotifications(data || []);
-    client.channel(`notifications:${userData.user.id}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `recipient_id=eq.${userData.user.id}` }, (payload) => { renderNotifications([payload.new, ...[...notificationItems].map((item) => ({ id: item.dataset.notificationId, message: item.dataset.notification, read_at: item.classList.contains('is-unread') ? null : new Date().toISOString(), created_at: new Date().toISOString() }))]); showToast(payload.new.message); }).subscribe();
+  try { const client = await window.IQZodiacSupabase.ready; const { data: userData } = await client.auth.getUser(); if (!userData?.user?.id) return; const { data, error } = await client.from('notifications').select('id,notification_type,actor_id,message_id,post_id,comment_id,reel_id,reel_comment_id,message,read_at,created_at').eq('recipient_id', userData.user.id).order('created_at', { ascending: false }).limit(30); if (error) throw error; renderNotifications(data || []);
+    client.channel(`notifications:${userData.user.id}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `recipient_id=eq.${userData.user.id}` }, (payload) => { void loadNotifications(); showToast(payload.new.message); }).subscribe();
   } catch { /* Notifications remain empty if the account service is unavailable. */ }
 };
 void loadNotifications();

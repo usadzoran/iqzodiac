@@ -65,7 +65,7 @@
       item.append(icon, copy);
       item.addEventListener('click', async () => {
         await markNotificationRead(row.id);
-        renderPopover();
+        window.IQZodiacNotifications?.navigate(row);
       });
       const deleteButton = document.createElement('button');
       deleteButton.type = 'button';
@@ -116,7 +116,7 @@
       userId = auth?.user?.id;
       if (!userId) return;
       const update = async () => {
-        const { data, error } = await client.from('notifications').select('id,message,read_at,created_at,post_id,comment_id').eq('recipient_id', userId).order('created_at', { ascending: false }).limit(30);
+        const { data, error } = await client.from('notifications').select('id,notification_type,actor_id,message_id,message,read_at,created_at,post_id,comment_id,reel_id,reel_comment_id').eq('recipient_id', userId).order('created_at', { ascending: false }).limit(30);
         if (error) throw error;
         notificationRows = data || [];
         updateBadge();

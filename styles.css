@@ -1170,3 +1170,16 @@ html.has-scroll-reveal .home-page [data-scroll-reveal].is-revealed { opacity: 1;
   .profile-private-shortcut,
   .profile-private-shortcut-arrow { transition: none; }
 }
+
+
+/* Brief focus state for items opened from an account notification. */
+.notification-target-highlight {
+  outline: 2px solid rgba(131, 229, 232, 0.72);
+  outline-offset: 4px;
+  animation: notification-target-pulse 1.8s ease-out 2;
+  scroll-margin-block: 110px;
+}
+@keyframes notification-target-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(131, 229, 232, 0); }
+  35% { box-shadow: 0 0 0 8px rgba(131, 229, 232, 0.16); }
+}

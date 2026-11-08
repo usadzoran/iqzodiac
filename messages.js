@@ -9,7 +9,9 @@
   const callStatus = document.querySelector('#call-status');
   const callTimer = document.querySelector('#call-timer');
   const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
-  let client; let user; let contacts = []; let activeId = new URLSearchParams(window.location.search).get('match'); let activeConversation = null; let timerInterval; let elapsedSeconds = 0;
+  const routeParams = new URLSearchParams(window.location.search);
+  const targetMessageId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(routeParams.get('message') || '') ? routeParams.get('message') : '';
+  let client; let user; let contacts = []; let activeId = routeParams.get('match'); let activeConversation = null; let timerInterval; let elapsedSeconds = 0;
   const toast = (message) => { const node = document.querySelector('.toast-message'); if (node) { node.textContent = message; document.querySelector('.toast')?.classList.add('is-visible'); } };
   const renderContacts = (filter = '') => {
     contactList.replaceChildren();
@@ -21,11 +23,18 @@
     const person = contacts.find((item) => item.id === activeId);
     if (!person || !activeConversation) { messageList.innerHTML = '<div class="message-day-divider">REAL MEMBER CONVERSATIONS ONLY</div><p class="sidebar-note">Open a real match to start a private conversation.</p>'; return; }
     document.querySelector('#active-name').textContent = person.name; document.querySelector('#active-handle').textContent = `${person.handle} · Private member conversation`; document.querySelector('#call-title').textContent = person.name;
-    const { data: rows, error } = await client.from('messages').select('sender_id,body,created_at').eq('conversation_id', activeConversation).order('created_at', { ascending: true }).limit(200);
+    const { data: rows, error } = await client.from('messages').select('id,sender_id,body,created_at').eq('conversation_id', activeConversation).order('created_at', { ascending: true }).limit(200);
     if (error) { toast('Messages could not be loaded.'); return; }
+    let messages = rows || [];
+    if (targetMessageId && !messages.some((message) => message.id === targetMessageId)) {
+      const { data: targetMessage } = await client.from('messages').select('id,sender_id,body,created_at').eq('id', targetMessageId).eq('conversation_id', activeConversation).maybeSingle();
+      if (targetMessage) messages = [...messages, targetMessage].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    }
     messageList.replaceChildren(); const divider = document.createElement('div'); divider.className = 'message-day-divider'; divider.textContent = 'PRIVATE CONVERSATION'; messageList.append(divider);
-    (rows || []).forEach((message) => { const bubble = document.createElement('div'); bubble.className = `message-bubble${message.sender_id === user.id ? ' is-mine' : ''}`; const body = document.createElement('span'); body.textContent = message.body; const meta = document.createElement('small'); meta.className = 'message-meta'; meta.textContent = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(message.created_at)); bubble.append(body, meta); messageList.append(bubble); });
-    messageList.scrollTop = messageList.scrollHeight; renderContacts(document.querySelector('#contact-search').value); await renderRevealState();
+    messages.forEach((message) => { const bubble = document.createElement('div'); bubble.className = `message-bubble${message.sender_id === user.id ? ' is-mine' : ''}`; if (message.id) bubble.id = `message-${message.id}`; const body = document.createElement('span'); body.textContent = message.body; const meta = document.createElement('small'); meta.className = 'message-meta'; meta.textContent = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(message.created_at)); bubble.append(body, meta); messageList.append(bubble); });
+    messageList.scrollTop = messageList.scrollHeight;
+    if (targetMessageId) { const target = document.getElementById(`message-${targetMessageId}`); if (target) { target.classList.add('notification-target-highlight'); target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }
+    renderContacts(document.querySelector('#contact-search').value); await renderRevealState();
   };
   const renderRevealState = async () => {
     const status = document.querySelector('#face-consent-status'); const request = document.querySelector('#request-reveal'); const partnerButton = document.querySelector('#partner-consent');

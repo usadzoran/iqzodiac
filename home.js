@@ -26,9 +26,14 @@ const currentPublicIdentity = {
   handle: hasPseudonymousProfile && /^@[a-z0-9._-]{1,24}$/i.test(savedProfile.handle || '') ? savedProfile.handle : '@orbit-member',
   initials: String(hasPseudonymousProfile ? (savedProfile.initials || 'OM') : 'OM').slice(0, 2).toUpperCase(),
 };
+const isUuid = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
+const notificationParams = new URLSearchParams(window.location.search);
+const notificationPostId = isUuid(notificationParams.get('post')) ? notificationParams.get('post') : '';
+const notificationCommentId = isUuid(notificationParams.get('comment')) ? notificationParams.get('comment') : '';
 const createCommentElement = (comment, post, childrenByParent = {}, submitReply = null) => {
   const wrapper = document.createElement('div'); wrapper.className = 'comment-thread';
   const element = document.createElement('div'); element.className = 'comment'; element.dataset.commentId = comment.comment_id || comment.id || '';
+  if (element.dataset.commentId) element.id = `comment-${element.dataset.commentId}`;
   const avatar = document.createElement('span'); avatar.className = 'comment-avatar home-avatar-small'; avatar.textContent = String(comment.display_name || comment.handle || 'OM').replace(/^@/, '').slice(0, 2).toUpperCase();
   const content = document.createElement('div'); content.className = 'comment-content';
   const copy = document.createElement('p'); const author = document.createElement('strong'); author.textContent = comment.handle || comment.display_name || '@member';
@@ -56,6 +61,15 @@ const renderComments = (post, rows) => {
     const count = post.querySelector('.comment-count'); count.textContent = `${formatCount(Number(count.textContent.replace(/[^0-9]/g, '')) + 1)} comments`; showToast('Reply added.'); return true;
   };
   (byParent.root || []).forEach((comment) => list.append(createCommentElement(comment, post, byParent, submitReply)));
+};
+const focusNotificationTarget = () => {
+  if (!notificationPostId) return;
+  const post = document.getElementById(`post-${notificationPostId}`);
+  if (!post) return;
+  const comment = notificationCommentId ? document.getElementById(`comment-${notificationCommentId}`) : null;
+  const target = comment?.closest('.comment-thread') || post;
+  target.classList.add('notification-target-highlight');
+  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 };
 const applyCurrentIdentity = () => {
   document.querySelectorAll('[data-current-user-name]').forEach((node) => { node.textContent = currentPublicIdentity.displayName; });
@@ -298,14 +312,47 @@ if ('IntersectionObserver' in window && !reduceMotion) {
     }
     const { data: feed, error } = await client.rpc('get_home_feed', { p_limit: 30 });
     if (error) throw error;
+    const feedRows = Array.isArray(feed) ? [...feed] : [];
+    if (notificationPostId && !feedRows.some((item) => item.post_id === notificationPostId)) {
+      const { data: targetPost, error: targetError } = await client.from('posts').select('id,author_id,body,media_type,media_path,created_at').eq('id', notificationPostId).maybeSingle();
+      if (targetError) throw targetError;
+      if (targetPost) {
+        const [profileResult, likesResult, commentsResult, viewerLikeResult, followingResult] = await Promise.all([
+          client.rpc('get_public_profile_cards', { p_user_ids: [targetPost.author_id] }),
+          client.from('post_likes').select('post_id', { count: 'exact', head: true }).eq('post_id', notificationPostId),
+          client.from('comments').select('id', { count: 'exact', head: true }).eq('post_id', notificationPostId),
+          client.from('post_likes').select('post_id').eq('post_id', notificationPostId).eq('user_id', authenticatedUserId).maybeSingle(),
+          client.from('follows').select('followed_id').eq('follower_id', authenticatedUserId).eq('followed_id', targetPost.author_id).maybeSingle(),
+        ]);
+        let targetProfile = profileResult.data?.[0];
+        if (!targetProfile) {
+          const { data: profile } = await client.from('profiles').select('display_name,handle').eq('user_id', targetPost.author_id).maybeSingle();
+          targetProfile = profile || {};
+        }
+        feedRows.unshift({
+          post_id: targetPost.id,
+          author_id: targetPost.author_id,
+          display_name: targetProfile.display_name || 'Orbit Member',
+          handle: targetProfile.handle || '@member',
+          body: targetPost.body,
+          media_type: targetPost.media_type,
+          media_path: targetPost.media_path,
+          created_at: targetPost.created_at,
+          like_count: likesResult.count || 0,
+          comment_count: commentsResult.count || 0,
+          liked_by_me: Boolean(viewerLikeResult.data),
+          following: Boolean(followingResult.data),
+        });
+      }
+    }
     const feedList = document.querySelector('#feed-list');
     feedList.replaceChildren();
-    if (!Array.isArray(feed) || !feed.length) {
+    if (!feedRows.length) {
       feedList.innerHTML = '<p class="match-empty">No real posts have been published yet.</p>';
     } else {
-      for (const item of feed) {
+      for (const item of feedRows) {
         const post = document.createElement('article');
-        post.className = 'post-card'; post.dataset.postId = item.post_id; post.dataset.author = String(item.handle || '').replace(/^@/, ''); post.dataset.authorId = item.author_id;
+        post.className = 'post-card'; post.id = `post-${item.post_id}`; post.dataset.postId = item.post_id; post.dataset.author = String(item.handle || '').replace(/^@/, ''); post.dataset.authorId = item.author_id;
         const liked = Boolean(item.liked_by_me);
         let mediaUrl = '';
         if (item.media_path) {
@@ -317,7 +364,7 @@ if ('IntersectionObserver' in window && !reduceMotion) {
         feedList.append(post); bindPost(post);
       }
     }
-    const postIds = (feed || []).map((item) => item.post_id).filter(Boolean);
+    const postIds = feedRows.map((item) => item.post_id).filter(Boolean);
     if (postIds.length) {
       let comments = [];
       const { data: enrichedComments, error: commentsError } = await client.rpc('get_post_comments', { p_post_ids: postIds });
@@ -330,6 +377,7 @@ if ('IntersectionObserver' in window && !reduceMotion) {
       }
       document.querySelectorAll('#feed-list .post-card').forEach((post) => renderComments(post, comments.filter((comment) => comment.post_id === post.dataset.postId)));
     }
+    if (notificationPostId) requestAnimationFrame(focusNotificationTarget);
     const today = new Date().toLocaleDateString('en-CA');
     const { data: mood } = await client.from('daily_moods').select('mood').eq('mood_date', today).maybeSingle();
     if (mood?.mood && moodCopy[mood.mood]) selectMood(mood.mood);

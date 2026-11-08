@@ -43,6 +43,10 @@
   let reelObserver = null;
   const reelById = new Map();
   const viewedReelIds = new Set();
+  const routeParams = new URLSearchParams(window.location.search);
+  const isUuid = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
+  const targetReelId = isUuid(routeParams.get('reel')) ? routeParams.get('reel') : '';
+  const targetReelCommentId = isUuid(routeParams.get('comment')) ? routeParams.get('comment') : '';
 
   const language = () => window.IQZodiacLanguage?.language === 'ar' ? 'ar' : 'en';
   const copy = {
@@ -560,6 +564,8 @@
   const createCommentItem = (comment, profile) => {
     const item = document.createElement('li');
     item.className = 'reel-comment';
+    item.dataset.commentId = comment.id;
+    item.id = `reel-comment-${comment.id}`;
     const displayName = profile?.display_name || profile?.handle || (comment.author_id === authenticatedUserId ? (language() === 'ar' ? 'أنت' : 'You') : 'Orbit Member');
     const avatar = makeAvatar(profile, displayName, 'reel-comment-avatar');
     const body = document.createElement('div');
@@ -595,7 +601,7 @@
     return item;
   };
 
-  const loadComments = async (row) => {
+  const loadComments = async (row, focusCommentId = '') => {
     commentsList.replaceChildren();
     const loading = document.createElement('li');
     loading.className = 'reel-comments-empty';
@@ -611,6 +617,10 @@
       return;
     }
     const comments = data || [];
+    if (focusCommentId && !comments.some((comment) => comment.id === focusCommentId)) {
+      const { data: targetComment } = await client.from('reel_comments').select('id,reel_id,author_id,body,created_at').eq('id', focusCommentId).eq('reel_id', row.id).maybeSingle();
+      if (targetComment) comments.push(targetComment);
+    }
     if (!comments.length) {
       const empty = document.createElement('li');
       empty.className = 'reel-comments-empty';
@@ -620,13 +630,17 @@
     }
     const profileMap = await getPublicProfiles(comments.map((comment) => comment.author_id));
     commentsList.replaceChildren(...comments.map((comment) => createCommentItem(comment, profileMap.get(comment.author_id))));
+    if (focusCommentId) {
+      const target = commentsList.querySelector(`[data-comment-id="${CSS.escape(focusCommentId)}"]`);
+      if (target) { target.classList.add('notification-target-highlight'); target.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    }
   };
 
-  const openComments = async (row) => {
+  const openComments = async (row, focusCommentId = '') => {
     selectedCommentReel = row;
     byId('reel-comments-title').textContent = language() === 'ar' ? 'التعليقات' : 'Comments';
     if (!commentsDialog.open) commentsDialog.showModal();
-    await loadComments(row);
+    await loadComments(row, focusCommentId);
   };
 
   const bindCardActions = (card, row) => {
@@ -841,6 +855,29 @@
     }
   };
 
+  const openNotificationTarget = async () => {
+    if (!targetReelId) return;
+    let row = reelById.get(targetReelId);
+    if (!row) {
+      const { data, error } = await client.from('reels').select('id,author_id,caption,media_path,duration_seconds,created_at').eq('id', targetReelId).maybeSingle();
+      if (error) throw error;
+      if (!data) return;
+      [row] = await enrichRows([data]);
+      reelById.set(row.id, row);
+      if (row.signed_url) {
+        const firstCard = feed.querySelector('.reel-card');
+        feed.insertBefore(renderCard(row, row.signed_url), firstCard || loadSentinel);
+      }
+    }
+    if (!row?.signed_url) return;
+    const card = feed.querySelector(`.reel-card[data-reel-id="${CSS.escape(targetReelId)}"]`);
+    if (!card) return;
+    setFeedMessage('', '');
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    feed.scrollTop = card.offsetTop;
+    if (targetReelCommentId) await openComments(row, targetReelCommentId);
+  };
+
   const resetFeed = async () => {
     pageIndex = 0;
     hasMore = true;
@@ -988,6 +1025,7 @@
       setupObservers();
       localizeEditor();
       await loadMoreReels();
+      await openNotificationTarget();
     } catch (error) {
       console.warn('Reels could not be initialized.', error);
       feed.replaceChildren();

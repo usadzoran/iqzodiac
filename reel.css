@@ -979,3 +979,9 @@ body.reel-page .toast {
     transition: none;
   }
 }
+
+.reel-comment.notification-target-highlight {
+  border-radius: 12px;
+  outline-offset: 3px;
+  background: rgba(131, 229, 232, 0.09);
+}
