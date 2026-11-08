@@ -2,27 +2,57 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="View an IQZodiac member profile and published Reels." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="View a member's publicly visible IQZodiac Reels." />
   <title>Reel Profile — IQZodiac</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="preconnect" href="https://mludiumdvwdvuetivxvj.supabase.co" crossorigin />
   <link rel="stylesheet" href="./styles.css?v=profile-performance-20261107" />
-  <link rel="stylesheet" href="./reel-profile.css?v=profile-performance-20261107" />
+  <link rel="stylesheet" href="./reel-profile.css?v=profile-real-data-20261108" />
 </head>
 <body class="has-site-nav reel-profile-page">
-  <main class="reel-profile-shell">
-    <header class="topbar reel-profile-topbar"><a class="mini-mark" href="./home.html" aria-label="IQZodiac home"><span class="mini-mark-orbit" aria-hidden="true"></span><span>IQZ</span></a><a class="back-link" href="./reel.html"><span aria-hidden="true">←</span> Back to Reels</a></header>
+  <main class="reel-profile-shell" data-i18n-skip>
+    <header class="topbar reel-profile-topbar">
+      <a class="mini-mark" href="./home.html" aria-label="IQZodiac home"><span class="mini-mark-orbit" aria-hidden="true"></span><span>IQZ</span></a>
+      <a class="back-link" href="./reel.html"><span aria-hidden="true">←</span> <span id="back-to-reels">Back to Reels</span></a>
+    </header>
     <section class="reel-profile-hero" aria-labelledby="member-name">
-      <div id="member-avatar" class="reel-profile-avatar">OM</div>
-      <div class="reel-profile-copy"><p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> REEL PROFILE</p><h1 id="member-name">Orbit Member</h1><p id="member-handle" class="reel-profile-handle">@orbit-member</p><p id="member-bio" class="reel-profile-bio">Moments, ideas, and little sparks from this orbit.</p></div>
-      <div class="reel-profile-stats" aria-label="Profile statistics"><div><strong id="reel-total">0</strong><span>Reels</span></div><div><strong id="reel-likes-total">0</strong><span>Likes</span></div></div>
+      <div id="member-avatar" class="reel-profile-avatar" aria-hidden="true">IQ</div>
+      <div class="reel-profile-copy">
+        <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> <span id="member-kicker">REEL PROFILE</span></p>
+        <h1 id="member-name">Member</h1>
+        <p id="member-handle" class="reel-profile-handle" hidden></p>
+      </div>
+      <div class="reel-profile-stats" aria-label="Profile statistics">
+        <div><strong id="reel-total">0</strong><span id="reel-total-label">Latest Reels</span></div>
+        <div><strong id="reel-likes-total">0</strong><span id="reel-likes-total-label">Likes on these Reels</span></div>
+      </div>
     </section>
-    <section class="reel-profile-feed" aria-labelledby="published-reels-title"><div class="reel-profile-heading"><div><p class="card-kicker">FROM THIS ORBIT</p><h2 id="published-reels-title">Published Reels</h2></div><span id="profile-status" class="reel-profile-status" role="status">Loading…</span></div><div id="profile-reel-grid" class="profile-reel-grid"><p class="profile-reel-empty">Loading published Reels…</p></div></section>
-    <footer class="footer reel-profile-footer"><span>© 2026 IQZodiac</span><span class="footer-orbit" aria-hidden="true"><i></i><i></i><i></i></span><span>Look inward. Move forward.</span><button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>
+    <section class="reel-profile-feed" aria-labelledby="published-reels-title">
+      <div class="reel-profile-heading">
+        <div><p class="card-kicker" id="profile-feed-kicker">FROM THIS ORBIT</p><h2 id="published-reels-title">Published Reels</h2></div>
+        <span id="profile-status" class="reel-profile-status" role="status" aria-live="polite">Loading…</span>
+      </div>
+      <div id="profile-reel-grid" class="profile-reel-grid" aria-busy="true"><p class="profile-reel-empty">Loading published Reels…</p></div>
+    </section>
+    <footer class="footer reel-profile-footer"><span>© 2026 IQZodiac</span><span class="footer-orbit" aria-hidden="true"><i></i><i></i><i></i></span><span id="profile-footer-tagline">Look inward. Move forward.</span><button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>
   </main>
-  <nav class="site-nav" aria-label="Main navigation"><a href="./home.html"><span class="nav-glyph" aria-hidden="true">⌂</span><span data-menu-key="home">Home</span></a><a href="./match.html"><span class="nav-glyph" aria-hidden="true">♡</span><span data-menu-key="match">Match</span></a><a href="./daily.html"><span class="nav-glyph" aria-hidden="true">◌</span><span data-menu-key="daily">Daily</span></a><a href="./discover.html"><span class="nav-glyph" aria-hidden="true">✦</span><span data-menu-key="discover">Discover</span></a><a href="./reel.html"><span class="nav-glyph" aria-hidden="true">◉</span><span data-menu-key="reel">Reel</span></a><a href="./profile.html"><span class="nav-glyph" aria-hidden="true">◍</span><span data-menu-key="profile">Profile</span></a></nav>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script><script src="./supabase-client.js" defer></script><script src="./auth-guard.js" defer></script><script src="./i18n-data.js?v=20261107-profile" defer></script><script src="./language.js?v=20261107-profile" defer></script><script src="./reel-profile.js?v=20261107-profile" defer></script><script src="./nav-performance.js" defer></script>
+  <nav class="site-nav" aria-label="Main navigation">
+    <a href="./home.html"><span class="nav-glyph" aria-hidden="true">⌂</span><span data-menu-key="home">Home</span></a>
+    <a href="./match.html"><span class="nav-glyph" aria-hidden="true">♡</span><span data-menu-key="match">Match</span></a>
+    <a href="./daily.html"><span class="nav-glyph" aria-hidden="true">◌</span><span data-menu-key="daily">Daily</span></a>
+    <a href="./discover.html"><span class="nav-glyph" aria-hidden="true">✦</span><span data-menu-key="discover">Discover</span></a>
+    <a href="./reel.html"><span class="nav-glyph" aria-hidden="true">◉</span><span data-menu-key="reel">Reel</span></a>
+    <a href="./profile.html"><span class="nav-glyph" aria-hidden="true">◍</span><span data-menu-key="profile">Profile</span></a>
+  </nav>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="./supabase-client.js" defer></script>
+  <script src="./auth-guard.js" defer></script>
+  <script src="./auth-ui.js" defer></script>
+  <script src="./i18n-data.js?v=20261107-profile" defer></script>
+  <script src="./language.js?v=20261107-profile" defer></script>
+  <script src="./reel-profile.js?v=profile-real-data-20261108" defer></script>
+  <script src="./nav-performance.js" defer></script>
 </body>
 </html>
