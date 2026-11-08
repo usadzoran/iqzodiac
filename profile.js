@@ -168,8 +168,6 @@ saveProfileButton.addEventListener('click', async () => {
     if (label) label.textContent = originalLabel;
   }
 });
-  }
-});
 
 const renderMedia = (items) => {
   mediaGrid.querySelectorAll('.uploaded-media').forEach((tile) => tile.remove());
