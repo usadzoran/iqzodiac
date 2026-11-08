@@ -1043,3 +1043,130 @@ html.has-scroll-reveal .home-page [data-scroll-reveal].is-revealed { opacity: 1;
 .reel-profile-link-card .section-intro { margin-bottom: 0; }
 .reel-profile-link-card h2 { margin: 0; color: var(--ink); font-size: 22px; letter-spacing: -0.045em; }
 @media (max-width: 600px) { .reel-profile-link-card { align-items: stretch; flex-direction: column; gap: 8px; } }
+
+
+/* Profile-only quick access cards for personal and private sections. */
+.profile-private-shortcuts {
+  margin: -14px 0 28px;
+  padding: clamp(16px, 2.2vw, 24px);
+  border: 1px solid rgba(131,229,232,0.14);
+  border-radius: 5px;
+  background: linear-gradient(115deg, rgba(18,27,49,0.72), rgba(12,17,32,0.55));
+  box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+}
+.profile-private-shortcuts-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 13px;
+}
+.profile-private-shortcuts-heading .card-kicker {
+  margin: 0;
+  font-size: 9px;
+}
+.profile-private-shortcuts-heading h2 {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+.profile-private-shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 9px;
+}
+.profile-private-shortcut {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 72px;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 10px;
+  border: 1px solid rgba(218,225,255,0.1);
+  border-radius: 4px;
+  background: rgba(5,8,17,0.28);
+  color: var(--ink);
+  text-decoration: none;
+  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+.profile-private-shortcut:hover,
+.profile-private-shortcut:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(131,229,232,0.45);
+  background: rgba(131,229,232,0.07);
+  outline: none;
+}
+.profile-private-shortcut:focus-visible {
+  box-shadow: 0 0 0 2px rgba(131,229,232,0.16);
+}
+.profile-private-shortcut-icon {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(131,229,232,0.19);
+  border-radius: 50%;
+  background: rgba(131,229,232,0.07);
+  color: var(--cyan);
+  font-size: 15px;
+}
+.profile-private-shortcut-copy {
+  display: block;
+  min-width: 0;
+  flex: 1;
+}
+.profile-private-shortcut-copy strong,
+.profile-private-shortcut-copy small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.profile-private-shortcut-copy strong {
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.profile-private-shortcut-copy small {
+  margin-top: 4px;
+  color: var(--dim);
+  font-size: 8px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.profile-private-shortcut-arrow {
+  flex: 0 0 auto;
+  color: var(--cyan);
+  font-size: 13px;
+  opacity: 0.75;
+  transition: transform 180ms ease;
+}
+.profile-private-shortcut:hover .profile-private-shortcut-arrow {
+  transform: translate(2px, -2px);
+}
+.profile-page [id="personal-details"],
+.profile-page [id="private-info"],
+.profile-page [id="profile-photo"],
+.profile-page [id="gallery-title"],
+.profile-page [id="gallery-privacy-settings"] {
+  scroll-margin-top: 34px;
+}
+@media (max-width: 1050px) {
+  .profile-private-shortcut-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  .profile-private-shortcuts { margin: -9px 0 22px; padding: 15px 12px; }
+  .profile-private-shortcuts-heading { align-items: flex-start; flex-direction: column; gap: 5px; }
+  .profile-private-shortcut-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+  .profile-private-shortcut { min-height: 68px; gap: 7px; padding: 9px 8px; }
+  .profile-private-shortcut-icon { width: 28px; height: 28px; font-size: 13px; }
+  .profile-private-shortcut-copy strong { font-size: 9px; }
+  .profile-private-shortcut-copy small { font-size: 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .profile-private-shortcut,
+  .profile-private-shortcut-arrow { transition: none; }
+}

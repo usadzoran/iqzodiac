@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <link rel="stylesheet" href="./styles.css?v=notifications-top-20261106" />
+    <link rel="stylesheet" href="./styles.css?v=profile-private-shortcuts-20261108" />
   </head>
   <body class="profile-page has-site-nav">
     <div class="aurora aurora-one" aria-hidden="true"></div>
@@ -43,6 +43,40 @@
         <p>Choose what feels right to share. You can change these settings anytime.</p>
       </section>
 
+      <nav class="profile-private-shortcuts" aria-labelledby="profile-shortcuts-title">
+        <div class="profile-private-shortcuts-heading">
+          <p class="card-kicker">PROFILE QUICK ACCESS</p>
+          <h2 id="profile-shortcuts-title">Jump to a section</h2>
+        </div>
+        <div class="profile-private-shortcut-grid">
+          <a class="profile-private-shortcut" href="#personal-details">
+            <span class="profile-private-shortcut-icon" aria-hidden="true">◎</span>
+            <span class="profile-private-shortcut-copy"><strong>Personal information</strong><small>Name, location &amp; birth details</small></span>
+            <span class="profile-private-shortcut-arrow" aria-hidden="true">↗</span>
+          </a>
+          <a class="profile-private-shortcut" href="#private-info">
+            <span class="profile-private-shortcut-icon" aria-hidden="true">◈</span>
+            <span class="profile-private-shortcut-copy"><strong>Private information</strong><small>Your details stay protected</small></span>
+            <span class="profile-private-shortcut-arrow" aria-hidden="true">↗</span>
+          </a>
+          <a class="profile-private-shortcut" href="#profile-photo">
+            <span class="profile-private-shortcut-icon" aria-hidden="true">◉</span>
+            <span class="profile-private-shortcut-copy"><strong>Profile photo</strong><small>Update your avatar</small></span>
+            <span class="profile-private-shortcut-arrow" aria-hidden="true">↗</span>
+          </a>
+          <a class="profile-private-shortcut" href="#gallery-title">
+            <span class="profile-private-shortcut-icon" aria-hidden="true">▧</span>
+            <span class="profile-private-shortcut-copy"><strong>Photos &amp; videos</strong><small>Your profile media gallery</small></span>
+            <span class="profile-private-shortcut-arrow" aria-hidden="true">↗</span>
+          </a>
+          <a class="profile-private-shortcut" href="#gallery-privacy-settings">
+            <span class="profile-private-shortcut-icon" aria-hidden="true">◇</span>
+            <span class="profile-private-shortcut-copy"><strong>Gallery privacy</strong><small>Choose who can see your media</small></span>
+            <span class="profile-private-shortcut-arrow" aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </nav>
+
       <div class="profile-grid">
         <section class="profile-card identity-card" aria-labelledby="identity-title">
           <div class="card-heading">
@@ -54,7 +88,7 @@
           </div>
 
           <div class="identity-content">
-            <div class="avatar-column">
+              <div class="avatar-column" id="profile-photo">
               <div class="avatar" id="avatar-preview" aria-label="Profile photo preview">
                 <span class="avatar-initials">OM</span>
                 <span class="avatar-orbit" aria-hidden="true"></span>
@@ -72,7 +106,7 @@
               <div class="input-wrap"><span class="input-prefix" aria-hidden="true">@</span><input id="username" type="text" value="orbit-member" maxlength="24" autocomplete="username" /></div>
               <p class="field-help">Use a pseudonymous handle, not your real name.</p>
 
-              <div class="profile-details-grid">
+              <div class="profile-details-grid" id="personal-details">
                 <label class="profile-detail-field"><span>First name</span><input id="first-name" type="text" autocomplete="given-name" /></label>
                 <label class="profile-detail-field"><span>Last name</span><input id="last-name" type="text" autocomplete="family-name" /></label>
                 <label class="profile-detail-field"><span>Residence country</span><select id="country" autocomplete="country-name"><option value="">Select country</option></select></label>
@@ -85,7 +119,7 @@
             </div>
           </div>
 
-          <div class="privacy-row">
+          <div class="privacy-row" id="private-info">
             <div class="privacy-copy"><span class="privacy-icon" aria-hidden="true">◉</span><div><strong>Real identity &amp; personal details</strong><small>Legal name, age, email, phone, and verification photos are always private.</small></div></div>
             <span class="privacy-badge">PRIVATE</span>
           </div>
@@ -107,7 +141,7 @@
             <input id="media-input" type="file" accept="image/*,video/*" multiple hidden />
           </div>
 
-          <div class="privacy-row gallery-privacy-row">
+          <div class="privacy-row gallery-privacy-row" id="gallery-privacy-settings">
             <div class="privacy-copy"><span class="privacy-icon" aria-hidden="true">✦</span><div><strong>Share my profile photos publicly</strong><small id="gallery-privacy-status">Private — profile photos stay hidden from other members.</small></div></div>
             <label class="toggle"><input type="checkbox" id="gallery-visibility" /><span class="toggle-track" aria-hidden="true"><span></span></span><span class="sr-only">Make my gallery visible to others</span></label>
           </div>
@@ -226,7 +260,7 @@
 </nav>
     <div class="toast" role="status" aria-live="polite" aria-atomic="true"><span class="toast-icon" aria-hidden="true">✦</span><span class="toast-message"></span></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-client.js"></script><script src="./auth-guard.js"></script><script src="./auth-ui.js"></script>
-    <script src="./i18n-data.js?v=20261022-global"></script>
+    <script src="./i18n-data.js?v=20261108-profile-shortcuts"></script>
     <script src="./language.js?v=20261022-global"></script>
     <script src="./location-data.js"></script>
     <script src="./privacy-core.js"></script>
