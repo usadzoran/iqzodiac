@@ -545,11 +545,16 @@ h1 {
 .post-card-new { border-color: rgba(131,229,232,0.38); animation: post-in 280ms ease both; }
 @keyframes post-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 .post-header { display: flex; align-items: center; gap: 10px; }
-.post-owner-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
-.post-edit-button, .post-delete-button { display: grid; width: 27px; height: 27px; flex: 0 0 auto; place-items: center; border: 1px solid rgba(131,229,232,0.22); border-radius: 50%; background: transparent; color: var(--cyan); cursor: pointer; font-size: 15px; line-height: 1; }
-.post-delete-button { border-color: rgba(255,179,179,0.22); color: #ffb3b3; font-size: 17px; }
-.post-edit-button:hover, .post-edit-button:focus-visible { border-color: rgba(131,229,232,0.6); background: rgba(131,229,232,0.1); outline: none; }
-.post-delete-button:hover, .post-delete-button:focus-visible { border-color: rgba(255,111,125,0.6); background: rgba(255,111,125,0.1); color: #ff6f7d; outline: none; }
+.post-owner-menu { position: relative; flex: 0 0 auto; margin-inline-start: auto; }
+.post-owner-menu-trigger { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid rgba(131,229,232,0.22); border-radius: 50%; background: transparent; color: var(--cyan); cursor: pointer; list-style: none; }
+.post-owner-menu-trigger::-webkit-details-marker { display: none; }
+.post-owner-menu-trigger span { font-size: 24px; line-height: 1; }
+.post-owner-menu-trigger:hover, .post-owner-menu-trigger:focus-visible, .post-owner-menu[open] .post-owner-menu-trigger { border-color: rgba(131,229,232,0.65); background: rgba(131,229,232,0.1); outline: none; }
+.post-owner-menu-panel { position: absolute; z-index: 8; top: calc(100% + 7px); inset-inline-end: 0; display: grid; min-width: 150px; overflow: hidden; padding: 5px; border: 1px solid rgba(131,229,232,0.24); border-radius: 10px; background: #11182a; box-shadow: 0 12px 32px rgba(0,0,0,0.38); }
+.post-edit-button, .post-delete-button { width: 100%; padding: 10px 12px; border: 0; border-radius: 6px; background: transparent; color: var(--ink); cursor: pointer; font: 11px "Manrope", sans-serif; text-align: start; white-space: nowrap; }
+.post-edit-button:hover, .post-edit-button:focus-visible { background: rgba(131,229,232,0.1); color: var(--cyan); outline: none; }
+.post-delete-button { color: #ffb3b3; }
+.post-delete-button:hover, .post-delete-button:focus-visible { background: rgba(255,111,125,0.12); color: #ff6f7d; outline: none; }
 .post-avatar { display: grid; flex: none; place-items: center; width: 34px; height: 34px; border-radius: 50%; color: var(--night); font-size: 11px; font-weight: 800; }
 .post-author { min-width: 0; flex: 1; }
 .post-author strong, .post-author span { display: block; }

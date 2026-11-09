@@ -234,9 +234,10 @@ const bindPost = (post) => {
   const commentList = post.querySelector('.comment-list');
   const deleteButton = post.querySelector('.post-delete-button');
   const editButton = post.querySelector('.post-edit-button');
+  const ownerMenu = post.querySelector('.post-owner-menu');
 
-  deleteButton?.addEventListener('click', () => { void deleteFeedPost(post, deleteButton); });
-  editButton?.addEventListener('click', () => { void editFeedPost(post, editButton); });
+  deleteButton?.addEventListener('click', () => { ownerMenu.open = false; void deleteFeedPost(post, deleteButton); });
+  editButton?.addEventListener('click', () => { ownerMenu.open = false; void editFeedPost(post, editButton); });
 
   likeButton.addEventListener('click', async () => {
     const liked = likeButton.dataset.like === 'true';
@@ -467,7 +468,8 @@ if ('IntersectionObserver' in window && !reduceMotion) {
         const bodyMarkup = item.body ? `<p class="post-body">${escapeHTML(item.body)}</p>` : '';
         const editPostLabel = feedText('Edit post', 'تعديل المنشور');
         const deletePostLabel = feedText('Delete post', 'حذف المنشور');
-        const ownerActions = item.author_id === authenticatedUserId ? `<div class="post-owner-actions"><button class="post-edit-button" type="button" aria-label="${escapeHTML(editPostLabel)}" title="${escapeHTML(editPostLabel)}">✎</button><button class="post-delete-button" type="button" aria-label="${escapeHTML(deletePostLabel)}" title="${escapeHTML(deletePostLabel)}">×</button></div>` : '';
+        const moreActionsLabel = feedText('Post options', 'خيارات المنشور');
+        const ownerActions = item.author_id === authenticatedUserId ? `<details class="post-owner-menu"><summary class="post-owner-menu-trigger" aria-label="${escapeHTML(moreActionsLabel)}" title="${escapeHTML(moreActionsLabel)}"><span aria-hidden="true">⋮</span></summary><div class="post-owner-menu-panel"><button class="post-edit-button" type="button">${escapeHTML(editPostLabel)}</button><button class="post-delete-button" type="button">${escapeHTML(deletePostLabel)}</button></div></details>` : '';
         post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">${escapeHTML(String(item.display_name || 'OM').slice(0, 1))}</div><div class="post-author"><strong>${escapeHTML(item.display_name || 'Orbit Member')}</strong><span>${escapeHTML(item.handle || '@member')} · ${escapeHTML(formatDateTime(item.created_at))}</span></div>${ownerActions}</header>${bodyMarkup}${createPostMedia(item, mediaUrl)}<div class="post-meta"><span class="like-count">${formatCount(Number(item.like_count || 0))} likes</span><span class="comment-count">${formatCount(Number(item.comment_count || 0))} comments</span></div><div class="post-actions"><button class="post-action like-button ${liked ? 'is-liked' : ''}" type="button" data-like="${liked}"><span class="action-icon">${liked ? '♥' : '♡'}</span><span>${liked ? 'Liked' : 'Like'}</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment" /><button type="submit" aria-label="Post comment">↗</button></form>`;
         feedList.append(post); bindPost(post);
       }
