@@ -74,11 +74,13 @@ const editFeedComment = async (post, comment, button) => {
 const createCommentElement = (comment, post, childrenByParent = {}, submitReply = null) => {
   const wrapper = document.createElement('div'); wrapper.className = 'comment-thread';
   const element = document.createElement('div'); element.className = 'comment'; element.dataset.commentId = comment.comment_id || comment.id || '';
+  const isArabicComment = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(comment.body || '');
+  element.classList.add(isArabicComment ? 'comment-rtl' : 'comment-ltr');
   if (element.dataset.commentId) element.id = `comment-${element.dataset.commentId}`;
   const avatar = document.createElement('span'); avatar.className = 'comment-avatar home-avatar-small'; avatar.textContent = String(comment.display_name || comment.handle || 'OM').replace(/^@/, '').slice(0, 2).toUpperCase();
   const content = document.createElement('div'); content.className = 'comment-content';
   const copy = document.createElement('p'); const author = document.createElement('strong'); author.textContent = comment.handle || comment.display_name || '@member';
-  const body = document.createElement('span'); body.textContent = ` ${comment.body || ''}`;
+  const body = document.createElement('span'); body.textContent = ` ${comment.body || ''}`; body.dir = isArabicComment ? 'rtl' : 'ltr';
   const time = document.createElement('small'); time.className = 'comment-time'; time.textContent = formatDateTime(comment.created_at); copy.append(author, body, time);
   const replyButton = document.createElement('button'); replyButton.type = 'button'; replyButton.className = 'comment-reply-button'; replyButton.textContent = 'Reply';
   const replyForm = document.createElement('form'); replyForm.className = 'comment-form comment-reply-form'; replyForm.hidden = true; replyForm.innerHTML = '<input type="text" maxlength="180" placeholder="Write a reply..." aria-label="Write a reply" /><button type="submit" aria-label="Post reply">↗</button>';
@@ -86,19 +88,25 @@ const createCommentElement = (comment, post, childrenByParent = {}, submitReply 
   replyForm.addEventListener('submit', async (event) => { event.preventDefault(); const input = replyForm.querySelector('input'); const value = escapeText(input.value); if (!value || !submitReply) return; if (await submitReply(comment.comment_id || comment.id, value)) { input.value = ''; replyForm.hidden = true; } });
   content.append(copy, replyButton, replyForm);
   if (String(comment.author_id || '').toLowerCase() === String(authenticatedUserId || '').toLowerCase()) {
+    const actions = document.createElement('div'); actions.className = 'comment-owner-actions';
+    const menuButton = document.createElement('button');
+    menuButton.type = 'button'; menuButton.className = 'comment-more-button'; menuButton.textContent = '⋯';
+    menuButton.setAttribute('aria-label', feedText('Comment options', 'خيارات التعليق'));
+    menuButton.setAttribute('aria-haspopup', 'true'); menuButton.setAttribute('aria-expanded', 'false');
+    const menu = document.createElement('div'); menu.className = 'comment-actions-menu'; menu.hidden = true;
     const editButton = document.createElement('button');
-    editButton.type = 'button'; editButton.className = 'comment-edit-button'; editButton.textContent = '✎';
-    editButton.setAttribute('aria-label', feedText('Edit comment', 'تعديل التعليق'));
-    editButton.title = feedText('Edit comment', 'تعديل التعليق');
-    editButton.addEventListener('click', () => { void editFeedComment(post, comment, editButton); });
+    editButton.type = 'button'; editButton.className = 'comment-edit-button'; editButton.textContent = feedText('Edit', 'تعديل');
+    editButton.addEventListener('click', () => { menu.hidden = true; menuButton.setAttribute('aria-expanded', 'false'); void editFeedComment(post, comment, editButton); });
     const deleteButton = document.createElement('button');
-    deleteButton.type = 'button'; deleteButton.className = 'comment-delete-button'; deleteButton.textContent = '×';
-    deleteButton.setAttribute('aria-label', feedText('Delete comment', 'حذف التعليق'));
-    deleteButton.title = feedText('Delete comment', 'حذف التعليق');
-    deleteButton.addEventListener('click', () => { void deleteFeedComment(post, comment, wrapper, deleteButton); });
-    content.append(editButton, deleteButton);
-  }
-  element.append(avatar, content);
+    deleteButton.type = 'button'; deleteButton.className = 'comment-delete-button'; deleteButton.textContent = feedText('Delete', 'مسح');
+    deleteButton.addEventListener('click', () => { menu.hidden = true; menuButton.setAttribute('aria-expanded', 'false'); void deleteFeedComment(post, comment, wrapper, deleteButton); });
+    menu.append(editButton, deleteButton);
+    menuButton.addEventListener('click', () => { menu.hidden = !menu.hidden; menuButton.setAttribute('aria-expanded', String(!menu.hidden)); });
+    menuButton.addEventListener('keydown', (event) => { if (event.key === 'Escape') { menu.hidden = true; menuButton.setAttribute('aria-expanded', 'false'); menuButton.focus(); } });
+    actions.append(menuButton, menu);
+    if (isArabicComment) element.append(avatar, content, actions);
+    else element.append(actions, avatar, content);
+  } else element.append(avatar, content);
   const children = document.createElement('div');
   children.className = 'comment-replies';
   (childrenByParent[comment.comment_id || comment.id] || []).forEach((child) => children.append(createCommentElement(child, post, childrenByParent, submitReply)));
