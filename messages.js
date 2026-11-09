@@ -10,13 +10,25 @@
   const callTimer = document.querySelector('#call-timer');
   const selectionToolbar = document.querySelector('#message-selection-toolbar');
   const expirySelect = document.querySelector('#disappearing-select');
+  const attachmentInput = document.querySelector('#attachment-input');
+  const pendingAttachmentsNode = document.querySelector('#pending-attachments');
+  const attachmentButton = document.querySelector('#attach-file-button');
+  const recordAudioButton = document.querySelector('#record-audio-button');
+  const sendMessageButton = document.querySelector('#send-message-button');
+  const attachmentBucket = 'iqzodiac-chat-media';
   const t = (en, ar) => window.IQZodiacLanguage?.t(en, ar) || en;
   const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const routeParams = new URLSearchParams(window.location.search);
   const targetMessageId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(routeParams.get('message') || '') ? routeParams.get('message') : '';
   let client; let user; let contacts = []; let activeId = routeParams.get('match'); let activeConversation = null; let timerInterval; let elapsedSeconds = 0;
   let realtimeChannel = null; let renderTimer = null; let expiryRenderTimer = null; let renderRevision = 0; let longPressTimer = null; let suppressNextClick = false; let selectionMode = false; let selectedMessageIds = new Set(); let visibleMessageIds = [];
+  let pendingAttachments = []; const refreshedAttachmentPaths = new Set(); const signedUrlExpiries = new Map(); let mediaRecorder = null; let recordingStream = null; let recordedChunks = []; let recordingConversationId = null; let sendingMessages = false;
   const expiryValues = ['off', '1h', '24h', '7d'];
+  const allowedAttachmentMimes = new Set(['image/jpeg','image/png','image/webp','image/gif','audio/mpeg','audio/mp4','audio/ogg','audio/wav','audio/webm','audio/aac','audio/flac','audio/x-m4a','application/octet-stream','application/pdf','text/plain','text/csv','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation']);
+  const mimeByExtension = { jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',mp3:'audio/mpeg',m4a:'audio/mp4',mp4:'audio/mp4',ogg:'audio/ogg',oga:'audio/ogg',wav:'audio/wav',webm:'audio/webm',aac:'audio/aac',flac:'audio/flac',pdf:'application/pdf',txt:'text/plain',csv:'text/csv',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xls:'application/vnd.ms-excel',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',ppt:'application/vnd.ms-powerpoint',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation' };
+  const attachmentType = (mime) => mime.startsWith('image/') ? 'image' : mime.startsWith('audio/') ? 'audio' : 'file';
+  const attachmentMetadata = (file) => { const ext = String(file.name.split('.').pop() || '').toLowerCase(); const mime = allowedAttachmentMimes.has(file.type) ? file.type : (mimeByExtension[ext] || 'application/octet-stream'); if (!mime || !allowedAttachmentMimes.has(mime)) return null; const kind = attachmentType(mime); const maxBytes = kind === 'image' ? 12 * 1024 * 1024 : 25 * 1024 * 1024; if (!file.size || file.size > maxBytes) return null; return { mime, kind, size: file.size }; };
+  const safeAttachmentName = (value) => String(value || 'attachment').normalize('NFC').replace(/[\/\\\u0000-\u001f\u007f]/g, '_').replace(/\s+/g, ' ').trim().slice(0, 150) || 'attachment';
   const toast = (message) => { const node = document.querySelector('.toast-message'); if (node) { node.textContent = message; document.querySelector('.toast')?.classList.add('is-visible'); } };
   const expiryLabel = (value) => ({ off: t('Off', 'إيقاف'), '1h': t('1 hour', 'ساعة واحدة'), '24h': t('24 hours', '24 ساعة'), '7d': t('7 days', '7 أيام') }[value] || t('Off', 'إيقاف'));
   const localizeControls = () => {
@@ -27,11 +39,15 @@
     document.querySelector('#clear-message-selection').textContent = t('Cancel', 'إلغاء التحديد');
     document.querySelector('#delete-for-me-selected').textContent = t('Delete for me', 'حذف لديّ');
     document.querySelector('#delete-everyone-selected').textContent = t('Delete for everyone', 'حذف لدى الجميع');
+    attachmentButton.setAttribute('aria-label', t('Attach image, file or audio', 'إرفاق صورة أو ملف أو صوت')); attachmentButton.title = t('Attach image, file or audio', 'إرفاق صورة أو ملف أو صوت');
+    recordAudioButton.setAttribute('aria-label', mediaRecorder?.state === 'recording' ? t('Stop recording', 'إيقاف التسجيل') : t('Record voice message', 'تسجيل رسالة صوتية')); recordAudioButton.title = recordAudioButton.getAttribute('aria-label');
+    sendMessageButton.setAttribute('aria-label', t('Send message', 'إرسال الرسالة')); sendMessageButton.firstChild.textContent = `${t('Send', 'إرسال')} `;
+    renderPendingAttachments();
   };
   const renderContacts = (filter = '') => {
     contactList.replaceChildren();
     const matched = contacts.filter((person) => `${person.name} ${person.handle}`.toLowerCase().includes(filter.toLowerCase()));
-    matched.forEach((person) => { const button = document.createElement('button'); button.type = 'button'; button.className = `contact-item${person.id === activeId ? ' is-active' : ''}`; button.innerHTML = `<span class="contact-avatar">${escapeHTML((person.name || 'M').slice(0, 1))}</span><span class="contact-copy"><strong>${escapeHTML(person.name)}</strong><small>${escapeHTML(person.preview || t('Start a private conversation', 'ابدأ محادثة خاصة'))}</small></span><span class="contact-time">${escapeHTML(person.time || '')}</span>`; button.addEventListener('click', () => { activeId = person.id; void loadConversation(); }); contactList.append(button); });
+    matched.forEach((person) => { const button = document.createElement('button'); button.type = 'button'; button.className = `contact-item${person.id === activeId ? ' is-active' : ''}`; button.innerHTML = `<span class="contact-avatar">${escapeHTML((person.name || 'M').slice(0, 1))}</span><span class="contact-copy"><strong>${escapeHTML(person.name)}</strong><small>${escapeHTML(person.preview || t('Start a private conversation', 'ابدأ محادثة خاصة'))}</small></span><span class="contact-time">${escapeHTML(person.time || '')}</span>`; button.addEventListener('click', () => { if (sendingMessages) { toast(t('Please wait for the current upload to finish.', 'انتظر حتى يكتمل رفع الملف الحالي.')); return; } if (mediaRecorder?.state === 'recording') mediaRecorder.stop(); activeId = person.id; void loadConversation(); }); contactList.append(button); });
     if (!matched.length) contactList.innerHTML = `<p class="sidebar-note">${escapeHTML(t('No real conversations are available yet.', 'لا توجد محادثات حقيقية بعد.'))}</p>`;
   };
   const updateSelectionToolbar = () => {
@@ -70,24 +86,113 @@
       if (check) { check.hidden = !selectionMode; check.setAttribute('aria-pressed', String(selected)); }
     });
   };
-  const appendMessage = (fragment, message) => {
-    if (message.message_kind === 'system') {
-      const notice = document.createElement('div'); notice.className = 'message-system-notice'; notice.textContent = systemEventText(message); fragment.append(notice); return;
-    }
+  const appendMessage = async (message, signedUrl) => {
+    if (message.message_kind === 'system') { const notice = document.createElement('div'); notice.className = 'message-system-notice'; notice.textContent = systemEventText(message); return notice; }
     const bubble = document.createElement('article');
     bubble.className = `message-bubble${message.sender_id === user.id ? ' is-mine' : ''}`;
     bubble.id = `message-${message.id}`; bubble.dataset.messageId = message.id;
     const check = document.createElement('button'); check.type = 'button'; check.className = 'message-select-check'; check.hidden = !selectionMode; check.setAttribute('aria-label', t('Select message', 'تحديد الرسالة')); check.setAttribute('aria-pressed', String(selectedMessageIds.has(message.id)));
     check.addEventListener('click', (event) => { event.stopPropagation(); if (!selectionMode) setSelectionMode(true); toggleMessageSelection(message.id); });
-    const body = document.createElement('span'); body.className = 'message-body'; body.textContent = message.body; body.dir = 'auto';
+    const content = document.createElement('div'); content.className = 'message-content'; content.dir = 'auto';
+    if (message.body) { const body = document.createElement('span'); body.className = 'message-body'; body.textContent = message.body; body.dir = 'auto'; content.append(body); }
+    if (message.attachment_path) {
+      const attachment = document.createElement('div'); attachment.className = `message-attachment message-attachment-${message.attachment_kind || 'file'}`;
+      if (signedUrl) {
+        const url = signedUrl;
+        if (message.attachment_kind === 'image') {
+          const image = document.createElement('img'); image.className = 'message-attachment-image'; image.src = url; image.alt = message.attachment_name || t('Shared image', 'صورة مرفقة'); image.loading = 'lazy'; image.referrerPolicy = 'no-referrer'; image.addEventListener('load', () => refreshedAttachmentPaths.delete(message.attachment_path)); image.addEventListener('error', () => { if (!refreshedAttachmentPaths.has(message.attachment_path)) { refreshedAttachmentPaths.add(message.attachment_path); scheduleRenderMessages(); } }, { once: true }); attachment.append(image);
+        } else if (message.attachment_kind === 'audio') {
+          const audio = document.createElement('audio'); audio.className = 'message-attachment-audio'; audio.controls = true; audio.preload = 'none'; audio.src = url; audio.setAttribute('aria-label', t(`Audio message: ${message.attachment_name || 'audio'}`, `رسالة صوتية: ${message.attachment_name || 'صوت'}`)); audio.addEventListener('loadedmetadata', () => refreshedAttachmentPaths.delete(message.attachment_path)); audio.addEventListener('error', () => { if (!refreshedAttachmentPaths.has(message.attachment_path)) { refreshedAttachmentPaths.add(message.attachment_path); scheduleRenderMessages(); } }, { once: true }); attachment.append(audio);
+        } else {
+          const link = document.createElement('a'); link.className = 'message-attachment-file'; link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.referrerPolicy = 'no-referrer'; link.download = message.attachment_name || 'attachment';
+          link.addEventListener('click', async (event) => {
+            if ((signedUrlExpiries.get(message.attachment_path) || 0) > Date.now() + 15000) return;
+            event.preventDefault();
+            const popup = window.open('about:blank', '_blank');
+            if (!popup) { toast(t('Allow pop-ups to download this file.', 'اسمح بالنوافذ المنبثقة لتنزيل هذا الملف.')); return; }
+            popup.opener = null;
+            const remaining = message.expires_at ? Math.ceil((new Date(message.expires_at).getTime() - Date.now()) / 1000) : 300;
+            if (remaining <= 0) { popup.close(); toast(t('This attachment has expired.', 'انتهت صلاحية هذا المرفق.')); return; }
+            const { data: fresh, error: refreshError } = await client.storage.from(attachmentBucket).createSignedUrl(message.attachment_path, Math.max(1, Math.min(300, remaining)), { download: message.attachment_name || true });
+            if (refreshError || !fresh?.signedUrl) { popup.close(); toast(t('This attachment is no longer available.', 'لم يعد هذا المرفق متاحًا.')); return; }
+            link.href = fresh.signedUrl; signedUrlExpiries.set(message.attachment_path, Date.now() + Math.min(300, remaining) * 1000); popup.location.replace(fresh.signedUrl);
+          });
+          const icon = document.createElement('span'); icon.className = 'message-attachment-file-icon'; icon.setAttribute('aria-hidden', 'true'); icon.textContent = '↧';
+          const name = document.createElement('span'); name.className = 'message-attachment-file-name'; name.textContent = message.attachment_name || t('Download file', 'تنزيل الملف'); link.append(icon, name); attachment.append(link);
+        }
+      } else { const unavailable = document.createElement('span'); unavailable.className = 'attachment-unavailable'; unavailable.textContent = t('Attachment unavailable or expired.', 'المرفق غير متاح أو انتهت صلاحيته.'); attachment.append(unavailable); }
+      content.append(attachment);
+    }
     const meta = document.createElement('small'); meta.className = 'message-meta';
     meta.textContent = new Intl.DateTimeFormat(window.IQZodiacLanguage?.locale || undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(message.created_at));
-    bubble.append(check, body, meta);
+    bubble.append(check, content, meta);
     bubble.addEventListener('contextmenu', (event) => { event.preventDefault(); if (!selectionMode) setSelectionMode(true); if (!selectedMessageIds.has(message.id)) toggleMessageSelection(message.id); });
     bubble.addEventListener('pointerdown', (event) => { if (event.pointerType !== 'touch') return; window.clearTimeout(longPressTimer); longPressTimer = window.setTimeout(() => { suppressNextClick = true; if (!selectionMode) setSelectionMode(true); if (!selectedMessageIds.has(message.id)) toggleMessageSelection(message.id); }, 520); });
     ['pointerup', 'pointercancel', 'pointerleave'].forEach((name) => bubble.addEventListener(name, () => window.clearTimeout(longPressTimer)));
     bubble.addEventListener('click', () => { if (suppressNextClick) { suppressNextClick = false; return; } if (selectionMode) toggleMessageSelection(message.id); });
-    fragment.append(bubble);
+    return bubble;
+  };
+  const renderPendingAttachments = () => {
+    pendingAttachmentsNode.replaceChildren(); pendingAttachmentsNode.hidden = !pendingAttachments.length;
+    pendingAttachments.forEach((item, index) => {
+      const chip = document.createElement('div'); chip.className = 'pending-attachment';
+      const icon = document.createElement('span'); icon.setAttribute('aria-hidden', 'true'); icon.textContent = item.meta.kind === 'image' ? '▧' : item.meta.kind === 'audio' ? '♫' : '↧';
+      const name = document.createElement('span'); name.className = 'pending-attachment-name'; name.textContent = item.file.name;
+      const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'pending-attachment-remove'; remove.textContent = '×'; remove.setAttribute('aria-label', t(`Remove ${item.file.name}`, `إزالة ${item.file.name}`)); remove.disabled = sendingMessages; remove.addEventListener('click', () => { pendingAttachments.splice(index, 1); renderPendingAttachments(); });
+      chip.append(icon, name, remove); pendingAttachmentsNode.append(chip);
+    });
+  };
+  const addPendingFiles = (files) => {
+    const remaining = Math.max(0, 5 - pendingAttachments.length);
+    if (files.length > remaining) toast(t('You can attach up to 5 files to one send.', 'يمكنك إرفاق 5 ملفات كحد أقصى في عملية إرسال واحدة.'));
+    files.slice(0, remaining).forEach((file) => { const meta = attachmentMetadata(file); if (!meta) { toast(t(`Unsupported file type or size: ${file.name}`, `نوع الملف أو حجمه غير مدعوم: ${file.name}`)); return; } pendingAttachments.push({ file, meta }); });
+    renderPendingAttachments();
+  };
+  const setComposerBusy = (busy) => { sendingMessages = busy; messageInput.disabled = busy; attachmentInput.disabled = busy; attachmentButton.disabled = busy; recordAudioButton.disabled = busy || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined'; sendMessageButton.disabled = busy; renderPendingAttachments(); };
+  const sendPendingMessages = async (body, conversationId) => {
+    const files = [...pendingAttachments];
+    for (let index = 0; index < files.length; index += 1) {
+      const { file, meta } = files[index];
+      const displayName = safeAttachmentName(file.name);
+      const uniqueId = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const path = `${conversationId}/${user.id}/${uniqueId}-${displayName}`;
+      const { error: uploadError } = await client.storage.from(attachmentBucket).upload(path, file, { cacheControl: '3600', contentType: meta.mime, upsert: false });
+      if (uploadError) { toast(t(`Upload failed: ${file.name}`, `فشل رفع الملف: ${file.name}`)); return false; }
+      const { error: insertError } = await client.functions.invoke('chat-media-verify', { body: { conversation_id: conversationId, attachment_path: path, attachment_name: displayName, attachment_mime: meta.mime, attachment_kind: meta.kind, body: index === 0 ? body : '' } });
+      if (insertError) { await client.storage.from(attachmentBucket).remove([path]); toast(t(`Could not send: ${file.name}`, `تعذر إرسال: ${file.name}`)); return false; }
+      pendingAttachments.shift(); renderPendingAttachments();
+      if (index === 0) { body = ''; messageInput.value = ''; document.querySelector('#message-counter').textContent = '0 / 600'; }
+    }
+    if (body && !files.length) {
+      const { error } = await client.from('messages').insert({ conversation_id: conversationId, sender_id: user.id, body });
+      if (error) { toast(t('Message could not be sent.', 'تعذر إرسال الرسالة.')); return false; }
+      messageInput.value = ''; document.querySelector('#message-counter').textContent = '0 / 600';
+    }
+    return true;
+  };
+  const setRecordingUi = (recording) => { recordAudioButton.classList.toggle('is-recording', recording); recordAudioButton.setAttribute('aria-pressed', String(recording)); localizeControls(); };
+  const startAudioRecording = async () => {
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') { toast(t('Audio recording is not supported by this browser.', 'تسجيل الصوت غير مدعوم في هذا المتصفح.')); return; }
+    if (!activeConversation) { toast(t('Open a conversation before recording.', 'افتح محادثة قبل بدء التسجيل.')); return; }
+    const requestedConversationId = activeConversation;
+    try {
+      recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (activeConversation !== requestedConversationId) { recordingStream.getTracks().forEach((track) => track.stop()); recordingStream = null; toast(t('Recording cancelled because the conversation changed.', 'تم إلغاء التسجيل لأن المحادثة تغيّرت.')); return; }
+      recordingConversationId = requestedConversationId; recordedChunks = [];
+      const mimeType = ['audio/webm;codecs=opus','audio/mp4','audio/ogg;codecs=opus'].find((candidate) => MediaRecorder.isTypeSupported?.(candidate));
+      mediaRecorder = new MediaRecorder(recordingStream, mimeType ? { mimeType } : undefined);
+      mediaRecorder.ondataavailable = (event) => { if (event.data.size) recordedChunks.push(event.data); };
+      mediaRecorder.onerror = () => { toast(t('Audio recording failed.', 'فشل تسجيل الصوت.')); };
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || recordedChunks[0]?.type || 'audio/webm' });
+        const ext = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm';
+        const file = new File([blob], `voice-message-${new Date().toISOString().replace(/[:.]/g, '-')}.${ext}`, { type: blob.type });
+        if (activeConversation === recordingConversationId && blob.size) addPendingFiles([file]);
+        else toast(t('Recording discarded because the conversation changed.', 'تم تجاهل التسجيل لأن المحادثة تغيّرت.'));
+        recordingStream?.getTracks().forEach((track) => track.stop()); recordingStream = null; mediaRecorder = null; recordingConversationId = null; recordedChunks = []; setRecordingUi(false);
+      };
+      mediaRecorder.start(); setRecordingUi(true);
+    } catch (error) { recordingStream?.getTracks().forEach((track) => track.stop()); recordingStream = null; setRecordingUi(false); toast(t('Microphone permission was not granted.', 'لم يتم منح إذن استخدام الميكروفون.')); }
   };
   const renderMessages = async () => {
     const revision = ++renderRevision;
@@ -97,7 +202,7 @@
     if (!person || !renderingConversation) { messageList.innerHTML = `<div class="message-day-divider">${escapeHTML(t('PRIVATE CONVERSATION', 'محادثة خاصة'))}</div><p class="sidebar-note">${escapeHTML(t('Open a real match to start a private conversation.', 'افتح تطابقًا حقيقيًا لبدء محادثة خاصة.'))}</p>`; return; }
     document.querySelector('#active-name').textContent = person.name; document.querySelector('#active-handle').textContent = `${person.handle} · ${t('Private member conversation', 'محادثة خاصة')}`; document.querySelector('#call-title').textContent = person.name;
     const [{ data: rows, error }, { data: hiddenRows, error: hiddenError }, { data: settings, error: settingsError }] = await Promise.all([
-      client.from('messages').select('id,sender_id,body,created_at,expires_at,message_kind').eq('conversation_id', renderingConversation).order('created_at', { ascending: true }).limit(200),
+      client.from('messages').select('id,sender_id,body,created_at,expires_at,message_kind,attachment_path,attachment_name,attachment_mime,attachment_size_bytes,attachment_kind').eq('conversation_id', renderingConversation).order('created_at', { ascending: true }).limit(200),
       client.from('message_user_hides').select('message_id').eq('conversation_id', renderingConversation).eq('user_id', user.id),
       client.from('conversation_message_settings').select('expiry_duration').eq('conversation_id', renderingConversation).maybeSingle(),
     ]);
@@ -106,9 +211,21 @@
     const hiddenIds = new Set((hiddenRows || []).map((item) => item.message_id));
     let messages = (rows || []).filter((message) => !hiddenIds.has(message.id) && (!message.expires_at || new Date(message.expires_at).getTime() > Date.now()));
     if (targetMessageId && !messages.some((message) => message.id === targetMessageId)) {
-      const { data: targetMessage } = await client.from('messages').select('id,sender_id,body,created_at,expires_at,message_kind').eq('id', targetMessageId).eq('conversation_id', renderingConversation).maybeSingle();
+      const { data: targetMessage } = await client.from('messages').select('id,sender_id,body,created_at,expires_at,message_kind,attachment_path,attachment_name,attachment_mime,attachment_size_bytes,attachment_kind').eq('id', targetMessageId).eq('conversation_id', renderingConversation).maybeSingle();
       if (revision !== renderRevision || activeConversation !== renderingConversation || activeId !== renderingMember) return;
       if (targetMessage && !hiddenIds.has(targetMessage.id) && (!targetMessage.expires_at || new Date(targetMessage.expires_at).getTime() > Date.now())) messages = [...messages, targetMessage].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    }
+    const attachmentMessages = messages.filter((message) => message.attachment_path);
+    const signedUrls = new Map();
+    if (attachmentMessages.length) {
+      const ttl = attachmentMessages.reduce((shortest, message) => message.expires_at ? Math.min(shortest, Math.max(1, Math.ceil((new Date(message.expires_at).getTime() - Date.now()) / 1000))) : shortest, 300);
+      const groups = [
+        { rows: attachmentMessages.filter((message) => message.attachment_kind === 'file'), download: true },
+        { rows: attachmentMessages.filter((message) => message.attachment_kind !== 'file'), download: false },
+      ].filter((group) => group.rows.length);
+      const signedResults = await Promise.all(groups.map((group) => client.storage.from(attachmentBucket).createSignedUrls(group.rows.map((message) => message.attachment_path), ttl, group.download ? { download: true } : undefined)));
+      if (revision !== renderRevision || activeConversation !== renderingConversation || activeId !== renderingMember) return;
+      signedResults.forEach(({ data: signedRows, error: signedError }) => { if (!signedError) (signedRows || []).forEach((row) => { if (row.signedUrl) { signedUrls.set(row.path, row.signedUrl); signedUrlExpiries.set(row.path, Date.now() + ttl * 1000); } }); });
     }
     visibleMessageIds = messages.filter((message) => message.message_kind === 'user');
     if (selectedMessageIds.size) {
@@ -120,7 +237,9 @@
     if (Number.isFinite(nextExpiry)) expiryRenderTimer = window.setTimeout(scheduleRenderMessages, Math.max(0, nextExpiry - Date.now() + 25));
     expirySelect.value = expiryValues.includes(settings?.expiry_duration) ? settings.expiry_duration : 'off';
     const fragment = document.createDocumentFragment(); const divider = document.createElement('div'); divider.className = 'message-day-divider'; divider.textContent = t('PRIVATE CONVERSATION', 'محادثة خاصة'); fragment.append(divider);
-    messages.forEach((message) => appendMessage(fragment, message));
+    const renderedBubbles = await Promise.all(messages.map((message) => appendMessage(message, signedUrls.get(message.attachment_path))));
+    if (revision !== renderRevision || activeConversation !== renderingConversation || activeId !== renderingMember) return;
+    fragment.append(...renderedBubbles);
     messageList.replaceChildren(fragment); messageList.classList.toggle('is-selecting', selectionMode); updateSelectionToolbar();
     messageList.scrollTop = messageList.scrollHeight;
     if (targetMessageId) { const target = document.getElementById(`message-${targetMessageId}`); if (target) { target.classList.add('notification-target-highlight'); target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }
@@ -162,7 +281,16 @@
   };
   document.querySelector('#contact-search').addEventListener('input', (event) => renderContacts(event.target.value));
   messageInput.addEventListener('input', () => { document.querySelector('#message-counter').textContent = `${messageInput.value.length} / 600`; });
-  document.querySelector('#message-form').addEventListener('submit', async (event) => { event.preventDefault(); const body = messageInput.value.trim(); if (!body || !activeConversation) return; const { error } = await client.from('messages').insert({ conversation_id: activeConversation, sender_id: user.id, body }); if (error) { toast(t('Message could not be sent.', 'تعذر إرسال الرسالة.')); return; } messageInput.value = ''; document.querySelector('#message-counter').textContent = '0 / 600'; await renderMessages(); messageInput.focus(); });
+  attachmentButton.addEventListener('click', () => attachmentInput.click());
+  attachmentInput.addEventListener('change', () => { addPendingFiles([...attachmentInput.files]); attachmentInput.value = ''; });
+  recordAudioButton.addEventListener('click', () => { if (mediaRecorder?.state === 'recording') mediaRecorder.stop(); else void startAudioRecording(); });
+  document.querySelector('#message-form').addEventListener('submit', async (event) => {
+    event.preventDefault(); const body = messageInput.value.trim(); if (mediaRecorder?.state === 'recording') { toast(t('Stop the voice recording before sending.', 'أوقف التسجيل الصوتي قبل الإرسال.')); return; } if ((!body && !pendingAttachments.length) || !activeConversation || sendingMessages) return;
+    setComposerBusy(true);
+    try { const ok = await sendPendingMessages(body, activeConversation); if (ok) { await renderMessages(); messageInput.focus(); } }
+    catch (error) { console.warn('Message attachment send failed.', error); toast(t('The attachment could not be sent.', 'تعذر إرسال المرفق.')); }
+    finally { setComposerBusy(false); }
+  });
   expirySelect.addEventListener('change', async () => {
     if (!activeConversation) return;
     expirySelect.disabled = true;
@@ -185,8 +313,12 @@
     const ids = JSON.parse(event.currentTarget.dataset.ownIds || '[]');
     if (!ids.length || !activeConversation) return;
     if (!window.confirm(t(`Delete ${ids.length} of your selected message(s) for everyone? This cannot be undone.`, `هل تريد حذف ${ids.length} من رسائلك المحددة لدى الجميع؟ لا يمكن التراجع عن ذلك.`))) return;
-    const { data, error } = await client.rpc('iqzodiac_delete_messages_for_everyone', { p_conversation_id: activeConversation, p_message_ids: ids });
+    const conversationId = activeConversation;
+    const { data: selectedRows } = await client.from('messages').select('id,attachment_path').eq('conversation_id', conversationId).in('id', ids);
+    const { data, error } = await client.rpc('iqzodiac_delete_messages_for_everyone', { p_conversation_id: conversationId, p_message_ids: ids });
     if (error || Number(data) !== ids.length) { toast(t('Some messages could not be deleted for everyone.', 'تعذر حذف بعض الرسائل لدى الجميع.')); return; }
+    const attachmentPaths = (selectedRows || []).map((row) => row.attachment_path).filter(Boolean);
+    if (attachmentPaths.length) await client.storage.from(attachmentBucket).remove(attachmentPaths);
     ids.forEach((id) => selectedMessageIds.delete(id));
     if (!selectedMessageIds.size) selectionMode = false;
     toast(t('Messages deleted for everyone.', 'تم حذف الرسائل لدى الجميع.')); await renderMessages();
@@ -196,15 +328,17 @@
   callButton.addEventListener('click', () => { if (!activeConversation) { toast(t('Open a real conversation before starting a call.', 'افتح محادثة حقيقية قبل بدء الاتصال.')); return; } callStatus.textContent = t('Audio calling is not connected yet.', 'الاتصال الصوتي غير متصل بعد.'); callTimer.textContent = '00:00'; callModal.hidden = false; timerInterval = setInterval(() => { elapsedSeconds += 1; callTimer.textContent = `${String(Math.floor(elapsedSeconds / 60)).padStart(2, '0')}:${String(elapsedSeconds % 60).padStart(2, '0')}`; }, 1000); });
   document.querySelector('#close-call').addEventListener('click', stopCall); document.querySelector('#end-call').addEventListener('click', stopCall); callModal.addEventListener('click', (event) => { if (event.target === callModal) stopCall(); });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && selectionMode) setSelectionMode(false); });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && activeConversation) scheduleRenderMessages(); });
   document.addEventListener('iqzodiac:languagechange', () => { localizeControls(); if (activeConversation) void renderMessages(); });
   localizeControls();
+  if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') { recordAudioButton.disabled = true; recordAudioButton.title = t('Audio recording is not supported by this browser.', 'تسجيل الصوت غير مدعوم في هذا المتصفح.'); }
   (async () => {
     try {
       client = await database();
       const { data: session } = await client.auth.getSession(); user = session.session?.user;
       if (!user) return;
       const { data, error } = await client.rpc('list_my_conversations'); if (error) throw error;
-      contacts = (data || []).map((row) => ({ id: row.other_user_id, name: row.display_name || 'Orbit Member', handle: row.handle || '@member', preview: row.last_message || t('Start a private conversation', 'ابدأ محادثة خاصة'), time: row.last_message_at ? new Intl.DateTimeFormat(window.IQZodiacLanguage?.locale || undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(row.last_message_at)) : '' }));
+      contacts = (data || []).map((row) => ({ id: row.other_user_id, name: row.display_name || 'Orbit Member', handle: row.handle || '@member', preview: row.last_message === '[Image]' ? t('Image', 'صورة') : row.last_message === '[Audio]' ? t('Audio', 'صوت') : row.last_message || t('Start a private conversation', 'ابدأ محادثة خاصة'), time: row.last_message_at ? new Intl.DateTimeFormat(window.IQZodiacLanguage?.locale || undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(row.last_message_at)) : '' }));
       if (activeId && !contacts.some((person) => person.id === activeId)) { const { data: matches } = await client.rpc('list_compatible_profiles'); const match = (matches || []).find((row) => row.user_id === activeId); if (match) contacts.unshift({ id: match.user_id, name: match.display_name, handle: match.handle, preview: t('Matched member', 'عضو متطابق') }); }
       if (!activeId) activeId = contacts[0]?.id || null;
       renderContacts(); await loadConversation();

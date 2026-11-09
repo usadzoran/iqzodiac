@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=messages-controls-20261109" />
-  <link rel="stylesheet" href="./messages.css?v=messages-controls-20261109" />
+  <link rel="stylesheet" href="./styles.css?v=messages-attachments-20261109" />
+  <link rel="stylesheet" href="./messages.css?v=messages-attachments-20261109" />
 </head>
 <body class="messages-page has-user-menu">
   <div class="aurora aurora-one" aria-hidden="true"></div>
@@ -24,9 +24,9 @@
       <a class="messages-back" href="./home.html">Back to your feed <span aria-hidden="true">↗</span></a>
     </header>
 
-    <div class="demo-notice" role="note"><span aria-hidden="true">ⓘ</span><p><strong>Private account messaging.</strong> Messages are stored securely and visible only to conversation participants. Audio calling is not connected yet.</p></div>
+    <div class="demo-notice" role="note"><span aria-hidden="true">ⓘ</span><p><strong>Private account messaging.</strong> Messages and attachments are stored in private conversation storage and visible only to participants. Audio calling is not connected yet.</p></div>
 
-    <section class="messages-panel" aria-label="Messaging demo">
+    <section class="messages-panel" aria-label="Private messages">
       <aside class="conversation-sidebar" aria-label="Conversations">
         <div class="conversation-heading"><div><p class="card-kicker">YOUR CIRCLE</p><h2>Conversations</h2></div><span class="online-count"><i></i> 3 people</span></div>
         <label class="conversation-search"><span aria-hidden="true">⌕</span><input id="contact-search" type="search" placeholder="Find someone…" aria-label="Search conversations" /></label>
@@ -54,11 +54,15 @@
           <button id="delete-everyone-selected" type="button" hidden>Delete for everyone</button>
         </div>
         <div id="message-list" class="message-list" aria-live="polite" aria-label="Messages"></div>
+        <div id="pending-attachments" class="pending-attachments" hidden aria-live="polite"></div>
         <form id="message-form" class="message-form">
           <label class="sr-only" for="message-input">Write a message</label>
           <input id="message-input" maxlength="600" autocomplete="off" placeholder="Write a message…" />
           <span id="message-counter" class="message-counter">0 / 600</span>
-          <button type="submit" aria-label="Send message">Send <span aria-hidden="true">↗</span></button>
+          <input id="attachment-input" class="sr-only" type="file" multiple />
+          <button id="attach-file-button" class="composer-icon-button" type="button" aria-label="Attach image, file or audio" title="Attach image, file or audio"><span aria-hidden="true">＋</span></button>
+          <button id="record-audio-button" class="composer-icon-button record-audio-button" type="button" aria-label="Record voice message" title="Record voice message"><span aria-hidden="true">●</span></button>
+          <button id="send-message-button" type="submit" aria-label="Send message">Send <span aria-hidden="true">↗</span></button>
         </form>
         <p class="conversation-footnote">Messages are saved to your private conversation.</p>
       </section>
@@ -88,7 +92,7 @@
     <script src="./i18n-data.js?v=20261022-global"></script>
   <script src="./language.js?v=20261022-global"></script>
   <script src="./privacy-core.js"></script>
-  <script src="./messages.js?v=messages-controls-20261109"></script>
+  <script src="./messages.js?v=messages-attachments-20261109"></script>
     <script src="./nav-performance.js" defer></script>
   </body>
 </html>
