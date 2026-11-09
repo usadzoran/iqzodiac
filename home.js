@@ -30,6 +30,30 @@ const isUuid = (value) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a
 const notificationParams = new URLSearchParams(window.location.search);
 const notificationPostId = isUuid(notificationParams.get('post')) ? notificationParams.get('post') : '';
 const notificationCommentId = isUuid(notificationParams.get('comment')) ? notificationParams.get('comment') : '';
+const feedText = (english, arabic) => window.IQZodiacLanguage?.t(english, arabic) || english;
+
+const deleteFeedComment = async (post, comment, wrapper, button) => {
+  if (!authenticatedUserId || comment.author_id !== authenticatedUserId) return;
+  if (!window.confirm(feedText('Delete this comment?', 'هل تريد حذف هذا التعليق؟'))) return;
+  button.disabled = true;
+  const client = await database();
+  const { error } = client ? await client.from('comments').delete().eq('id', comment.comment_id || comment.id).eq('author_id', authenticatedUserId) : { error: new Error('not-authenticated') };
+  if (error) { button.disabled = false; showToast(feedText('Comment could not be deleted.', 'تعذّر حذف التعليق.')); return; }
+  const deletedIds = new Set([comment.comment_id || comment.id]);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    (post._commentRows || []).forEach((row) => {
+      if (deletedIds.has(row.parent_comment_id) && !deletedIds.has(row.comment_id || row.id)) { deletedIds.add(row.comment_id || row.id); changed = true; }
+    });
+  }
+  post._commentRows = (post._commentRows || []).filter((row) => !deletedIds.has(row.comment_id || row.id));
+  renderComments(post, post._commentRows);
+  const count = post.querySelector('.comment-count');
+  if (count) count.textContent = `${formatCount(Math.max(0, Number(count.textContent.replace(/[^0-9]/g, '')) - deletedIds.size))} comments`;
+  showToast(feedText('Comment deleted.', 'تم حذف التعليق.'));
+};
+
 const createCommentElement = (comment, post, childrenByParent = {}, submitReply = null) => {
   const wrapper = document.createElement('div'); wrapper.className = 'comment-thread';
   const element = document.createElement('div'); element.className = 'comment'; element.dataset.commentId = comment.comment_id || comment.id || '';
@@ -43,8 +67,20 @@ const createCommentElement = (comment, post, childrenByParent = {}, submitReply 
   const replyForm = document.createElement('form'); replyForm.className = 'comment-form comment-reply-form'; replyForm.hidden = true; replyForm.innerHTML = '<input type="text" maxlength="180" placeholder="Write a reply..." aria-label="Write a reply" /><button type="submit" aria-label="Post reply">↗</button>';
   replyButton.addEventListener('click', () => { replyForm.hidden = !replyForm.hidden; if (!replyForm.hidden) replyForm.querySelector('input').focus(); });
   replyForm.addEventListener('submit', async (event) => { event.preventDefault(); const input = replyForm.querySelector('input'); const value = escapeText(input.value); if (!value || !submitReply) return; if (await submitReply(comment.comment_id || comment.id, value)) { input.value = ''; replyForm.hidden = true; } });
-  content.append(copy, replyButton, replyForm); element.append(avatar, content); wrapper.append(element);
-  const children = document.createElement('div'); children.className = 'comment-replies'; (childrenByParent[comment.comment_id || comment.id] || []).forEach((child) => children.append(createCommentElement(child, post, childrenByParent, submitReply))); wrapper.append(children);
+  content.append(copy, replyButton, replyForm);
+  if (comment.author_id === authenticatedUserId) {
+    const deleteButton = document.createElement('button');
+    deleteButton.type = 'button'; deleteButton.className = 'comment-delete-button'; deleteButton.textContent = '×';
+    deleteButton.setAttribute('aria-label', feedText('Delete comment', 'حذف التعليق'));
+    deleteButton.title = feedText('Delete comment', 'حذف التعليق');
+    deleteButton.addEventListener('click', () => { void deleteFeedComment(post, comment, wrapper, deleteButton); });
+    content.append(deleteButton);
+  }
+  element.append(avatar, content);
+  const children = document.createElement('div');
+  children.className = 'comment-replies';
+  (childrenByParent[comment.comment_id || comment.id] || []).forEach((child) => children.append(createCommentElement(child, post, childrenByParent, submitReply)));
+  wrapper.append(element, children);
   return wrapper;
 };
 const renderComments = (post, rows) => {
@@ -123,6 +159,21 @@ const createPostMedia = (item, url) => {
     : `<div class="post-media-slot"><img class="post-uploaded-media" src="${safeUrl}" alt="Shared photo" loading="lazy" /></div>`;
 };
 
+const deleteFeedPost = async (post, button) => {
+  if (!authenticatedUserId || post.dataset.authorId !== authenticatedUserId) return;
+  if (!window.confirm(feedText('Delete this post permanently?', 'هل تريد حذف هذا المنشور نهائيًا؟'))) return;
+  button.disabled = true;
+  const client = await database();
+  const { error } = client ? await client.from('posts').delete().eq('id', post.dataset.postId).eq('author_id', authenticatedUserId) : { error: new Error('not-authenticated') };
+  if (error) { button.disabled = false; showToast(feedText('Post could not be deleted.', 'تعذّر حذف المنشور.')); return; }
+  if (post.dataset.mediaPath) {
+    const { error: mediaError } = await client.storage.from('iqzodiac-media').remove([post.dataset.mediaPath]);
+    if (mediaError) console.warn('Post media cleanup failed.', mediaError);
+  }
+  post.remove();
+  showToast(feedText('Post deleted.', 'تم حذف المنشور.'));
+};
+
 const bindPost = (post) => {
   const likeButton = post.querySelector('.like-button');
   const commentButton = post.querySelector('.comment-focus');
@@ -132,6 +183,9 @@ const bindPost = (post) => {
   const commentForm = post.querySelector('.comment-form');
   const commentInput = commentForm.querySelector('input');
   const commentList = post.querySelector('.comment-list');
+  const deleteButton = post.querySelector('.post-delete-button');
+
+  deleteButton?.addEventListener('click', () => { void deleteFeedPost(post, deleteButton); });
 
   likeButton.addEventListener('click', async () => {
     const liked = likeButton.dataset.like === 'true';
@@ -352,7 +406,7 @@ if ('IntersectionObserver' in window && !reduceMotion) {
     } else {
       for (const item of feedRows) {
         const post = document.createElement('article');
-        post.className = 'post-card'; post.id = `post-${item.post_id}`; post.dataset.postId = item.post_id; post.dataset.author = String(item.handle || '').replace(/^@/, ''); post.dataset.authorId = item.author_id;
+        post.className = 'post-card'; post.id = `post-${item.post_id}`; post.dataset.postId = item.post_id; post.dataset.author = String(item.handle || '').replace(/^@/, ''); post.dataset.authorId = item.author_id; post.dataset.mediaPath = item.media_path || '';
         const liked = Boolean(item.liked_by_me);
         let mediaUrl = '';
         if (item.media_path) {
@@ -360,7 +414,9 @@ if ('IntersectionObserver' in window && !reduceMotion) {
           mediaUrl = signed?.signedUrl || '';
         }
         const bodyMarkup = item.body ? `<p class="post-body">${escapeHTML(item.body)}</p>` : '';
-        post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">${escapeHTML(String(item.display_name || 'OM').slice(0, 1))}</div><div class="post-author"><strong>${escapeHTML(item.display_name || 'Orbit Member')}</strong><span>${escapeHTML(item.handle || '@member')} · ${escapeHTML(formatDateTime(item.created_at))}</span></div></header>${bodyMarkup}${createPostMedia(item, mediaUrl)}<div class="post-meta"><span class="like-count">${formatCount(Number(item.like_count || 0))} likes</span><span class="comment-count">${formatCount(Number(item.comment_count || 0))} comments</span></div><div class="post-actions"><button class="post-action like-button ${liked ? 'is-liked' : ''}" type="button" data-like="${liked}"><span class="action-icon">${liked ? '♥' : '♡'}</span><span>${liked ? 'Liked' : 'Like'}</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment" /><button type="submit" aria-label="Post comment">↗</button></form>`;
+        const deletePostLabel = feedText('Delete post', 'حذف المنشور');
+        const deletePostAction = item.author_id === authenticatedUserId ? `<button class="post-delete-button" type="button" aria-label="${escapeHTML(deletePostLabel)}" title="${escapeHTML(deletePostLabel)}">×</button>` : '';
+        post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">${escapeHTML(String(item.display_name || 'OM').slice(0, 1))}</div><div class="post-author"><strong>${escapeHTML(item.display_name || 'Orbit Member')}</strong><span>${escapeHTML(item.handle || '@member')} · ${escapeHTML(formatDateTime(item.created_at))}</span></div>${deletePostAction}</header>${bodyMarkup}${createPostMedia(item, mediaUrl)}<div class="post-meta"><span class="like-count">${formatCount(Number(item.like_count || 0))} likes</span><span class="comment-count">${formatCount(Number(item.comment_count || 0))} comments</span></div><div class="post-actions"><button class="post-action like-button ${liked ? 'is-liked' : ''}" type="button" data-like="${liked}"><span class="action-icon">${liked ? '♥' : '♡'}</span><span>${liked ? 'Liked' : 'Like'}</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment" /><button type="submit" aria-label="Post comment">↗</button></form>`;
         feedList.append(post); bindPost(post);
       }
     }

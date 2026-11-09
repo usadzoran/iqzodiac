@@ -545,6 +545,8 @@ h1 {
 .post-card-new { border-color: rgba(131,229,232,0.38); animation: post-in 280ms ease both; }
 @keyframes post-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 .post-header { display: flex; align-items: center; gap: 10px; }
+.post-delete-button { display: grid; width: 27px; height: 27px; flex: 0 0 auto; margin-left: auto; place-items: center; border: 1px solid rgba(255,179,179,0.22); border-radius: 50%; background: transparent; color: #ffb3b3; cursor: pointer; font-size: 17px; line-height: 1; }
+.post-delete-button:hover, .post-delete-button:focus-visible { border-color: rgba(255,111,125,0.6); background: rgba(255,111,125,0.1); color: #ff6f7d; outline: none; }
 .post-avatar { display: grid; flex: none; place-items: center; width: 34px; height: 34px; border-radius: 50%; color: var(--night); font-size: 11px; font-weight: 800; }
 .post-author { min-width: 0; flex: 1; }
 .post-author strong, .post-author span { display: block; }
@@ -575,6 +577,8 @@ h1 {
 .comment-content { min-width: 0; }
 .comment-reply-button { margin: 3px 0 0; padding: 0; border: 0; background: transparent; color: var(--cyan); cursor: pointer; font: 8px "DM Mono", monospace; text-transform: uppercase; }
 .comment-reply-button:hover { color: var(--ink); }
+.comment-delete-button { margin: 3px 0 0 8px; padding: 0; border: 0; background: transparent; color: #ffb3b3; cursor: pointer; font: 16px/1 Manrope, sans-serif; }
+.comment-delete-button:hover, .comment-delete-button:focus-visible { color: #ff6f7d; outline: none; }
 .comment-replies { display: grid; gap: 7px; margin-left: 30px; padding-left: 10px; border-left: 1px solid rgba(131,229,232,0.16); }
 .comment-reply-form { max-width: 360px; margin-top: 6px; }
 .comment-avatar { display: grid; flex: none; width: 22px; height: 22px; place-items: center; border-radius: 50%; color: var(--night); font-size: 8px; font-weight: 800; }
