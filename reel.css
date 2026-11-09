@@ -985,3 +985,54 @@ body.reel-page .toast {
   outline-offset: 3px;
   background: rgba(131, 229, 232, 0.09);
 }
+
+/* Wide View / Clean Video Mode: keeps the normal Reel layout untouched. */
+.reel-wide-button .reel-wide-icon {
+  font-size: 22px;
+}
+
+.reel-wide-button[data-active="true"] .reel-wide-icon {
+  color: #a6ffdf;
+}
+
+body.reel-wide-view .reel-topbar,
+body.reel-wide-view .site-nav {
+  display: none !important;
+}
+
+body.reel-wide-view .reel-feed {
+  overflow: hidden;
+  scroll-snap-type: none;
+}
+
+.reel-card.is-wide-view,
+.reel-card.is-wide-view:fullscreen,
+.reel-card.is-wide-view:-webkit-full-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  width: 100vw;
+  max-width: none;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+  background: #000;
+}
+
+.reel-card.is-wide-view::after,
+.reel-card.is-wide-view .reel-video-tap-hint,
+.reel-card.is-wide-view .reel-card-copy,
+.reel-card.is-wide-view .reel-actions,
+.reel-card.is-wide-view .reel-share-menu {
+  display: none !important;
+}
+
+.reel-card.is-wide-view .reel-card-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+  cursor: pointer;
+}

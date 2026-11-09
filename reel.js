@@ -35,6 +35,9 @@
   let authenticatedUserId = null;
   let client = null;
   let activeVideo = null;
+  let wideViewCard = null;
+  let wideViewVideo = null;
+  let wideViewExitRequested = false;
   let selectedCommentReel = null;
   let pageIndex = 0;
   let hasMore = true;
@@ -56,7 +59,7 @@
       invalidVideo: 'Choose a supported video file.', invalidAudio: 'Choose an audio file for the soundtrack.', tooLarge: 'The video must be 50 MB or smaller.', audioTooLarge: 'The soundtrack must be 50 MB or smaller.', tooLong: 'Reels can be no longer than 6 minutes.', checking: 'Checking video duration…', ready: 'Ready to publish.',
       editing: 'Preparing edited video', editUnsupported: 'This browser cannot export video edits. Try a recent browser or remove the text and soundtrack edits.', editFailed: 'The edited video could not be prepared. Try again or publish without edits.', editedTooLarge: 'The edited video exceeds 50 MB. Use a shorter clip or a smaller soundtrack.',
       publishing: 'Publishing your Reel…', saved: 'Your Reel is now in your orbit.', failed: 'Your Reel could not be published. Try again.',
-      like: 'Like', liked: 'Liked', comments: 'Comments', comment: 'comment', commentsPlural: 'comments', share: 'Share', mute: 'Mute', unmute: 'Turn sound on',
+      like: 'Like', liked: 'Liked', comments: 'Comments', comment: 'comment', commentsPlural: 'comments', share: 'Share', mute: 'Mute', unmute: 'Turn sound on', wideView: 'Wide View', exitWideView: 'Exit Wide View',
       writeComment: 'Write a comment…', postComment: 'Post comment', commentSaved: 'Comment added.', commentFailed: 'Comment could not be saved.', likeFailed: 'Like could not be saved.', signIn: 'Sign in to interact with Reels.',
       noComments: 'No comments yet. Start the conversation.', commentsFailed: 'Comments could not be loaded.', commentBy: (name) => `Comment by ${name}`,
       copied: 'Link copied.', shareTitle: 'Share this Reel', shareText: 'Watch this Reel on IQZodiac',
@@ -69,7 +72,7 @@
       invalidVideo: 'اختر ملف فيديو مدعومًا.', invalidAudio: 'اختر ملفًا صوتيًا للموسيقى.', tooLarge: 'يجب ألا يتجاوز حجم الفيديو 50 ميغابايت.', audioTooLarge: 'يجب ألا يتجاوز حجم المقطع الصوتي 50 ميغابايت.', tooLong: 'يجب ألا تتجاوز مدة الـ Reel ست دقائق.', checking: 'جارٍ التحقق من مدة الفيديو…', ready: 'الفيديو جاهز للنشر.',
       editing: 'جارٍ تجهيز الفيديو المعدّل', editUnsupported: 'هذا المتصفح لا يدعم تصدير تعديلات الفيديو. استخدم متصفحًا حديثًا أو احذف النص والموسيقى.', editFailed: 'تعذّر تجهيز الفيديو المعدّل. حاول مجددًا أو انشر دون تعديلات.', editedTooLarge: 'تجاوز حجم الفيديو المعدّل 50 ميغابايت. اختر مقطعًا أقصر أو موسيقى أصغر.',
       publishing: 'جارٍ نشر الـ Reel…', saved: 'تم نشر الـ Reel.', failed: 'تعذّر نشر الـ Reel. حاول مجددًا.',
-      like: 'إعجاب', liked: 'أعجبني', comments: 'التعليقات', comment: 'تعليق', commentsPlural: 'تعليقات', share: 'مشاركة', mute: 'كتم الصوت', unmute: 'تشغيل الصوت',
+      like: 'إعجاب', liked: 'أعجبني', comments: 'التعليقات', comment: 'تعليق', commentsPlural: 'تعليقات', share: 'مشاركة', mute: 'كتم الصوت', unmute: 'تشغيل الصوت', wideView: 'عرض واسع', exitWideView: 'الخروج من العرض الواسع',
       writeComment: 'اكتب تعليقًا…', postComment: 'نشر التعليق', commentSaved: 'تمت إضافة التعليق.', commentFailed: 'تعذّر حفظ التعليق.', likeFailed: 'تعذّر حفظ الإعجاب.', signIn: 'سجّل الدخول للتفاعل مع Reels.',
       noComments: 'لا توجد تعليقات بعد. ابدأ الحوار.', commentsFailed: 'تعذّر تحميل التعليقات.', commentBy: (name) => `تعليق من ${name}`,
       copied: 'تم نسخ الرابط.', shareTitle: 'مشاركة هذا الـ Reel', shareText: 'شاهد هذا الـ Reel على IQZodiac',
@@ -143,6 +146,7 @@
     });
     document.querySelectorAll('.reel-share-button').forEach((button) => button.querySelector('.reel-action-label').textContent = t('share'));
     document.querySelectorAll('.reel-sound-button').forEach((button) => updateSoundButton(button.closest('.reel-card')));
+    document.querySelectorAll('.reel-wide-button').forEach((button) => updateWideViewButton(button.closest('.reel-card')));
     document.querySelectorAll('.reel-feed-status').forEach((node) => {
       if (node.dataset.kind === 'loading') node.textContent = t('loading');
       if (node.dataset.kind === 'empty') node.textContent = t('empty');
@@ -528,6 +532,60 @@
     button.querySelector('.reel-action-label').textContent = muted ? t('unmute') : t('mute');
   };
 
+  const updateWideViewButton = (card) => {
+    const button = card?.querySelector('.reel-wide-button');
+    if (!button) return;
+    const active = card === wideViewCard;
+    button.dataset.active = String(active);
+    button.setAttribute('aria-label', t(active ? 'exitWideView' : 'wideView'));
+    button.title = t(active ? 'exitWideView' : 'wideView');
+    button.querySelector('.reel-action-label').textContent = t(active ? 'exitWideView' : 'wideView');
+  };
+
+  const clearWideView = () => {
+    const card = wideViewCard;
+    wideViewCard = null;
+    wideViewVideo = null;
+    document.body.classList.remove('reel-wide-view');
+    card?.classList.remove('is-wide-view');
+    updateWideViewButton(card);
+  };
+
+  const exitWideView = async () => {
+    if (!wideViewCard) return;
+    wideViewExitRequested = true;
+    const fullscreenActive = document.fullscreenElement || document.webkitFullscreenElement;
+    clearWideView();
+    const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
+    if (fullscreenActive && exitFullscreen) {
+      try { await exitFullscreen.call(document); } catch { /* CSS fallback already restored the feed. */ }
+    }
+    wideViewExitRequested = false;
+  };
+
+  const enterWideView = async (card) => {
+    if (wideViewCard && wideViewCard !== card) await exitWideView();
+    if (wideViewCard === card) { await exitWideView(); return; }
+    wideViewCard = card;
+    wideViewVideo = card.querySelector('.reel-card-video');
+    card.classList.add('is-wide-view');
+    document.body.classList.add('reel-wide-view');
+    updateWideViewButton(card);
+    const requestFullscreen = card.requestFullscreen || card.webkitRequestFullscreen;
+    if (requestFullscreen) {
+      try { await requestFullscreen.call(card, { navigationUI: 'hide' }); } catch { /* CSS wide view remains available when denied. */ }
+    }
+  };
+
+  const handleFullscreenChange = () => {
+    if (!(document.fullscreenElement || document.webkitFullscreenElement) && wideViewCard && !wideViewExitRequested) clearWideView();
+  };
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
+  document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && wideViewCard && !(document.fullscreenElement || document.webkitFullscreenElement)) void exitWideView();
+  });
+
   const makeShareMenu = (card, row) => {
     const existing = card.querySelector('.reel-share-menu');
     if (existing) { existing.remove(); return; }
@@ -648,6 +706,7 @@
     const commentButton = card.querySelector('.reel-comment-button');
     const shareButton = card.querySelector('.reel-share-button');
     const soundButton = card.querySelector('.reel-sound-button');
+    const wideButton = card.querySelector('.reel-wide-button');
 
     likeButton.addEventListener('click', async () => {
       if (!authenticatedUserId) { showToast(t('signIn')); return; }
@@ -682,8 +741,10 @@
       updateUserMutePreference(card, !video.muted);
       if (!video.muted) video.play().catch(() => {});
     });
+    wideButton.addEventListener('click', () => { void enterWideView(card); });
     const video = card.querySelector('.reel-card-video');
     video.addEventListener('click', () => {
+      if (card === wideViewCard) { void exitWideView(); return; }
       if (video.paused) video.play().catch(() => {});
       else video.pause();
       card.classList.toggle('is-paused', video.paused);
@@ -694,6 +755,7 @@
     updateLikeButton(card, Boolean(row.liked_by_me), numeric(row.like_count));
     updateCommentButton(card, numeric(row.comment_count));
     updateSoundButton(card);
+    updateWideViewButton(card);
   };
 
   const renderCard = (row, signedUrl) => {
@@ -745,7 +807,7 @@
 
     const actions = document.createElement('div');
     actions.className = 'reel-actions';
-    actions.innerHTML = `<button type="button" class="reel-action reel-like-button" data-reel-id="${escapeHTML(row.id)}" data-liked="${Boolean(row.liked_by_me)}"><span class="reel-action-icon" aria-hidden="true">${row.liked_by_me ? '♥' : '♡'}</span><span class="reel-action-label">${escapeHTML(t(row.liked_by_me ? 'liked' : 'like'))}</span><span class="reel-action-count" data-count="${numeric(row.like_count)}">${escapeHTML(t('count', numeric(row.like_count)))}</span></button><button type="button" class="reel-action reel-comment-button" data-reel-id="${escapeHTML(row.id)}" aria-label="${escapeHTML(t('comments'))}"><span class="reel-action-icon" aria-hidden="true">▱</span><span class="reel-action-label">${escapeHTML(t('comments'))}</span><span class="reel-action-count" data-count="${numeric(row.comment_count)}">${escapeHTML(t('count', numeric(row.comment_count)))}</span></button><button type="button" class="reel-action reel-share-button"><span class="reel-action-icon" aria-hidden="true">↗</span><span class="reel-action-label">${escapeHTML(t('share'))}</span></button><button type="button" class="reel-action reel-sound-button"><span class="reel-action-icon reel-sound-icon" aria-hidden="true">♫</span><span class="reel-action-label">${escapeHTML(t('unmute'))}</span></button>`;
+    actions.innerHTML = `<button type="button" class="reel-action reel-like-button" data-reel-id="${escapeHTML(row.id)}" data-liked="${Boolean(row.liked_by_me)}"><span class="reel-action-icon" aria-hidden="true">${row.liked_by_me ? '♥' : '♡'}</span><span class="reel-action-label">${escapeHTML(t(row.liked_by_me ? 'liked' : 'like'))}</span><span class="reel-action-count" data-count="${numeric(row.like_count)}">${escapeHTML(t('count', numeric(row.like_count)))}</span></button><button type="button" class="reel-action reel-comment-button" data-reel-id="${escapeHTML(row.id)}" aria-label="${escapeHTML(t('comments'))}"><span class="reel-action-icon" aria-hidden="true">▱</span><span class="reel-action-label">${escapeHTML(t('comments'))}</span><span class="reel-action-count" data-count="${numeric(row.comment_count)}">${escapeHTML(t('count', numeric(row.comment_count)))}</span></button><button type="button" class="reel-action reel-share-button"><span class="reel-action-icon" aria-hidden="true">↗</span><span class="reel-action-label">${escapeHTML(t('share'))}</span></button><button type="button" class="reel-action reel-sound-button"><span class="reel-action-icon reel-sound-icon" aria-hidden="true">♫</span><span class="reel-action-label">${escapeHTML(t('unmute'))}</span></button><button type="button" class="reel-action reel-wide-button"><span class="reel-action-icon reel-wide-icon" aria-hidden="true">⛶</span><span class="reel-action-label">${escapeHTML(t('wideView'))}</span></button>`;
     card.append(video, playHint, copyNode, actions);
     bindCardActions(card, row);
     if (reelObserver) reelObserver.observe(video);
