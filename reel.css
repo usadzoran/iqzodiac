@@ -1036,3 +1036,15 @@ body.reel-wide-view .reel-feed {
   background: #000;
   cursor: pointer;
 }
+
+.reel-delete-button .reel-action-icon,
+.reel-comment-delete {
+  color: #ffb3b3;
+}
+
+.reel-delete-button:hover .reel-action-icon,
+.reel-delete-button:focus-visible .reel-action-icon,
+.reel-comment-delete:hover,
+.reel-comment-delete:focus-visible {
+  color: #ff6f7d;
+}

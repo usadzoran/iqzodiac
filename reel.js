@@ -59,7 +59,7 @@
       invalidVideo: 'Choose a supported video file.', invalidAudio: 'Choose an audio file for the soundtrack.', tooLarge: 'The video must be 50 MB or smaller.', audioTooLarge: 'The soundtrack must be 50 MB or smaller.', tooLong: 'Reels can be no longer than 6 minutes.', checking: 'Checking video duration…', ready: 'Ready to publish.',
       editing: 'Preparing edited video', editUnsupported: 'This browser cannot export video edits. Try a recent browser or remove the text and soundtrack edits.', editFailed: 'The edited video could not be prepared. Try again or publish without edits.', editedTooLarge: 'The edited video exceeds 50 MB. Use a shorter clip or a smaller soundtrack.',
       publishing: 'Publishing your Reel…', saved: 'Your Reel is now in your orbit.', failed: 'Your Reel could not be published. Try again.',
-      like: 'Like', liked: 'Liked', comments: 'Comments', comment: 'comment', commentsPlural: 'comments', share: 'Share', mute: 'Mute', unmute: 'Turn sound on', wideView: 'Wide View', exitWideView: 'Exit Wide View',
+      like: 'Like', liked: 'Liked', comments: 'Comments', comment: 'comment', commentsPlural: 'comments', share: 'Share', mute: 'Mute', unmute: 'Turn sound on', wideView: 'Wide View', exitWideView: 'Exit Wide View', deleteComment: 'Delete comment', deleteReel: 'Delete Reel', confirmDeleteComment: 'Delete this comment?', confirmDeleteReel: 'Delete this Reel permanently?', deleteFailed: 'Could not delete this item.', deleted: 'Deleted successfully.',
       writeComment: 'Write a comment…', postComment: 'Post comment', commentSaved: 'Comment added.', commentFailed: 'Comment could not be saved.', likeFailed: 'Like could not be saved.', signIn: 'Sign in to interact with Reels.',
       noComments: 'No comments yet. Start the conversation.', commentsFailed: 'Comments could not be loaded.', commentBy: (name) => `Comment by ${name}`,
       copied: 'Link copied.', shareTitle: 'Share this Reel', shareText: 'Watch this Reel on IQZodiac',
@@ -72,7 +72,7 @@
       invalidVideo: 'اختر ملف فيديو مدعومًا.', invalidAudio: 'اختر ملفًا صوتيًا للموسيقى.', tooLarge: 'يجب ألا يتجاوز حجم الفيديو 50 ميغابايت.', audioTooLarge: 'يجب ألا يتجاوز حجم المقطع الصوتي 50 ميغابايت.', tooLong: 'يجب ألا تتجاوز مدة الـ Reel ست دقائق.', checking: 'جارٍ التحقق من مدة الفيديو…', ready: 'الفيديو جاهز للنشر.',
       editing: 'جارٍ تجهيز الفيديو المعدّل', editUnsupported: 'هذا المتصفح لا يدعم تصدير تعديلات الفيديو. استخدم متصفحًا حديثًا أو احذف النص والموسيقى.', editFailed: 'تعذّر تجهيز الفيديو المعدّل. حاول مجددًا أو انشر دون تعديلات.', editedTooLarge: 'تجاوز حجم الفيديو المعدّل 50 ميغابايت. اختر مقطعًا أقصر أو موسيقى أصغر.',
       publishing: 'جارٍ نشر الـ Reel…', saved: 'تم نشر الـ Reel.', failed: 'تعذّر نشر الـ Reel. حاول مجددًا.',
-      like: 'إعجاب', liked: 'أعجبني', comments: 'التعليقات', comment: 'تعليق', commentsPlural: 'تعليقات', share: 'مشاركة', mute: 'كتم الصوت', unmute: 'تشغيل الصوت', wideView: 'عرض واسع', exitWideView: 'الخروج من العرض الواسع',
+      like: 'إعجاب', liked: 'أعجبني', comments: 'التعليقات', comment: 'تعليق', commentsPlural: 'تعليقات', share: 'مشاركة', mute: 'كتم الصوت', unmute: 'تشغيل الصوت', wideView: 'عرض واسع', exitWideView: 'الخروج من العرض الواسع', deleteComment: 'حذف التعليق', deleteReel: 'حذف الـ Reel', confirmDeleteComment: 'هل تريد حذف هذا التعليق؟', confirmDeleteReel: 'هل تريد حذف هذا الـ Reel نهائيًا؟', deleteFailed: 'تعذّر حذف العنصر.', deleted: 'تم الحذف بنجاح.',
       writeComment: 'اكتب تعليقًا…', postComment: 'نشر التعليق', commentSaved: 'تمت إضافة التعليق.', commentFailed: 'تعذّر حفظ التعليق.', likeFailed: 'تعذّر حفظ الإعجاب.', signIn: 'سجّل الدخول للتفاعل مع Reels.',
       noComments: 'لا توجد تعليقات بعد. ابدأ الحوار.', commentsFailed: 'تعذّر تحميل التعليقات.', commentBy: (name) => `تعليق من ${name}`,
       copied: 'تم نسخ الرابط.', shareTitle: 'مشاركة هذا الـ Reel', shareText: 'شاهد هذا الـ Reel على IQZodiac',
@@ -642,12 +642,15 @@
       remove.type = 'button';
       remove.className = 'reel-comment-delete';
       remove.textContent = '×';
-      remove.setAttribute('aria-label', language() === 'ar' ? 'حذف التعليق' : 'Delete comment');
+      remove.setAttribute('aria-label', t('deleteComment'));
+      remove.title = t('deleteComment');
       remove.addEventListener('click', async () => {
+        if (!window.confirm(t('confirmDeleteComment'))) return;
         remove.disabled = true;
         const { error } = await client.from('reel_comments').delete().eq('id', comment.id).eq('author_id', authenticatedUserId);
-        if (error) { remove.disabled = false; showToast(t('commentFailed')); return; }
+        if (error) { remove.disabled = false; showToast(t('deleteFailed')); return; }
         item.remove();
+        showToast(t('deleted'));
         if (selectedCommentReel) {
           selectedCommentReel.comment_count = Math.max(0, numeric(selectedCommentReel.comment_count) - 1);
           const card = document.querySelector(`.reel-card[data-reel-id="${CSS.escape(selectedCommentReel.id)}"]`);
@@ -701,12 +704,32 @@
     await loadComments(row, focusCommentId);
   };
 
+  const deleteReel = async (card, row, button) => {
+    if (!authenticatedUserId || row.author_id !== authenticatedUserId) return;
+    if (!window.confirm(t('confirmDeleteReel'))) return;
+    button.disabled = true;
+    try {
+      const { error } = await client.from('reels').delete().eq('id', row.id).eq('author_id', authenticatedUserId);
+      if (error) throw error;
+      try { await client.storage.from(MEDIA_BUCKET).remove([row.media_path]); } catch { /* The database row is already removed; storage cleanup can be retried administratively. */ }
+      if (wideViewCard === card) await exitWideView();
+      card.remove();
+      reelById.delete(row.id);
+      showToast(t('deleted'));
+    } catch (error) {
+      console.warn('Reel could not be deleted.', error);
+      button.disabled = false;
+      showToast(t('deleteFailed'));
+    }
+  };
+
   const bindCardActions = (card, row) => {
     const likeButton = card.querySelector('.reel-like-button');
     const commentButton = card.querySelector('.reel-comment-button');
     const shareButton = card.querySelector('.reel-share-button');
     const soundButton = card.querySelector('.reel-sound-button');
     const wideButton = card.querySelector('.reel-wide-button');
+    const deleteButton = card.querySelector('.reel-delete-button');
 
     likeButton.addEventListener('click', async () => {
       if (!authenticatedUserId) { showToast(t('signIn')); return; }
@@ -742,6 +765,7 @@
       if (!video.muted) video.play().catch(() => {});
     });
     wideButton.addEventListener('click', () => { void enterWideView(card); });
+    deleteButton?.addEventListener('click', () => { void deleteReel(card, row, deleteButton); });
     const video = card.querySelector('.reel-card-video');
     video.addEventListener('click', () => {
       if (card === wideViewCard) { void exitWideView(); return; }
@@ -807,7 +831,8 @@
 
     const actions = document.createElement('div');
     actions.className = 'reel-actions';
-    actions.innerHTML = `<button type="button" class="reel-action reel-like-button" data-reel-id="${escapeHTML(row.id)}" data-liked="${Boolean(row.liked_by_me)}"><span class="reel-action-icon" aria-hidden="true">${row.liked_by_me ? '♥' : '♡'}</span><span class="reel-action-label">${escapeHTML(t(row.liked_by_me ? 'liked' : 'like'))}</span><span class="reel-action-count" data-count="${numeric(row.like_count)}">${escapeHTML(t('count', numeric(row.like_count)))}</span></button><button type="button" class="reel-action reel-comment-button" data-reel-id="${escapeHTML(row.id)}" aria-label="${escapeHTML(t('comments'))}"><span class="reel-action-icon" aria-hidden="true">▱</span><span class="reel-action-label">${escapeHTML(t('comments'))}</span><span class="reel-action-count" data-count="${numeric(row.comment_count)}">${escapeHTML(t('count', numeric(row.comment_count)))}</span></button><button type="button" class="reel-action reel-share-button"><span class="reel-action-icon" aria-hidden="true">↗</span><span class="reel-action-label">${escapeHTML(t('share'))}</span></button><button type="button" class="reel-action reel-sound-button"><span class="reel-action-icon reel-sound-icon" aria-hidden="true">♫</span><span class="reel-action-label">${escapeHTML(t('unmute'))}</span></button><button type="button" class="reel-action reel-wide-button"><span class="reel-action-icon reel-wide-icon" aria-hidden="true">⛶</span><span class="reel-action-label">${escapeHTML(t('wideView'))}</span></button>`;
+    const deleteAction = row.author_id === authenticatedUserId ? `<button type="button" class="reel-action reel-delete-button" aria-label="${escapeHTML(t('deleteReel'))}" title="${escapeHTML(t('deleteReel'))}"><span class="reel-action-icon" aria-hidden="true">×</span><span class="reel-action-label">${escapeHTML(t('deleteReel'))}</span></button>` : '';
+    actions.innerHTML = `<button type="button" class="reel-action reel-like-button" data-reel-id="${escapeHTML(row.id)}" data-liked="${Boolean(row.liked_by_me)}"><span class="reel-action-icon" aria-hidden="true">${row.liked_by_me ? '♥' : '♡'}</span><span class="reel-action-label">${escapeHTML(t(row.liked_by_me ? 'liked' : 'like'))}</span><span class="reel-action-count" data-count="${numeric(row.like_count)}">${escapeHTML(t('count', numeric(row.like_count)))}</span></button><button type="button" class="reel-action reel-comment-button" data-reel-id="${escapeHTML(row.id)}" aria-label="${escapeHTML(t('comments'))}"><span class="reel-action-icon" aria-hidden="true">▱</span><span class="reel-action-label">${escapeHTML(t('comments'))}</span><span class="reel-action-count" data-count="${numeric(row.comment_count)}">${escapeHTML(t('count', numeric(row.comment_count)))}</span></button><button type="button" class="reel-action reel-share-button"><span class="reel-action-icon" aria-hidden="true">↗</span><span class="reel-action-label">${escapeHTML(t('share'))}</span></button><button type="button" class="reel-action reel-sound-button"><span class="reel-action-icon reel-sound-icon" aria-hidden="true">♫</span><span class="reel-action-label">${escapeHTML(t('unmute'))}</span></button><button type="button" class="reel-action reel-wide-button"><span class="reel-action-icon reel-wide-icon" aria-hidden="true">⛶</span><span class="reel-action-label">${escapeHTML(t('wideView'))}</span></button>${deleteAction}`;
     card.append(video, playHint, copyNode, actions);
     bindCardActions(card, row);
     if (reelObserver) reelObserver.observe(video);
