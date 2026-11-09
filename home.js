@@ -33,7 +33,9 @@ const notificationCommentId = isUuid(notificationParams.get('comment')) ? notifi
 const feedText = (english, arabic) => window.IQZodiacLanguage?.t(english, arabic) || english;
 
 const deleteFeedComment = async (post, comment, wrapper, button) => {
-  if (!authenticatedUserId || comment.author_id !== authenticatedUserId) return;
+  const commentAuthorId = String(comment.author_id || '').toLowerCase();
+  const currentUserId = String(authenticatedUserId || '').toLowerCase();
+  if (!currentUserId || commentAuthorId !== currentUserId) return;
   if (!window.confirm(feedText('Delete this comment?', 'هل تريد حذف هذا التعليق؟'))) return;
   button.disabled = true;
   const client = await database();
@@ -68,7 +70,7 @@ const createCommentElement = (comment, post, childrenByParent = {}, submitReply 
   replyButton.addEventListener('click', () => { replyForm.hidden = !replyForm.hidden; if (!replyForm.hidden) replyForm.querySelector('input').focus(); });
   replyForm.addEventListener('submit', async (event) => { event.preventDefault(); const input = replyForm.querySelector('input'); const value = escapeText(input.value); if (!value || !submitReply) return; if (await submitReply(comment.comment_id || comment.id, value)) { input.value = ''; replyForm.hidden = true; } });
   content.append(copy, replyButton, replyForm);
-  if (comment.author_id === authenticatedUserId) {
+  if (String(comment.author_id || '').toLowerCase() === String(authenticatedUserId || '').toLowerCase()) {
     const deleteButton = document.createElement('button');
     deleteButton.type = 'button'; deleteButton.className = 'comment-delete-button'; deleteButton.textContent = '×';
     deleteButton.setAttribute('aria-label', feedText('Delete comment', 'حذف التعليق'));
