@@ -583,6 +583,16 @@
     wideViewExitRequested = false;
   };
 
+  const resumeWideViewVideo = () => {
+    const video = wideViewVideo;
+    if (!video || !wideViewCard || video.dataset.wideViewResume !== 'true') return;
+    const resume = () => {
+      if (wideViewCard && video.isConnected && video.paused && !video.ended) video.play().catch(() => {});
+    };
+    requestAnimationFrame(() => { resume(); requestAnimationFrame(resume); });
+    window.setTimeout(resume, 120);
+  };
+
   const enterWideView = async (card) => {
     if (wideViewCard && wideViewCard !== card) await exitWideView();
     if (wideViewCard === card) { await exitWideView(); return; }
@@ -592,16 +602,19 @@
     document.body.classList.add('reel-wide-view');
     updateWideViewButton(card);
     const playbackPosition = wideViewVideo?.currentTime || 0;
+    if (wideViewVideo) wideViewVideo.dataset.wideViewResume = 'true';
     if (wideViewVideo?.paused) wideViewVideo.play().catch(() => {});
     const requestFullscreen = card.requestFullscreen || card.webkitRequestFullscreen;
     if (requestFullscreen) {
       try { await requestFullscreen.call(card, { navigationUI: 'hide' }); } catch { /* CSS wide view remains available when denied. */ }
     }
     if (wideViewVideo && Math.abs(wideViewVideo.currentTime - playbackPosition) > 0.05) wideViewVideo.currentTime = playbackPosition;
+    resumeWideViewVideo();
   };
 
   const handleFullscreenChange = () => {
     if (!(document.fullscreenElement || document.webkitFullscreenElement) && wideViewCard && !wideViewExitRequested) clearWideView();
+    else if (wideViewCard) resumeWideViewVideo();
   };
   document.addEventListener('fullscreenchange', handleFullscreenChange);
   document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
