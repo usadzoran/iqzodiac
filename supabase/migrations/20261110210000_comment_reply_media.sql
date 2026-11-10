@@ -7,6 +7,7 @@ alter table public.comments
   add column if not exists media_size_bytes bigint;
 
 alter table public.comments drop constraint if exists comments_body_check;
+alter table public.comments drop constraint if exists comments_body_or_media_check;
 alter table public.comments
   add constraint comments_body_or_media_check
   check (
@@ -16,6 +17,7 @@ alter table public.comments
   );
 
 alter table public.comments drop constraint if exists comments_media_metadata_check;
+alter table public.comments drop constraint if exists comments_media_type_check;
 alter table public.comments
   add constraint comments_media_metadata_check
   check (
