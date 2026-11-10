@@ -1048,3 +1048,36 @@ body.reel-wide-view .reel-feed {
 .reel-comment-delete:focus-visible {
   color: #ff6f7d;
 }
+
+/* Own-comment actions and inline editing */
+.reel-comment-menu{position:relative;z-index:2;justify-self:end}
+.reel-comment-menu>summary{display:grid;width:30px;height:30px;place-items:center;border:1px solid rgba(255,255,255,.13);border-radius:50%;background:rgba(8,10,15,.48);color:#d2d7e0;cursor:pointer;font-size:19px;line-height:1;list-style:none}
+.reel-comment-menu>summary::-webkit-details-marker{display:none}
+.reel-comment-menu>summary:hover,.reel-comment-menu>summary:focus-visible{border-color:rgba(166,255,223,.55);color:#a6ffdf;outline:2px solid rgba(166,255,223,.35);outline-offset:2px}
+.reel-comment-menu-options{position:absolute;inset-block-start:34px;inset-inline-end:0;display:grid;min-width:142px;padding:5px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(13,16,24,.97);box-shadow:0 12px 34px rgba(0,0,0,.45);backdrop-filter:blur(14px)}
+.reel-comment-menu-option{min-height:36px;padding:7px 10px;border:0;border-radius:8px;background:transparent;color:#f2f3f6;font:500 11px "Manrope",sans-serif;text-align:start;cursor:pointer}
+.reel-comment-menu-option:hover,.reel-comment-menu-option:focus-visible{background:rgba(255,255,255,.08);outline:none}
+.reel-comment-menu-option.is-danger{color:#ffaaaa}
+.reel-comment-editor{display:grid;gap:7px;margin:7px 0}
+.reel-comment-editor textarea{width:100%;min-height:58px;resize:vertical;padding:8px 10px;border:1px solid rgba(166,255,223,.36);border-radius:10px;background:rgba(255,255,255,.06);color:#fff;font:11px/1.5 "Manrope",sans-serif;outline:none}
+.reel-comment-editor textarea:focus{border-color:#a6ffdf;box-shadow:0 0 0 2px rgba(166,255,223,.15)}
+.reel-comment-editor-actions{display:flex;justify-content:flex-end;gap:7px}
+.reel-comment-editor-actions button{min-width:64px;min-height:34px;padding:6px 10px;border:1px solid rgba(166,255,223,.32);border-radius:9px;background:rgba(166,255,223,.12);color:#b7ffe8;font:600 10px "Manrope",sans-serif;cursor:pointer}
+.reel-comment-editor-actions button.is-secondary{border-color:rgba(255,255,255,.16);background:transparent;color:#b9bfca}
+.reel-comment-editor-actions button:disabled{opacity:.55;cursor:wait}
+@media(prefers-reduced-motion:reduce){.reel-comment-menu>summary,.reel-comment-menu-option,.reel-comment-editor-actions button{transition:none}}
+
+/* Visible per-comment actions and one-level replies */
+.reel-comment-controls{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:5px}
+.reel-comment-action{min-height:28px;padding:3px 8px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(255,255,255,.035);color:#aab4c2;font:500 9px "Manrope",sans-serif;cursor:pointer}
+.reel-comment-action:hover,.reel-comment-action:focus-visible{border-color:rgba(166,255,223,.45);background:rgba(166,255,223,.08);color:#baffea;outline:none}
+.reel-comment-action.is-danger{color:#ffaaaa}
+.reel-comment-action.is-danger:hover,.reel-comment-action.is-danger:focus-visible{border-color:rgba(255,111,125,.45);background:rgba(255,111,125,.08);color:#ff8b99}
+.reel-comment-replies{display:grid;gap:10px;margin:10px 0 0;padding:9px 0 0;padding-inline-start:12px;border-top:1px solid rgba(255,255,255,.08);border-inline-start:2px solid rgba(166,255,223,.2);list-style:none}
+.reel-comment-replies .reel-comment{grid-template-columns:27px minmax(0,1fr) auto;gap:7px}
+.reel-comment-replies .reel-comment-avatar{width:26px;height:26px;font-size:9px}
+.reel-comment-reply-form{display:grid;gap:6px;margin:7px 0}
+.reel-comment-reply-form input{width:100%;min-height:36px;padding:7px 10px;border:1px solid rgba(255,255,255,.15);border-radius:9px;background:rgba(255,255,255,.05);color:#fff;font:10px "Manrope",sans-serif;outline:none}
+.reel-comment-reply-form input:focus{border-color:rgba(166,255,223,.65)}
+.reel-comment-reply-form input::placeholder{color:#858d9d}
+.reel-comment-reply-form .reel-comment-editor-actions button{min-height:31px}

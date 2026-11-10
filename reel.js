@@ -59,7 +59,7 @@
       invalidVideo: 'Choose a supported video file.', invalidAudio: 'Choose an audio file for the soundtrack.', tooLarge: 'The video must be 50 MB or smaller.', audioTooLarge: 'The soundtrack must be 50 MB or smaller.', tooLong: 'Reels can be no longer than 6 minutes.', checking: 'Checking video duration…', ready: 'Ready to publish.',
       editing: 'Preparing edited video', editUnsupported: 'This browser cannot export video edits. Try a recent browser or remove the text and soundtrack edits.', editFailed: 'The edited video could not be prepared. Try again or publish without edits.', editedTooLarge: 'The edited video exceeds 50 MB. Use a shorter clip or a smaller soundtrack.',
       publishing: 'Publishing your Reel…', saved: 'Your Reel is now in your orbit.', failed: 'Your Reel could not be published. Try again.',
-      like: 'Like', liked: 'Liked', comments: 'Comments', comment: 'comment', commentsPlural: 'comments', share: 'Share', mute: 'Mute', unmute: 'Turn sound on', wideView: 'Wide View', exitWideView: 'Exit Wide View', deleteComment: 'Delete comment', deleteReel: 'Delete Reel', confirmDeleteComment: 'Delete this comment?', confirmDeleteReel: 'Delete this Reel permanently?', deleteFailed: 'Could not delete this item.', deleted: 'Deleted successfully.',
+      like: 'Like', liked: 'Liked', comments: 'Comments', comment: 'comment', commentsPlural: 'comments', replies: 'Replies', share: 'Share', mute: 'Mute', unmute: 'Turn sound on', wideView: 'Wide View', exitWideView: 'Exit Wide View', editComment: 'Edit comment', deleteComment: 'Delete comment', reply: 'Reply', replyPlaceholder: 'Write a reply…', postReply: 'Send reply', replySaved: 'Reply added.', replyFailed: 'Reply could not be added.', saveComment: 'Save', cancelEdit: 'Cancel', commentUpdated: 'Comment updated.', commentUpdateFailed: 'Comment could not be updated.', deleteReel: 'Delete Reel', confirmDeleteComment: 'Delete this comment?', confirmDeleteCommentWithReplies: 'Delete this comment? Replies will remain in the conversation.', confirmDeleteReel: 'Delete this Reel permanently?', deleteFailed: 'Could not delete this item.', deleted: 'Deleted successfully.',
       writeComment: 'Write a comment…', postComment: 'Post comment', commentSaved: 'Comment added.', commentFailed: 'Comment could not be saved.', likeFailed: 'Like could not be saved.', signIn: 'Sign in to interact with Reels.',
       noComments: 'No comments yet. Start the conversation.', commentsFailed: 'Comments could not be loaded.', commentBy: (name) => `Comment by ${name}`,
       copied: 'Link copied.', shareTitle: 'Share this Reel', shareText: 'Watch this Reel on IQZodiac',
@@ -72,7 +72,7 @@
       invalidVideo: 'اختر ملف فيديو مدعومًا.', invalidAudio: 'اختر ملفًا صوتيًا للموسيقى.', tooLarge: 'يجب ألا يتجاوز حجم الفيديو 50 ميغابايت.', audioTooLarge: 'يجب ألا يتجاوز حجم المقطع الصوتي 50 ميغابايت.', tooLong: 'يجب ألا تتجاوز مدة الـ Reel ست دقائق.', checking: 'جارٍ التحقق من مدة الفيديو…', ready: 'الفيديو جاهز للنشر.',
       editing: 'جارٍ تجهيز الفيديو المعدّل', editUnsupported: 'هذا المتصفح لا يدعم تصدير تعديلات الفيديو. استخدم متصفحًا حديثًا أو احذف النص والموسيقى.', editFailed: 'تعذّر تجهيز الفيديو المعدّل. حاول مجددًا أو انشر دون تعديلات.', editedTooLarge: 'تجاوز حجم الفيديو المعدّل 50 ميغابايت. اختر مقطعًا أقصر أو موسيقى أصغر.',
       publishing: 'جارٍ نشر الـ Reel…', saved: 'تم نشر الـ Reel.', failed: 'تعذّر نشر الـ Reel. حاول مجددًا.',
-      like: 'إعجاب', liked: 'أعجبني', comments: 'التعليقات', comment: 'تعليق', commentsPlural: 'تعليقات', share: 'مشاركة', mute: 'كتم الصوت', unmute: 'تشغيل الصوت', wideView: 'عرض واسع', exitWideView: 'الخروج من العرض الواسع', deleteComment: 'حذف التعليق', deleteReel: 'حذف الـ Reel', confirmDeleteComment: 'هل تريد حذف هذا التعليق؟', confirmDeleteReel: 'هل تريد حذف هذا الـ Reel نهائيًا؟', deleteFailed: 'تعذّر حذف العنصر.', deleted: 'تم الحذف بنجاح.',
+      like: 'إعجاب', liked: 'أعجبني', comments: 'التعليقات', comment: 'تعليق', commentsPlural: 'تعليقات', replies: 'الردود', share: 'مشاركة', mute: 'كتم الصوت', unmute: 'تشغيل الصوت', wideView: 'عرض واسع', exitWideView: 'الخروج من العرض الواسع', editComment: 'تعديل التعليق', deleteComment: 'حذف التعليق', reply: 'رد', replyPlaceholder: 'اكتب ردًا…', postReply: 'إرسال الرد', replySaved: 'تمت إضافة الرد.', replyFailed: 'تعذّر إضافة الرد.', saveComment: 'حفظ', cancelEdit: 'إلغاء', commentUpdated: 'تم تعديل التعليق.', commentUpdateFailed: 'تعذّر تعديل التعليق.', deleteReel: 'حذف الـ Reel', confirmDeleteComment: 'هل تريد حذف هذا التعليق؟', confirmDeleteCommentWithReplies: 'هل تريد حذف التعليق؟ ستبقى الردود في المحادثة كتعليقات مستقلة.', confirmDeleteReel: 'هل تريد حذف هذا الـ Reel نهائيًا؟', deleteFailed: 'تعذّر حذف العنصر.', deleted: 'تم الحذف بنجاح.',
       writeComment: 'اكتب تعليقًا…', postComment: 'نشر التعليق', commentSaved: 'تمت إضافة التعليق.', commentFailed: 'تعذّر حفظ التعليق.', likeFailed: 'تعذّر حفظ الإعجاب.', signIn: 'سجّل الدخول للتفاعل مع Reels.',
       noComments: 'لا توجد تعليقات بعد. ابدأ الحوار.', commentsFailed: 'تعذّر تحميل التعليقات.', commentBy: (name) => `تعليق من ${name}`,
       copied: 'تم نسخ الرابط.', shareTitle: 'مشاركة هذا الـ Reel', shareText: 'شاهد هذا الـ Reel على IQZodiac',
@@ -571,6 +571,7 @@
     card.classList.add('is-wide-view');
     document.body.classList.add('reel-wide-view');
     updateWideViewButton(card);
+    if (wideViewVideo?.paused) wideViewVideo.play().catch(() => {});
     const requestFullscreen = card.requestFullscreen || card.webkitRequestFullscreen;
     if (requestFullscreen) {
       try { await requestFullscreen.call(card, { navigationUI: 'hide' }); } catch { /* CSS wide view remains available when denied. */ }
@@ -619,46 +620,98 @@
     card.append(menu);
   };
 
-  const createCommentItem = (comment, profile) => {
+  const createCommentItem = (comment, profile, replies = [], profileMap = new Map()) => {
     const item = document.createElement('li');
-    item.className = 'reel-comment';
+    item.className = `reel-comment${comment.parent_comment_id ? ' is-reply' : ''}`;
     item.dataset.commentId = comment.id;
     item.id = `reel-comment-${comment.id}`;
     const displayName = profile?.display_name || profile?.handle || (comment.author_id === authenticatedUserId ? (language() === 'ar' ? 'أنت' : 'You') : 'Orbit Member');
     const avatar = makeAvatar(profile, displayName, 'reel-comment-avatar');
-    const body = document.createElement('div');
-    body.className = 'reel-comment-body';
-    const author = document.createElement('strong');
-    author.textContent = displayName;
-    const text = document.createElement('p');
-    text.textContent = comment.body;
-    const date = document.createElement('small');
-    date.textContent = formatDate(comment.created_at);
-    body.append(author, text, date);
+    const body = document.createElement('div'); body.className = 'reel-comment-body';
+    const author = document.createElement('strong'); author.textContent = displayName;
+    const text = document.createElement('p'); text.textContent = comment.body;
+    const date = document.createElement('small'); date.textContent = formatDate(comment.created_at);
+    const controls = document.createElement('div'); controls.className = 'reel-comment-controls';
+    const repliesList = document.createElement('ul'); repliesList.className = 'reel-comment-replies'; repliesList.setAttribute('aria-label', t('replies'));
+    replies.forEach((reply) => repliesList.append(createCommentItem(reply, profileMap.get(reply.author_id), [], profileMap)));
+
+    const replyButton = document.createElement('button');
+    if (!comment.parent_comment_id) {
+      replyButton.type = 'button'; replyButton.className = 'reel-comment-action'; replyButton.textContent = t('reply');
+      replyButton.addEventListener('click', () => {
+        const existing = body.querySelector('.reel-comment-reply-form');
+        if (existing) { existing.remove(); return; }
+        const editor = document.createElement('form'); editor.className = 'reel-comment-reply-form';
+        const input = document.createElement('input'); input.type = 'text'; input.maxLength = 180; input.placeholder = t('replyPlaceholder'); input.setAttribute('aria-label', t('replyPlaceholder'));
+        const actions = document.createElement('div'); actions.className = 'reel-comment-editor-actions';
+        const send = document.createElement('button'); send.type = 'submit'; send.textContent = t('postReply');
+        const cancel = document.createElement('button'); cancel.type = 'button'; cancel.className = 'is-secondary'; cancel.textContent = t('cancelEdit');
+        cancel.addEventListener('click', () => editor.remove());
+        editor.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const replyBody = input.value.trim().slice(0, 180);
+          if (!replyBody || !authenticatedUserId) { if (!authenticatedUserId) showToast(t('signIn')); input.focus(); return; }
+          send.disabled = true; cancel.disabled = true;
+          try {
+            const { data, error } = await client.from('reel_comments').insert({ reel_id: comment.reel_id, author_id: authenticatedUserId, parent_comment_id: comment.id, body: replyBody }).select('id,reel_id,author_id,body,created_at,parent_comment_id').single();
+            if (error) throw error;
+            const profileMap = await getPublicProfiles([authenticatedUserId]);
+            if (!repliesList.isConnected) body.append(repliesList);
+            repliesList.append(createCommentItem(data, profileMap.get(authenticatedUserId), [], profileMap));
+            editor.remove();
+            const reel = reelById.get(comment.reel_id);
+            if (reel) { reel.comment_count = numeric(reel.comment_count) + 1; updateCommentButton(document.querySelector(`.reel-card[data-reel-id="${CSS.escape(comment.reel_id)}"]`), reel.comment_count); }
+            showToast(t('replySaved'));
+          } catch (error) { console.warn('Reel reply could not be saved.', error); send.disabled = false; cancel.disabled = false; showToast(t('replyFailed')); }
+        });
+        actions.append(send, cancel); editor.append(input, actions); body.insertBefore(editor, controls); input.focus();
+      });
+      controls.append(replyButton);
+    }
+
+    if (comment.author_id === authenticatedUserId) {
+      const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'reel-comment-action'; edit.textContent = t('editComment');
+      edit.addEventListener('click', () => {
+        if (body.querySelector('.reel-comment-editor')) return;
+        text.hidden = true;
+        const editor = document.createElement('form'); editor.className = 'reel-comment-editor';
+        const input = document.createElement('textarea'); input.maxLength = 180; input.rows = 2; input.value = comment.body; input.setAttribute('aria-label', t('editComment'));
+        const actions = document.createElement('div'); actions.className = 'reel-comment-editor-actions';
+        const save = document.createElement('button'); save.type = 'submit'; save.textContent = t('saveComment');
+        const cancel = document.createElement('button'); cancel.type = 'button'; cancel.className = 'is-secondary'; cancel.textContent = t('cancelEdit');
+        cancel.addEventListener('click', () => { editor.remove(); text.hidden = false; });
+        editor.addEventListener('submit', async (event) => {
+          event.preventDefault(); const nextBody = input.value.trim().slice(0, 180); if (!nextBody) { input.focus(); return; }
+          save.disabled = true; cancel.disabled = true;
+          try {
+            const { data, error } = await client.from('reel_comments').update({ body: nextBody }).eq('id', comment.id).eq('author_id', authenticatedUserId).select('id').maybeSingle();
+            if (error || !data) throw error || new Error('comment_not_updated');
+            comment.body = nextBody; text.textContent = nextBody; text.hidden = false; editor.remove(); showToast(t('commentUpdated'));
+          } catch (error) { console.warn('Reel comment could not be updated.', error); save.disabled = false; cancel.disabled = false; showToast(t('commentUpdateFailed')); }
+        });
+        actions.append(save, cancel); editor.append(input, actions); body.insertBefore(editor, controls); input.focus();
+      });
+      const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'reel-comment-action is-danger'; remove.textContent = t('deleteComment');
+      remove.addEventListener('click', async () => {
+        const confirmText = comment.parent_comment_id ? t('confirmDeleteComment') : t('confirmDeleteCommentWithReplies');
+        if (!window.confirm(confirmText)) return;
+        remove.disabled = true;
+        try {
+          const { data, error } = await client.from('reel_comments').delete().eq('id', comment.id).eq('author_id', authenticatedUserId).select('id').maybeSingle();
+          if (error || !data) throw error || new Error('comment_not_deleted');
+          const reel = reelById.get(comment.reel_id);
+          if (reel) { reel.comment_count = Math.max(0, numeric(reel.comment_count) - 1); updateCommentButton(document.querySelector(`.reel-card[data-reel-id="${CSS.escape(comment.reel_id)}"]`), reel.comment_count); }
+          showToast(t('deleted'));
+          if (selectedCommentReel?.id === comment.reel_id) await loadComments(selectedCommentReel);
+          else item.remove();
+        } catch (error) { console.warn('Reel comment could not be deleted.', error); remove.disabled = false; showToast(t('deleteFailed')); }
+      });
+      controls.append(edit, remove);
+    }
+    body.append(author, text, date, controls);
+    if (replies.length) body.append(repliesList);
     item.append(avatar, body);
     item.setAttribute('aria-label', t('commentBy', displayName));
-    if (comment.author_id === authenticatedUserId) {
-      const remove = document.createElement('button');
-      remove.type = 'button';
-      remove.className = 'reel-comment-delete';
-      remove.textContent = '×';
-      remove.setAttribute('aria-label', t('deleteComment'));
-      remove.title = t('deleteComment');
-      remove.addEventListener('click', async () => {
-        if (!window.confirm(t('confirmDeleteComment'))) return;
-        remove.disabled = true;
-        const { error } = await client.from('reel_comments').delete().eq('id', comment.id).eq('author_id', authenticatedUserId);
-        if (error) { remove.disabled = false; showToast(t('deleteFailed')); return; }
-        item.remove();
-        showToast(t('deleted'));
-        if (selectedCommentReel) {
-          selectedCommentReel.comment_count = Math.max(0, numeric(selectedCommentReel.comment_count) - 1);
-          const card = document.querySelector(`.reel-card[data-reel-id="${CSS.escape(selectedCommentReel.id)}"]`);
-          updateCommentButton(card, selectedCommentReel.comment_count);
-        }
-      });
-      item.append(remove);
-    }
     return item;
   };
 
@@ -668,7 +721,8 @@
     loading.className = 'reel-comments-empty';
     loading.textContent = t('loading');
     commentsList.append(loading);
-    const { data, error } = await client.from('reel_comments').select('id,reel_id,author_id,body,created_at').eq('reel_id', row.id).order('created_at', { ascending: false }).limit(50);
+    const commentColumns = 'id,reel_id,author_id,body,created_at,parent_comment_id';
+    const { data, error } = await client.from('reel_comments').select(commentColumns).eq('reel_id', row.id).order('created_at', { ascending: false }).limit(50);
     if (error) {
       commentsList.replaceChildren();
       const message = document.createElement('li');
@@ -679,8 +733,14 @@
     }
     const comments = data || [];
     if (focusCommentId && !comments.some((comment) => comment.id === focusCommentId)) {
-      const { data: targetComment } = await client.from('reel_comments').select('id,reel_id,author_id,body,created_at').eq('id', focusCommentId).eq('reel_id', row.id).maybeSingle();
+      const { data: targetComment } = await client.from('reel_comments').select(commentColumns).eq('id', focusCommentId).eq('reel_id', row.id).maybeSingle();
       if (targetComment) comments.push(targetComment);
+    }
+    const commentIds = new Set(comments.map((comment) => comment.id));
+    const missingParentIds = [...new Set(comments.map((comment) => comment.parent_comment_id).filter((id) => id && !commentIds.has(id)))];
+    if (missingParentIds.length) {
+      const { data: parents } = await client.from('reel_comments').select(commentColumns).in('id', missingParentIds).eq('reel_id', row.id).limit(50);
+      (parents || []).forEach((parent) => { if (!commentIds.has(parent.id)) { comments.push(parent); commentIds.add(parent.id); } });
     }
     if (!comments.length) {
       const empty = document.createElement('li');
@@ -690,7 +750,15 @@
       return;
     }
     const profileMap = await getPublicProfiles(comments.map((comment) => comment.author_id));
-    commentsList.replaceChildren(...comments.map((comment) => createCommentItem(comment, profileMap.get(comment.author_id))));
+    const repliesByParent = new Map();
+    const topLevelComments = [];
+    comments.forEach((comment) => {
+      if (comment.parent_comment_id && commentIds.has(comment.parent_comment_id)) {
+        if (!repliesByParent.has(comment.parent_comment_id)) repliesByParent.set(comment.parent_comment_id, []);
+        repliesByParent.get(comment.parent_comment_id).push(comment);
+      } else topLevelComments.push(comment);
+    });
+    commentsList.replaceChildren(...topLevelComments.map((comment) => createCommentItem(comment, profileMap.get(comment.author_id), repliesByParent.get(comment.id) || [], profileMap)));
     if (focusCommentId) {
       const target = commentsList.querySelector(`[data-comment-id="${CSS.escape(focusCommentId)}"]`);
       if (target) { target.classList.add('notification-target-highlight'); target.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
@@ -886,6 +954,10 @@
             viewedReelIds.add(reelId);
             void client.rpc('record_reel_view', { p_reel_id: reelId });
           }
+        } else if (card === wideViewCard) {
+          // Fullscreen can move the card outside the feed's intersection root
+          // (notably on mobile browsers). Keep the selected Reel playing.
+          if (video.paused) video.play().catch(() => {});
         } else {
           video.pause();
           if (activeVideo === video) activeVideo = null;
