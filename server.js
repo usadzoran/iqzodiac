@@ -29,12 +29,16 @@ const routeFiles = {
   '/rooms': 'rooms.html',
   '/messages': 'messages.html',
   '/match': 'match.html',
+  '/marketplace': 'marketplace.html',
   '/daily': 'daily.html',
+  '/reel': 'reel.html',
+  '/reel-profile': 'reel-profile.html',
   '/vip': 'vip.html',
   '/vip-live': 'vip-live.html',
   '/gift-store': 'gift-store.html',
   '/wallet': 'wallet.html',
   '/youtube': 'youtube.html',
+  '/admin': 'admin.html',
 };
 const fetchText = (url) => new Promise((resolve, reject) => {
   const request = https.get(url, { headers: { 'User-Agent': 'IQZodiac Daily/1.0' } }, (res) => {
@@ -175,23 +179,27 @@ const server = http.createServer((request, response) => {
     const extension = path.extname(filePath);
     const etag = `W/"${data.length.toString(16)}-${Math.floor(data.length / 7).toString(16)}"`;
     if (request.headers['if-none-match'] === etag) {
-      response.writeHead(304, { ETag: etag, 'Cache-Control': extension === '.html' ? 'no-cache' : 'public, max-age=3600' });
+      response.writeHead(304, { ETag: etag, 'Cache-Control': extension === '.html' ? 'no-cache' : 'public, max-age=86400, stale-while-revalidate=604800' });
       response.end();
       return;
     }
 
     const isHtml = extension === '.html';
     const canCompress = compressedExtensions.has(extension) && data.length > 1024;
-    const acceptsGzip = /\bgzip\b/i.test(request.headers['accept-encoding'] || '');
-    const body = canCompress && acceptsGzip ? zlib.gzipSync(data, { level: 6 }) : data;
+    const acceptEncoding = request.headers['accept-encoding'] || '';
+    const acceptsBrotli = /\bbr\b/i.test(acceptEncoding);
+    const acceptsGzip = /\bgzip\b/i.test(acceptEncoding);
+    const body = canCompress && acceptsBrotli
+      ? zlib.brotliCompressSync(data, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 5 } })
+      : canCompress && acceptsGzip ? zlib.gzipSync(data, { level: 6 }) : data;
     const headers = {
       'Content-Type': contentType,
       'Content-Length': body.length,
       ETag: etag,
-      'Cache-Control': isHtml ? 'no-cache' : 'public, max-age=3600',
+      'Cache-Control': isHtml ? 'no-cache' : 'public, max-age=86400, stale-while-revalidate=604800',
     };
     if (body !== data) {
-      headers['Content-Encoding'] = 'gzip';
+      headers['Content-Encoding'] = acceptsBrotli ? 'br' : 'gzip';
       headers.Vary = 'Accept-Encoding';
     }
     response.writeHead(200, headers);
