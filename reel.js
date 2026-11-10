@@ -59,7 +59,7 @@
       invalidVideo: 'Choose a supported video file.', invalidAudio: 'Choose an audio file for the soundtrack.', tooLarge: 'The video must be 50 MB or smaller.', audioTooLarge: 'The soundtrack must be 50 MB or smaller.', tooLong: 'Reels can be no longer than 6 minutes.', checking: 'Checking video duration…', ready: 'Ready to publish.',
       editing: 'Preparing edited video', editUnsupported: 'This browser cannot export video edits. Try a recent browser or remove the text and soundtrack edits.', editFailed: 'The edited video could not be prepared. Try again or publish without edits.', editedTooLarge: 'The edited video exceeds 50 MB. Use a shorter clip or a smaller soundtrack.',
       publishing: 'Publishing your Reel…', saved: 'Your Reel is now in your orbit.', failed: 'Your Reel could not be published. Try again.',
-      like: 'Like', liked: 'Liked', save: 'Save', savedReel: 'Saved', comments: 'Comments', comment: 'comment', commentsPlural: 'comments', replies: 'Replies', share: 'Share', mute: 'Mute', unmute: 'Turn sound on', wideView: 'Wide View', exitWideView: 'Exit Wide View', editComment: 'Edit comment', deleteComment: 'Delete comment', reply: 'Reply', replyPlaceholder: 'Write a reply…', postReply: 'Send reply', replySaved: 'Reply added.', replyFailed: 'Reply could not be added.', saveComment: 'Save', cancelEdit: 'Cancel', commentUpdated: 'Comment updated.', commentUpdateFailed: 'Comment could not be updated.', deleteReel: 'Delete Reel', confirmDeleteComment: 'Delete this comment?', confirmDeleteCommentWithReplies: 'Delete this comment? Replies will remain in the conversation.', confirmDeleteReel: 'Delete this Reel permanently?', deleteFailed: 'Could not delete this item.', deleted: 'Deleted successfully.',
+      like: 'Like', liked: 'Liked', save: 'Save', savedReel: 'Saved', comments: 'Comments', comment: 'comment', commentsPlural: 'comments', replies: 'Replies', share: 'Share', download: 'Download', downloaded: 'Download started.', downloadFailed: 'The Reel could not be downloaded.', mute: 'Mute', unmute: 'Turn sound on', wideView: 'Wide View', exitWideView: 'Exit Wide View', editComment: 'Edit comment', deleteComment: 'Delete comment', reply: 'Reply', replyPlaceholder: 'Write a reply…', postReply: 'Send reply', replySaved: 'Reply added.', replyFailed: 'Reply could not be added.', saveComment: 'Save', cancelEdit: 'Cancel', commentUpdated: 'Comment updated.', commentUpdateFailed: 'Comment could not be updated.', deleteReel: 'Delete Reel', confirmDeleteComment: 'Delete this comment?', confirmDeleteCommentWithReplies: 'Delete this comment? Replies will remain in the conversation.', confirmDeleteReel: 'Delete this Reel permanently?', deleteFailed: 'Could not delete this item.', deleted: 'Deleted successfully.',
       writeComment: 'Write a comment…', postComment: 'Post comment', commentSaved: 'Comment added.', commentFailed: 'Comment could not be saved.', likeFailed: 'Like could not be saved.', signIn: 'Sign in to interact with Reels.',
       noComments: 'No comments yet. Start the conversation.', commentsFailed: 'Comments could not be loaded.', commentBy: (name) => `Comment by ${name}`,
       copied: 'Link copied.', shareTitle: 'Share this Reel', shareText: 'Watch this Reel on IQZodiac',
@@ -72,7 +72,7 @@
       invalidVideo: 'اختر ملف فيديو مدعومًا.', invalidAudio: 'اختر ملفًا صوتيًا للموسيقى.', tooLarge: 'يجب ألا يتجاوز حجم الفيديو 50 ميغابايت.', audioTooLarge: 'يجب ألا يتجاوز حجم المقطع الصوتي 50 ميغابايت.', tooLong: 'يجب ألا تتجاوز مدة الـ Reel ست دقائق.', checking: 'جارٍ التحقق من مدة الفيديو…', ready: 'الفيديو جاهز للنشر.',
       editing: 'جارٍ تجهيز الفيديو المعدّل', editUnsupported: 'هذا المتصفح لا يدعم تصدير تعديلات الفيديو. استخدم متصفحًا حديثًا أو احذف النص والموسيقى.', editFailed: 'تعذّر تجهيز الفيديو المعدّل. حاول مجددًا أو انشر دون تعديلات.', editedTooLarge: 'تجاوز حجم الفيديو المعدّل 50 ميغابايت. اختر مقطعًا أقصر أو موسيقى أصغر.',
       publishing: 'جارٍ نشر الـ Reel…', saved: 'تم نشر الـ Reel.', failed: 'تعذّر نشر الـ Reel. حاول مجددًا.',
-      like: 'إعجاب', liked: 'أعجبني', save: 'حفظ', savedReel: 'محفوظ', comments: 'التعليقات', comment: 'تعليق', commentsPlural: 'تعليقات', replies: 'الردود', share: 'مشاركة', mute: 'كتم الصوت', unmute: 'تشغيل الصوت', wideView: 'عرض واسع', exitWideView: 'الخروج من العرض الواسع', editComment: 'تعديل التعليق', deleteComment: 'حذف التعليق', reply: 'رد', replyPlaceholder: 'اكتب ردًا…', postReply: 'إرسال الرد', replySaved: 'تمت إضافة الرد.', replyFailed: 'تعذّر إضافة الرد.', saveComment: 'حفظ', cancelEdit: 'إلغاء', commentUpdated: 'تم تعديل التعليق.', commentUpdateFailed: 'تعذّر تعديل التعليق.', deleteReel: 'حذف الـ Reel', confirmDeleteComment: 'هل تريد حذف هذا التعليق؟', confirmDeleteCommentWithReplies: 'هل تريد حذف التعليق؟ ستبقى الردود في المحادثة كتعليقات مستقلة.', confirmDeleteReel: 'هل تريد حذف هذا الـ Reel نهائيًا؟', deleteFailed: 'تعذّر حذف العنصر.', deleted: 'تم الحذف بنجاح.',
+      like: 'إعجاب', liked: 'أعجبني', save: 'حفظ', savedReel: 'محفوظ', comments: 'التعليقات', comment: 'تعليق', commentsPlural: 'تعليقات', replies: 'الردود', share: 'مشاركة', download: 'تنزيل', downloaded: 'بدأ التنزيل.', downloadFailed: 'تعذّر تنزيل الـ Reel.', mute: 'كتم الصوت', unmute: 'تشغيل الصوت', wideView: 'عرض واسع', exitWideView: 'الخروج من العرض الواسع', editComment: 'تعديل التعليق', deleteComment: 'حذف التعليق', reply: 'رد', replyPlaceholder: 'اكتب ردًا…', postReply: 'إرسال الرد', replySaved: 'تمت إضافة الرد.', replyFailed: 'تعذّر إضافة الرد.', saveComment: 'حفظ', cancelEdit: 'إلغاء', commentUpdated: 'تم تعديل التعليق.', commentUpdateFailed: 'تعذّر تعديل التعليق.', deleteReel: 'حذف الـ Reel', confirmDeleteComment: 'هل تريد حذف هذا التعليق؟', confirmDeleteCommentWithReplies: 'هل تريد حذف التعليق؟ ستبقى الردود في المحادثة كتعليقات مستقلة.', confirmDeleteReel: 'هل تريد حذف هذا الـ Reel نهائيًا؟', deleteFailed: 'تعذّر حذف العنصر.', deleted: 'تم الحذف بنجاح.',
       writeComment: 'اكتب تعليقًا…', postComment: 'نشر التعليق', commentSaved: 'تمت إضافة التعليق.', commentFailed: 'تعذّر حفظ التعليق.', likeFailed: 'تعذّر حفظ الإعجاب.', signIn: 'سجّل الدخول للتفاعل مع Reels.',
       noComments: 'لا توجد تعليقات بعد. ابدأ الحوار.', commentsFailed: 'تعذّر تحميل التعليقات.', commentBy: (name) => `تعليق من ${name}`,
       copied: 'تم نسخ الرابط.', shareTitle: 'مشاركة هذا الـ Reel', shareText: 'شاهد هذا الـ Reel على IQZodiac',
@@ -110,6 +110,20 @@
     catch { window.prompt(t('shareTitle'), shareUrl(row)); }
   };
 
+  const downloadReel = async (row) => {
+    if (!client || !row?.media_path) return;
+    try {
+      const { data, error } = await client.storage.from(MEDIA_BUCKET).createSignedUrl(row.media_path, 600);
+      if (error || !data?.signedUrl) throw error || new Error('missing-download-url');
+      const response = await fetch(data.signedUrl);
+      if (!response.ok) throw new Error('download-failed');
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a'); link.href = objectUrl; link.download = `iqzodiac-reel-${row.id}.mp4`; document.body.append(link); link.click(); link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000); showToast(t('downloaded'));
+    } catch { showToast(t('downloadFailed')); }
+  };
+
   const localizeEditor = () => {
     const ar = language() === 'ar';
     byId('reel-brand-label').textContent = ar ? 'Reels' : 'Reels';
@@ -145,6 +159,7 @@
       if (row) button.querySelector('.reel-action-count').textContent = t('count', numeric(row.comment_count));
     });
     document.querySelectorAll('.reel-share-button').forEach((button) => button.querySelector('.reel-action-label').textContent = t('share'));
+    document.querySelectorAll('.reel-download-button').forEach((button) => button.querySelector('.reel-action-label').textContent = t('download'));
     document.querySelectorAll('.reel-sound-button').forEach((button) => updateSoundButton(button.closest('.reel-card')));
     document.querySelectorAll('.reel-wide-button').forEach((button) => updateWideViewButton(button.closest('.reel-card')));
     document.querySelectorAll('.reel-save-button').forEach((button) => updateSaveButton(button.closest('.reel-card'), button.dataset.saved === 'true'));
@@ -831,6 +846,7 @@
     const commentButton = card.querySelector('.reel-comment-button');
     const saveButton = card.querySelector('.reel-save-button');
     const shareButton = card.querySelector('.reel-share-button');
+    const downloadButton = card.querySelector('.reel-download-button');
     const soundButton = card.querySelector('.reel-sound-button');
     const wideButton = card.querySelector('.reel-wide-button');
     const deleteButton = card.querySelector('.reel-delete-button');
@@ -879,6 +895,7 @@
       }
       makeShareMenu(card, row);
     });
+    downloadButton?.addEventListener('click', (event) => { event.stopPropagation(); void downloadReel(row); });
     soundButton.addEventListener('click', (event) => {
       event.stopPropagation();
       const video = card.querySelector('.reel-card-video');
@@ -952,7 +969,7 @@
     const actions = document.createElement('div');
     actions.className = 'reel-actions';
     const deleteAction = row.author_id === authenticatedUserId ? `<button type="button" class="reel-action reel-delete-button" aria-label="${escapeHTML(t('deleteReel'))}" title="${escapeHTML(t('deleteReel'))}"><span class="reel-action-icon" aria-hidden="true">×</span><span class="reel-action-label">${escapeHTML(t('deleteReel'))}</span></button>` : '';
-    actions.innerHTML = `<button type="button" class="reel-action reel-like-button" data-reel-id="${escapeHTML(row.id)}" data-liked="${Boolean(row.liked_by_me)}"><span class="reel-action-icon" aria-hidden="true">${row.liked_by_me ? '♥' : '♡'}</span><span class="reel-action-label">${escapeHTML(t(row.liked_by_me ? 'liked' : 'like'))}</span><span class="reel-action-count" data-count="${numeric(row.like_count)}">${escapeHTML(t('count', numeric(row.like_count)))}</span></button><button type="button" class="reel-action reel-save-button" data-reel-id="${escapeHTML(row.id)}" data-saved="${Boolean(row.saved_by_viewer)}"><span class="reel-action-icon" aria-hidden="true">${row.saved_by_viewer ? '🔖' : '▱'}</span><span class="reel-action-label">${escapeHTML(t(row.saved_by_viewer ? 'savedReel' : 'save'))}</span></button><button type="button" class="reel-action reel-comment-button" data-reel-id="${escapeHTML(row.id)}" aria-label="${escapeHTML(t('comments'))}"><span class="reel-action-icon" aria-hidden="true">▱</span><span class="reel-action-label">${escapeHTML(t('comments'))}</span><span class="reel-action-count" data-count="${numeric(row.comment_count)}">${escapeHTML(t('count', numeric(row.comment_count)))}</span></button><button type="button" class="reel-action reel-share-button"><span class="reel-action-icon" aria-hidden="true">↗</span><span class="reel-action-label">${escapeHTML(t('share'))}</span></button><button type="button" class="reel-action reel-sound-button"><span class="reel-action-icon reel-sound-icon" aria-hidden="true">♫</span><span class="reel-action-label">${escapeHTML(t('unmute'))}</span></button><button type="button" class="reel-action reel-wide-button"><span class="reel-action-icon reel-wide-icon" aria-hidden="true">⛶</span><span class="reel-action-label">${escapeHTML(t('wideView'))}</span></button>${deleteAction}`;
+    actions.innerHTML = `<button type="button" class="reel-action reel-like-button" data-reel-id="${escapeHTML(row.id)}" data-liked="${Boolean(row.liked_by_me)}"><span class="reel-action-icon" aria-hidden="true">${row.liked_by_me ? '♥' : '♡'}</span><span class="reel-action-label">${escapeHTML(t(row.liked_by_me ? 'liked' : 'like'))}</span><span class="reel-action-count" data-count="${numeric(row.like_count)}">${escapeHTML(t('count', numeric(row.like_count)))}</span></button><button type="button" class="reel-action reel-save-button" data-reel-id="${escapeHTML(row.id)}" data-saved="${Boolean(row.saved_by_viewer)}"><span class="reel-action-icon" aria-hidden="true">${row.saved_by_viewer ? '🔖' : '▱'}</span><span class="reel-action-label">${escapeHTML(t(row.saved_by_viewer ? 'savedReel' : 'save'))}</span></button><button type="button" class="reel-action reel-comment-button" data-reel-id="${escapeHTML(row.id)}" aria-label="${escapeHTML(t('comments'))}"><span class="reel-action-icon" aria-hidden="true">▱</span><span class="reel-action-label">${escapeHTML(t('comments'))}</span><span class="reel-action-count" data-count="${numeric(row.comment_count)}">${escapeHTML(t('count', numeric(row.comment_count)))}</span></button><button type="button" class="reel-action reel-share-button"><span class="reel-action-icon" aria-hidden="true">↗</span><span class="reel-action-label">${escapeHTML(t('share'))}</span></button><button type="button" class="reel-action reel-download-button"><span class="reel-action-icon" aria-hidden="true">↓</span><span class="reel-action-label">${escapeHTML(t('download'))}</span></button><button type="button" class="reel-action reel-sound-button"><span class="reel-action-icon reel-sound-icon" aria-hidden="true">♫</span><span class="reel-action-label">${escapeHTML(t('unmute'))}</span></button><button type="button" class="reel-action reel-wide-button"><span class="reel-action-icon reel-wide-icon" aria-hidden="true">⛶</span><span class="reel-action-label">${escapeHTML(t('wideView'))}</span></button>${deleteAction}`;
     card.append(video, playHint, copyNode, actions);
     bindCardActions(card, row);
     if (reelObserver) reelObserver.observe(video);
