@@ -60,8 +60,8 @@ body {
 body.landing-page {
   position: relative;
   background:
-    linear-gradient(180deg, rgba(5, 10, 27, 0.58), rgba(5, 10, 27, 0.78)),
-    url("./assets/iqzodiac-landing.jpg") center / cover fixed,
+    linear-gradient(180deg, rgba(5, 10, 27, 0.48), rgba(5, 10, 27, 0.76)),
+    url("./assets/mesopotamian-gate-background.jpeg") center / cover fixed,
     linear-gradient(135deg, #090c18 0%, #0b1020 52%, #080b15 100%);
 }
 
