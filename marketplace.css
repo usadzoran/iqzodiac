@@ -10,3 +10,24 @@ body.marketplace-page{padding-bottom:100px}.marketplace-shell{position:relative;
 @media(max-width:1100px){.listing-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.market-filters-panel{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:680px){.marketplace-toolbar{padding:8px}.filters-toggle,.location-toggle{padding:9px 10px}.location-toggle span{display:none}.market-filters-panel{grid-template-columns:1fr 1fr}.listing-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.listing-card-body{padding:10px}.listing-card h3{font-size:13px}.listing-card p{font-size:10px}.listing-price{font-size:13px}.listing-card-actions{margin-top:9px}.listing-card-actions button{font-size:9px;padding:0}}
 @media(max-width:430px){.marketplace-shell{width:min(100% - 16px,1180px)}.marketplace-header h1{font-size:36px}.market-filters-panel{grid-template-columns:1fr 1fr}.market-filters-panel .market-sort{grid-column:1/-1}.market-filters-panel>.button{grid-column:1/-1}.listing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.listing-image{aspect-ratio:1/1}.listing-card h3{font-size:12px}.listing-card-actions button[data-favorite]{display:none}.marketplace-summary{display:flex;align-items:end}.market-count{font-size:9px}}
+
+/* Mobile overflow fix for toolbar actions, filter panel and dialogs. */
+.marketplace-page, .marketplace-shell, .marketplace-toolbar, .market-filters-panel, .market-dialog, .market-dialog form, .form-grid { min-width: 0; max-width: 100%; }
+.marketplace-toolbar > .button { min-width: 0; width: auto; flex: 0 0 auto; }
+.market-filters-panel > * { min-width: 0; }
+.market-dialog { box-sizing: border-box; margin: auto; }
+.market-dialog input, .market-dialog select, .market-dialog textarea { min-width: 0; max-width: 100%; }
+@media (max-width: 680px) {
+  .marketplace-toolbar { width: 100%; max-width: 100%; overflow: hidden; }
+  .market-search { min-width: 0; flex: 1 1 auto; }
+  .marketplace-toolbar .filters-toggle, .marketplace-toolbar .location-toggle { flex: 0 1 auto; white-space: nowrap; }
+  .market-filters-panel { width: 100%; box-sizing: border-box; overflow: hidden; }
+  .market-filters-panel .filter-field, .market-filters-panel .market-sort { min-width: 0; }
+  .market-dialog { width: calc(100% - 20px); max-width: calc(100% - 20px); padding: 18px 14px; }
+  .sell-dialog .form-grid { width: 100%; grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 390px) {
+  .marketplace-toolbar { gap: 5px; }
+  .marketplace-toolbar .filters-toggle, .marketplace-toolbar .location-toggle { padding-inline: 8px; font-size: 9px; }
+  .market-dialog { width: calc(100% - 14px); max-width: calc(100% - 14px); padding-inline: 12px; }
+}
