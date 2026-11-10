@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css?v=messages-whatsapp-20261110" />
-  <link rel="stylesheet" href="./messages.css?v=messages-whatsapp-20261110" />
+  <link rel="stylesheet" href="./messages.css?v=marketplace-private-chat-20261110" />
 </head>
 <body class="messages-page has-user-menu">
   <div class="aurora aurora-one" aria-hidden="true"></div>
@@ -31,7 +31,7 @@
         <div class="conversation-heading"><div><p class="card-kicker">YOUR CIRCLE</p><h2>Conversations</h2></div><span class="online-count"><i></i> 3 people</span></div>
         <label class="conversation-search"><span aria-hidden="true">⌕</span><input id="contact-search" type="search" placeholder="Find someone…" aria-label="Search conversations" /></label>
         <div id="contact-list" class="contact-list"></div>
-        <p class="sidebar-note">Only real matched members appear here.</p>
+        <p class="sidebar-note">Private chats with your matches and Marketplace sellers appear here.</p>
       </aside>
 
       <section class="conversation-view" aria-label="Conversation">
@@ -43,6 +43,7 @@
             <button id="call-button" class="call-button" type="button"><span aria-hidden="true">◖</span> Audio call <span class="call-demo-label">DEMO</span></button>
           </div>
         </header>
+        <aside id="marketplace-chat-context" class="marketplace-chat-context" hidden aria-live="polite"></aside>
         <section class="face-consent-panel" aria-labelledby="face-consent-title">
           <div><p class="card-kicker">FACE PRIVACY</p><h3 id="face-consent-title">The face stays protected.</h3><p id="face-consent-status">A reveal requires two explicit yeses.</p></div>
           <div class="face-consent-actions"><button id="request-reveal" class="call-button" type="button">Request reveal</button><button id="partner-consent" class="call-button demo-consent" type="button" hidden>Partner consent</button></div>
@@ -93,7 +94,7 @@
     <script src="./i18n-data.js?v=20261022-global"></script>
   <script src="./language.js?v=20261022-global"></script>
   <script src="./privacy-core.js"></script>
-  <script src="./messages.js?v=messages-whatsapp-expiry-fix-20261110"></script>
+  <script src="./messages.js?v=marketplace-private-chat-20261110"></script>
     <script src="./nav-performance.js" defer></script>
   </body>
 </html>

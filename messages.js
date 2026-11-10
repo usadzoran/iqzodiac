@@ -20,8 +20,11 @@
   const t = (en, ar) => window.IQZodiacLanguage?.t(en, ar) || en;
   const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const routeParams = new URLSearchParams(window.location.search);
+  const rawMarketplaceListingId = routeParams.get('listing') || '';
+  const marketplaceListingId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(rawMarketplaceListingId) ? rawMarketplaceListingId : '';
+  const marketplaceContextNode = document.querySelector('#marketplace-chat-context');
   const targetMessageId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(routeParams.get('message') || '') ? routeParams.get('message') : '';
-  let client; let user; let contacts = []; let activeId = routeParams.get('match'); let activeConversation = null; let timerInterval; let elapsedSeconds = 0; let currentExpiryDuration = 'off'; let expiryChangeInFlight = false;
+  let client; let user; let contacts = []; let activeId = rawMarketplaceListingId ? null : routeParams.get('match'); let activeConversation = null; let activeConversationHint = null; let marketplaceContext = null; let pendingMarketplaceListingId = marketplaceListingId; let timerInterval; let elapsedSeconds = 0; let currentExpiryDuration = 'off'; let expiryChangeInFlight = false;
   let realtimeChannel = null; let renderTimer = null; let expiryRenderTimer = null; let renderRevision = 0; let longPressTimer = null; let suppressNextClick = false; let selectionMode = false; let selectedMessageIds = new Set(); let visibleMessageIds = [];
   let pendingAttachments = []; const refreshedAttachmentPaths = new Set(); const signedUrlExpiries = new Map(); let mediaRecorder = null; let recordingStream = null; let recordedChunks = []; let recordingConversationId = null; let sendingMessages = false; let vapidPublicKey = ''; let serviceWorkerRegistration = null;
   const expiryValues = ['off', '1h', '24h', '7d'];
@@ -57,8 +60,44 @@
   const renderContacts = (filter = '') => {
     contactList.replaceChildren();
     const matched = contacts.filter((person) => `${person.name} ${person.handle}`.toLowerCase().includes(filter.toLowerCase()));
-    matched.forEach((person) => { const button = document.createElement('button'); button.type = 'button'; button.className = `contact-item${person.id === activeId ? ' is-active' : ''}`; button.innerHTML = `<span class="contact-avatar">${escapeHTML((person.name || 'M').slice(0, 1))}</span><span class="contact-copy"><strong>${escapeHTML(person.name)}</strong><small>${escapeHTML(person.preview || t('Start a private conversation', 'ابدأ محادثة خاصة'))}</small></span><span class="contact-time">${escapeHTML(person.time || '')}</span>`; button.addEventListener('click', () => { if (sendingMessages) { toast(t('Please wait for the current upload to finish.', 'انتظر حتى يكتمل رفع الملف الحالي.')); return; } if (mediaRecorder?.state === 'recording') mediaRecorder.stop(); activeId = person.id; void loadConversation(); }); contactList.append(button); });
+    matched.forEach((person) => { const button = document.createElement('button'); button.type = 'button'; button.className = `contact-item${person.id === activeId && (!person.conversation_id || !activeConversation || person.conversation_id === activeConversation) ? ' is-active' : ''}`; button.innerHTML = `<span class="contact-avatar">${escapeHTML((person.name || 'M').slice(0, 1))}</span><span class="contact-copy"><strong>${escapeHTML(person.name)}</strong><small>${escapeHTML(person.preview || t('Start a private conversation', 'ابدأ محادثة خاصة'))}</small></span><span class="contact-time">${escapeHTML(person.time || '')}</span>`; button.addEventListener('click', () => { if (sendingMessages) { toast(t('Please wait for the current upload to finish.', 'انتظر حتى يكتمل رفع الملف الحالي.')); return; } if (mediaRecorder?.state === 'recording') mediaRecorder.stop(); pendingMarketplaceListingId = ''; activeId = person.id; activeConversationHint = person.conversation_id || null; void loadConversation(); }); contactList.append(button); });
     if (!matched.length) contactList.innerHTML = `<p class="sidebar-note">${escapeHTML(t('No real conversations are available yet.', 'لا توجد محادثات حقيقية بعد.'))}</p>`;
+  };
+  const renderMarketplaceContext = (context, error = '') => {
+    if (!marketplaceContextNode) return;
+    if (error) {
+      marketplaceContextNode.hidden = false;
+      marketplaceContextNode.classList.add('is-error');
+      marketplaceContextNode.innerHTML = `<strong>${escapeHTML(t('Marketplace chat unavailable', 'محادثة السوق غير متاحة'))}</strong><p>${escapeHTML(error)}</p>`;
+      messageInput.placeholder = t('Write a message…', 'اكتب رسالة…');
+      return;
+    }
+    if (!context) {
+      marketplaceContextNode.hidden = true;
+      marketplaceContextNode.classList.remove('is-error');
+      marketplaceContextNode.replaceChildren();
+      messageInput.placeholder = t('Write a message…', 'اكتب رسالة…');
+      return;
+    }
+    const href = `./marketplace.html?listing=${encodeURIComponent(context.listing_id)}`;
+    const price = `${Number(context.price || 0).toFixed(2)} ${context.currency_code || 'USD'}`;
+    const status = context.listing_status === 'active' ? '' : `<span class="marketplace-context-status">${escapeHTML(t('This listing is no longer active.', 'هذا الإعلان لم يعد نشطًا.'))}</span>`;
+    marketplaceContextNode.classList.remove('is-error');
+    marketplaceContextNode.hidden = false;
+    marketplaceContextNode.innerHTML = `<div class="marketplace-context-copy"><p class="card-kicker">${escapeHTML(t('MARKETPLACE INQUIRY', 'استفسار من السوق'))}</p><strong>${escapeHTML(context.listing_title || t('Marketplace listing', 'إعلان من السوق'))}</strong><span>${escapeHTML(price)}${context.listing_kind ? ` · ${escapeHTML(context.listing_kind)}` : ''}</span>${status}</div>${context.listing_status === 'active' ? `<a class="marketplace-context-link" href="${href}">${escapeHTML(t('View listing', 'عرض الإعلان'))} ↗</a>` : ''}`;
+    messageInput.placeholder = t('Write a private message about this listing…', 'اكتب رسالة خاصة حول هذا الإعلان…');
+  };
+  const rememberMarketplaceCounterpart = (context) => {
+    if (!context?.other_user_id) return;
+    const rawHandle = context.other_handle || 'member';
+    const person = { id: context.other_user_id, conversation_id: context.conversation_id, name: context.other_display_name || 'IQZodiac member', handle: rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`, preview: `${t('Marketplace inquiry', 'استفسار من السوق')} · ${context.listing_title || ''}` };
+    const index = contacts.findIndex((item) => item.id === person.id);
+    if (index === -1) contacts.unshift(person); else contacts[index] = { ...contacts[index], ...person };
+    activeId = context.other_user_id;
+  };
+  const getMarketplaceThreadContext = async (conversationId, listingId = null) => {
+    const { data, error } = await client.rpc('marketplace_get_thread_context', { p_conversation_id: conversationId, p_listing_id: listingId || null });
+    return { context: Array.isArray(data) ? data[0] || null : data || null, error };
   };
   const updateSelectionToolbar = () => {
     selectionToolbar.hidden = !selectionMode;
@@ -218,7 +257,7 @@
     const renderingConversation = activeConversation;
     const renderingMember = activeId;
     const person = contacts.find((item) => item.id === renderingMember);
-    if (!person || !renderingConversation) { messageList.innerHTML = `<div class="message-day-divider">${escapeHTML(t('PRIVATE CONVERSATION', 'محادثة خاصة'))}</div><p class="sidebar-note">${escapeHTML(t('Open a real match to start a private conversation.', 'افتح تطابقًا حقيقيًا لبدء محادثة خاصة.'))}</p>`; return; }
+    if (!person || !renderingConversation) { messageList.innerHTML = `<div class="message-day-divider">${escapeHTML(t('PRIVATE CONVERSATION', 'محادثة خاصة'))}</div><p class="sidebar-note">${escapeHTML(t('Select a private conversation or open a Marketplace listing to message its seller.', 'اختر محادثة خاصة أو افتح إعلانًا في السوق لمراسلة بائعه.'))}</p>`; return; }
     document.querySelector('#active-name').textContent = person.name; document.querySelector('#active-handle').textContent = `${person.handle} · ${t('Private member conversation', 'محادثة خاصة')}`; document.querySelector('#call-title').textContent = person.name;
     const [{ data: rows, error }, { data: hiddenRows, error: hiddenError }, { data: settings, error: settingsError }] = await Promise.all([
       client.from('messages').select('id,sender_id,body,created_at,expires_at,message_kind,attachment_path,attachment_name,attachment_mime,attachment_size_bytes,attachment_kind').eq('conversation_id', renderingConversation).order('created_at', { ascending: true }).limit(200),
@@ -287,17 +326,55 @@
     request.disabled = both || mine; request.textContent = both ? t('Face reveal approved', 'تمت الموافقة على الكشف') : mine ? t('Request sent', 'تم إرسال الطلب') : t('Request reveal', 'طلب الكشف');
   };
   const loadConversation = async () => {
-    renderRevision += 1;
+    const revision = ++renderRevision;
     const requestedMemberId = activeId;
     selectedMessageIds.clear(); selectionMode = false; updateSelectionToolbar();
     window.clearTimeout(expiryRenderTimer);
     activeConversation = null;
+    marketplaceContext = null;
+    renderMarketplaceContext(null);
     if (realtimeChannel) { await client.removeChannel(realtimeChannel); realtimeChannel = null; }
-    if (!activeId) { renderContacts(); await renderMessages(); return; }
-    const { data: conversationId, error } = await client.rpc('get_or_create_conversation', { p_other_user: requestedMemberId });
-    if (activeId !== requestedMemberId) return;
-    if (error) { toast(t('This member cannot receive messages yet.', 'لا يمكن لهذا العضو استقبال الرسائل حاليًا.')); await renderMessages(); return; }
-    activeConversation = conversationId; await subscribeConversation(); await renderMessages();
+    if (revision !== renderRevision) return;
+
+    if (pendingMarketplaceListingId) {
+      const listingId = pendingMarketplaceListingId;
+      pendingMarketplaceListingId = '';
+      const { data: conversationId, error } = await client.rpc('marketplace_start_thread', { p_listing_id: listingId });
+      if (revision !== renderRevision) return;
+      if (error || !conversationId) {
+        activeId = null;
+        renderMarketplaceContext(null, t('This listing is unavailable for messaging. It may be inactive, or you may be its seller.', 'لا يمكن بدء محادثة لهذا الإعلان؛ ربما لم يعد نشطًا أو أنك صاحبه.'));
+        renderContacts(); await renderMessages(); return;
+      }
+      activeConversation = conversationId;
+      const result = await getMarketplaceThreadContext(conversationId, listingId);
+      if (revision !== renderRevision) return;
+      if (result.error || !result.context || result.context.listing_id !== listingId) {
+        activeConversation = null; activeId = null;
+        renderMarketplaceContext(null, t('The private Marketplace thread could not be verified. Please try again.', 'تعذر التحقق من محادثة السوق الخاصة. حاول مرة أخرى.'));
+        renderContacts(); await renderMessages(); return;
+      }
+      marketplaceContext = result.context;
+      rememberMarketplaceCounterpart(marketplaceContext);
+      renderMarketplaceContext(marketplaceContext);
+    } else {
+      if (!requestedMemberId) { activeId = null; renderContacts(); await renderMessages(); return; }
+      const hintedConversationId = activeConversationHint && contacts.some((person) => person.id === requestedMemberId && person.conversation_id === activeConversationHint) ? activeConversationHint : null;
+      activeConversationHint = null;
+      let conversationId = hintedConversationId; let error = null;
+      if (!conversationId) { const result = await client.rpc('get_or_create_conversation', { p_other_user: requestedMemberId }); conversationId = result.data; error = result.error; }
+      if (revision !== renderRevision || activeId !== requestedMemberId) return;
+      if (error || !conversationId) { toast(t('This member cannot receive messages yet.', 'لا يمكن لهذا العضو استقبال الرسائل حاليًا.')); await renderMessages(); return; }
+      activeConversation = conversationId;
+      const result = await getMarketplaceThreadContext(conversationId);
+      if (revision !== renderRevision || activeId !== requestedMemberId) return;
+      marketplaceContext = result.error ? null : result.context;
+      if (marketplaceContext) { rememberMarketplaceCounterpart(marketplaceContext); renderMarketplaceContext(marketplaceContext); }
+      else renderMarketplaceContext(null);
+    }
+    renderContacts();
+    await subscribeConversation();
+    await renderMessages();
   };
   const decodeBase64Url = (value) => { const padded = value.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - value.length % 4) % 4); return Uint8Array.from(atob(padded), (char) => char.charCodeAt(0)); };
   const syncPushSubscription = async () => {
@@ -431,14 +508,16 @@
       client = await database();
       const { data: session } = await client.auth.getSession(); user = session.session?.user;
       if (!user) { updatePushButton(); return; }
+      if (rawMarketplaceListingId && !marketplaceListingId) { renderMarketplaceContext(null, t('This Marketplace link is invalid.', 'رابط السوق هذا غير صالح.')); return; }
       const configResponse = await fetch('./public/supabase-public-config.json', { cache: 'no-store' });
       if (configResponse.ok) vapidPublicKey = (await configResponse.json()).vapidPublicKey || '';
       if ('serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && vapidPublicKey) { try { serviceWorkerRegistration = await navigator.serviceWorker.register('./service-worker.js'); await navigator.serviceWorker.ready; await syncPushSubscription(); } catch (pushError) { console.warn('Push service worker is unavailable.', pushError); } }
       updatePushButton();
       const { data, error } = await client.rpc('list_my_conversations'); if (error) throw error;
-      contacts = (data || []).map((row) => ({ id: row.other_user_id, name: row.display_name || 'Orbit Member', handle: row.handle || '@member', preview: row.last_message === '[Image]' ? t('Image', 'صورة') : row.last_message === '[Audio]' ? t('Audio', 'صوت') : row.last_message || t('Start a private conversation', 'ابدأ محادثة خاصة'), time: row.last_message_at ? new Intl.DateTimeFormat(window.IQZodiacLanguage?.locale || undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(row.last_message_at)) : '' }));
+      contacts = (data || []).map((row) => ({ id: row.other_user_id, conversation_id: row.conversation_id, name: row.display_name || 'Orbit Member', handle: row.handle || '@member', preview: row.last_message === '[Image]' ? t('Image', 'صورة') : row.last_message === '[Audio]' ? t('Audio', 'صوت') : row.last_message || t('Start a private conversation', 'ابدأ محادثة خاصة'), time: row.last_message_at ? new Intl.DateTimeFormat(window.IQZodiacLanguage?.locale || undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(row.last_message_at)) : '' }));
       if (activeId && !contacts.some((person) => person.id === activeId)) { const { data: matches } = await client.rpc('list_compatible_profiles'); const match = (matches || []).find((row) => row.user_id === activeId); if (match) contacts.unshift({ id: match.user_id, name: match.display_name, handle: match.handle, preview: t('Matched member', 'عضو متطابق') }); }
-      if (!activeId) activeId = contacts[0]?.id || null;
+      if (activeId) activeConversationHint = contacts.find((person) => person.id === activeId)?.conversation_id || null;
+      if (!activeId && !pendingMarketplaceListingId) activeId = contacts[0]?.id || null;
       renderContacts(); await loadConversation();
     } catch (error) { console.warn('Conversation data could not be loaded.', error); contactList.innerHTML = `<p class="sidebar-note">${escapeHTML(t('The shared messaging service is temporarily unavailable. No sample conversations are shown.', 'خدمة الرسائل غير متاحة مؤقتًا. لا نعرض محادثات تجريبية.'))}</p>`; }
   })();
