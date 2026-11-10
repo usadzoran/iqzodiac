@@ -1081,3 +1081,13 @@ body.reel-wide-view .reel-feed {
 .reel-comment-reply-form input:focus{border-color:rgba(166,255,223,.65)}
 .reel-comment-reply-form input::placeholder{color:#858d9d}
 .reel-comment-reply-form .reel-comment-editor-actions button{min-height:31px}
+
+
+/* Stable fullscreen behavior: keep the same video element and playback state. */
+.reel-card.is-wide-view:fullscreen, .reel-card.is-wide-view:-webkit-full-screen { width:100vw; height:100vh; max-width:none; margin:0; }
+.reel-card.is-wide-view .reel-card-video { object-fit:contain; }
+.reel-card.is-controls-hidden .reel-actions, .reel-card.is-controls-hidden .reel-card-copy { opacity:0; pointer-events:none; }
+.reel-card .reel-actions, .reel-card .reel-card-copy { transition:opacity .18s ease; }
+.reel-save-button.is-saved .reel-action-icon { color:#a6ffdf; }
+.reel-wide-button[data-active="true"] .reel-action-icon { color:#a6ffdf; }
+@media (prefers-reduced-motion: reduce) { .reel-card .reel-actions, .reel-card .reel-card-copy { transition:none; } }

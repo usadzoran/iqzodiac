@@ -1269,3 +1269,28 @@ table { display: block; max-width: 100%; overflow-x: auto; border-collapse: coll
   body.landing-page { background-attachment: scroll; }
   body::before { opacity: .28; }
 }
+
+
+/* Private Reel collections inside the existing Profile page. */
+.reel-collections-card { margin-top:17px; padding:clamp(20px,3vw,32px); }
+.reel-collections-status { color:var(--dim); font:9px "DM Mono",monospace; }
+.reel-collection-tabs { display:flex; gap:8px; margin-top:18px; border-bottom:1px solid rgba(218,225,255,.1); }
+.reel-collection-tab { padding:10px 12px; border:0; border-bottom:2px solid transparent; background:transparent; color:var(--muted); cursor:pointer; font:10px "DM Mono",monospace; }
+.reel-collection-tab.is-active { border-bottom-color:var(--cyan); color:var(--cyan); }
+.reel-collection-panel { padding-top:15px; }
+.reel-collection-panel[hidden] { display:none; }
+.reel-collection-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; }
+.reel-collection-tile { min-width:0; overflow:hidden; border:1px solid rgba(218,225,255,.12); border-radius:10px; background:rgba(5,8,17,.3); }
+.reel-collection-tile>a { position:relative; display:block; aspect-ratio:9/13; background:#11182a; }
+.reel-collection-tile img { display:block; width:100%; height:100%; object-fit:cover; }
+.reel-collection-play { position:absolute; right:8px; bottom:8px; display:grid; width:28px; height:28px; place-items:center; border-radius:50%; background:rgba(0,0,0,.6); color:#fff; font-size:11px; }
+.reel-collection-tile-copy { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:8px; }
+.reel-collection-tile-copy>span { min-width:0; overflow:hidden; color:var(--muted); font-size:9px; text-overflow:ellipsis; white-space:nowrap; }
+.reel-collection-tile-copy button { flex:0 0 auto; padding:2px; border:0; background:transparent; color:var(--cyan); cursor:pointer; }
+.reel-collection-tile.is-unavailable { display:grid; min-height:150px; align-content:center; justify-items:center; gap:7px; padding:12px; text-align:center; }
+.reel-collection-thumb { display:grid; width:34px; height:34px; place-items:center; border:1px solid rgba(242,167,124,.4); border-radius:50%; color:var(--orange); }
+.reel-collection-tile.is-unavailable strong { color:var(--ink); font-size:10px; }
+.reel-collection-tile.is-unavailable small { color:var(--dim); font-size:8px; line-height:1.4; }
+.reel-collection-empty { grid-column:1/-1; margin:0; padding:22px; border:1px dashed rgba(131,229,232,.2); color:var(--muted); font-size:10px; text-align:center; }
+@media(max-width:760px) { .reel-collection-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media(max-width:430px) { .reel-collections-card { padding:15px 12px; } .reel-collection-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; } }

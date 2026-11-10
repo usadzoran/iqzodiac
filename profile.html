@@ -168,6 +168,14 @@
         <a class="button button-secondary" href="./reel-profile.html">Open Reel profile <span class="button-arrow">↗</span></a>
       </section>
 
+      <section class="profile-card reel-collections-card" aria-labelledby="reel-collections-title">
+        <div class="card-heading"><div><p class="card-kicker">06 / Reel collections</p><h2 id="reel-collections-title">Saved &amp; liked Reels</h2></div><span id="reel-collections-status" class="reel-collections-status" role="status" aria-live="polite">Loading…</span></div>
+        <p class="section-intro">Keep the Reels you want to revisit. Your saved and liked lists are private to your account.</p>
+        <div class="reel-collection-tabs" role="tablist" aria-label="Reel collections"><button type="button" class="reel-collection-tab is-active" data-reel-collection-tab="saved" role="tab">Saved Reels</button><button type="button" class="reel-collection-tab" data-reel-collection-tab="liked" role="tab">Liked Reels</button></div>
+        <div class="reel-collection-panel" data-reel-collection-panel="saved" role="tabpanel"><div id="saved-reels-grid" class="reel-collection-grid"></div></div>
+        <div class="reel-collection-panel" data-reel-collection-panel="liked" role="tabpanel" hidden><div id="liked-reels-grid" class="reel-collection-grid"></div></div>
+      </section>
+
       <section class="profile-card profile-wallet-card" id="coin-wallet" aria-labelledby="profile-wallet-title" data-i18n-skip>
         <div class="card-heading">
           <div>
@@ -264,7 +272,7 @@
     <script src="./language.js?v=20261022-global"></script>
     <script src="./location-data.js"></script>
     <script src="./privacy-core.js"></script>
-    <script src="./profile.js?v=notification-deeplinks-20261108"></script>
+    <script src="./profile.js?v=notification-deeplinks-20261108"></script><script src="./reel-collections.js?v=reel-saves-likes-20261110"></script>
     <script src="./profile-wallet.js?v=coins-gifts-profile-20261106"></script>
       <script src="./nav-performance.js" defer></script>
   </body>
