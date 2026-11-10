@@ -41,3 +41,5 @@
 @media(max-width:760px){.message-form{gap:6px;margin:0 10px}.pending-attachments{margin-right:10px;margin-left:10px}.message-attachment-image{max-height:260px}}
 @media(max-width:430px){.composer-icon-button{width:31px;height:31px}.message-form input#message-input{flex:1 1 100px}.message-form button[type=submit]{padding:8px}.message-attachment-audio{width:min(100%,250px)}}
 @media(prefers-reduced-motion:reduce){.record-audio-button.is-recording{animation:none}}
+
+.push-notifications-button{white-space:nowrap}.push-notifications-button[aria-pressed="true"]{border-color:rgba(131,229,232,.48);background:rgba(131,229,232,.13);color:#a8f3e6}.push-notifications-button:disabled{opacity:.55;cursor:not-allowed}@media(max-width:430px){.conversation-tools .push-notifications-button{max-width:100%;font-size:8px;padding:6px 7px}}

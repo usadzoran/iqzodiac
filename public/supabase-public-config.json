@@ -1,5 +1,6 @@
 {
   "supabaseUrl": "https://mludiumdvwdvuetivxvj.supabase.co",
   "publishableKey": "sb_publishable_CEwWEKiMZ3BI8sOyGZA2Pw_oKxIeHif",
-  "apiBaseUrl": ""
+  "apiBaseUrl": "",
+  "vapidPublicKey": "BF2TTPhn_UL9yblxc9A9RsFfGEzqXVcngsJ6aIklXFO5CXgstcP0iSeH_IkyWM6Zh4jGuIXkPGT7iJohU45a_ig"
 }

@@ -15,6 +15,7 @@
   const attachmentButton = document.querySelector('#attach-file-button');
   const recordAudioButton = document.querySelector('#record-audio-button');
   const sendMessageButton = document.querySelector('#send-message-button');
+  const pushButton = document.querySelector('#push-notifications-button');
   const attachmentBucket = 'iqzodiac-chat-media';
   const t = (en, ar) => window.IQZodiacLanguage?.t(en, ar) || en;
   const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -22,7 +23,7 @@
   const targetMessageId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(routeParams.get('message') || '') ? routeParams.get('message') : '';
   let client; let user; let contacts = []; let activeId = routeParams.get('match'); let activeConversation = null; let timerInterval; let elapsedSeconds = 0;
   let realtimeChannel = null; let renderTimer = null; let expiryRenderTimer = null; let renderRevision = 0; let longPressTimer = null; let suppressNextClick = false; let selectionMode = false; let selectedMessageIds = new Set(); let visibleMessageIds = [];
-  let pendingAttachments = []; const refreshedAttachmentPaths = new Set(); const signedUrlExpiries = new Map(); let mediaRecorder = null; let recordingStream = null; let recordedChunks = []; let recordingConversationId = null; let sendingMessages = false;
+  let pendingAttachments = []; const refreshedAttachmentPaths = new Set(); const signedUrlExpiries = new Map(); let mediaRecorder = null; let recordingStream = null; let recordedChunks = []; let recordingConversationId = null; let sendingMessages = false; let vapidPublicKey = ''; let serviceWorkerRegistration = null;
   const expiryValues = ['off', '1h', '24h', '7d'];
   const allowedAttachmentMimes = new Set(['image/jpeg','image/png','image/webp','image/gif','audio/mpeg','audio/mp4','audio/ogg','audio/wav','audio/webm','audio/aac','audio/flac','audio/x-m4a','application/octet-stream','application/pdf','text/plain','text/csv','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation']);
   const mimeByExtension = { jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',mp3:'audio/mpeg',m4a:'audio/mp4',mp4:'audio/mp4',ogg:'audio/ogg',oga:'audio/ogg',wav:'audio/wav',webm:'audio/webm',aac:'audio/aac',flac:'audio/flac',pdf:'application/pdf',txt:'text/plain',csv:'text/csv',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xls:'application/vnd.ms-excel',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',ppt:'application/vnd.ms-powerpoint',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation' };
@@ -31,6 +32,14 @@
   const safeAttachmentName = (value) => String(value || 'attachment').normalize('NFC').replace(/[\/\\\u0000-\u001f\u007f]/g, '_').replace(/\s+/g, ' ').trim().slice(0, 150) || 'attachment';
   const toast = (message) => { const node = document.querySelector('.toast-message'); if (node) { node.textContent = message; document.querySelector('.toast')?.classList.add('is-visible'); } };
   const expiryLabel = (value) => ({ off: t('Off', 'إيقاف'), '1h': t('1 hour', 'ساعة واحدة'), '24h': t('24 hours', '24 ساعة'), '7d': t('7 days', '7 أيام') }[value] || t('Off', 'إيقاف'));
+  const updatePushButton = () => {
+    const active = Boolean(serviceWorkerRegistration?.pushManager);
+    const subscribed = Boolean(window.__iqPushSubscribed);
+    pushButton.textContent = `${subscribed ? t('Notifications enabled', 'الإشعارات مفعّلة') : t('Enable notifications', 'تفعيل الإشعارات')}`;
+    pushButton.setAttribute('aria-pressed', String(subscribed));
+    pushButton.title = subscribed ? t('Turn off message notifications', 'إيقاف إشعارات الرسائل') : t('Get notified about new messages', 'تلقي إشعار عند وصول رسالة جديدة');
+    pushButton.disabled = !active || !user;
+  };
   const localizeControls = () => {
     document.querySelector('.disappearing-label').textContent = t('Disappearing messages', 'الرسائل ذاتية الاختفاء');
     const options = [['off', 'Off', 'إيقاف'], ['1h', '1 hour', 'ساعة واحدة'], ['24h', '24 hours', '24 ساعة'], ['7d', '7 days', '7 أيام']];
@@ -42,6 +51,7 @@
     attachmentButton.setAttribute('aria-label', t('Attach image, file or audio', 'إرفاق صورة أو ملف أو صوت')); attachmentButton.title = t('Attach image, file or audio', 'إرفاق صورة أو ملف أو صوت');
     recordAudioButton.setAttribute('aria-label', mediaRecorder?.state === 'recording' ? t('Stop recording', 'إيقاف التسجيل') : t('Record voice message', 'تسجيل رسالة صوتية')); recordAudioButton.title = recordAudioButton.getAttribute('aria-label');
     sendMessageButton.setAttribute('aria-label', t('Send message', 'إرسال الرسالة')); sendMessageButton.firstChild.textContent = `${t('Send', 'إرسال')} `;
+    updatePushButton();
     renderPendingAttachments();
   };
   const renderContacts = (filter = '') => {
@@ -149,6 +159,13 @@
     renderPendingAttachments();
   };
   const setComposerBusy = (busy) => { sendingMessages = busy; messageInput.disabled = busy; attachmentInput.disabled = busy; attachmentButton.disabled = busy; recordAudioButton.disabled = busy || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined'; sendMessageButton.disabled = busy; renderPendingAttachments(); };
+  const sendPushForMessage = async (conversationId, messageId) => {
+    if (!messageId) return;
+    try {
+      const { error } = await client.functions.invoke('send-chat-push', { body: { conversation_id: conversationId, message_id: messageId } });
+      if (error) console.warn('Message push notification could not be sent.', error);
+    } catch (error) { console.warn('Message push notification could not be sent.', error); }
+  };
   const sendPendingMessages = async (body, conversationId) => {
     const files = [...pendingAttachments];
     for (let index = 0; index < files.length; index += 1) {
@@ -158,15 +175,17 @@
       const path = `${conversationId}/${user.id}/${uniqueId}-${displayName}`;
       const { error: uploadError } = await client.storage.from(attachmentBucket).upload(path, file, { cacheControl: '3600', contentType: meta.mime, upsert: false });
       if (uploadError) { toast(t(`Upload failed: ${file.name}`, `فشل رفع الملف: ${file.name}`)); return false; }
-      const { error: insertError } = await client.functions.invoke('chat-media-verify', { body: { conversation_id: conversationId, attachment_path: path, attachment_name: displayName, attachment_mime: meta.mime, attachment_kind: meta.kind, body: index === 0 ? body : '' } });
+      const { data: mediaResult, error: insertError } = await client.functions.invoke('chat-media-verify', { body: { conversation_id: conversationId, attachment_path: path, attachment_name: displayName, attachment_mime: meta.mime, attachment_kind: meta.kind, body: index === 0 ? body : '' } });
       if (insertError) { await client.storage.from(attachmentBucket).remove([path]); toast(t(`Could not send: ${file.name}`, `تعذر إرسال: ${file.name}`)); return false; }
+      await sendPushForMessage(conversationId, mediaResult?.message_id);
       pendingAttachments.shift(); renderPendingAttachments();
       if (index === 0) { body = ''; messageInput.value = ''; document.querySelector('#message-counter').textContent = '0 / 600'; }
     }
     if (body && !files.length) {
-      const { error } = await client.from('messages').insert({ conversation_id: conversationId, sender_id: user.id, body });
+      const { data: insertedMessage, error } = await client.from('messages').insert({ conversation_id: conversationId, sender_id: user.id, body }).select('id').single();
       if (error) { toast(t('Message could not be sent.', 'تعذر إرسال الرسالة.')); return false; }
       messageInput.value = ''; document.querySelector('#message-counter').textContent = '0 / 600';
+      await sendPushForMessage(conversationId, insertedMessage?.id);
     }
     return true;
   };
@@ -279,6 +298,42 @@
     if (error) { toast(t('This member cannot receive messages yet.', 'لا يمكن لهذا العضو استقبال الرسائل حاليًا.')); await renderMessages(); return; }
     activeConversation = conversationId; await subscribeConversation(); await renderMessages();
   };
+  const decodeBase64Url = (value) => { const padded = value.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - value.length % 4) % 4); return Uint8Array.from(atob(padded), (char) => char.charCodeAt(0)); };
+  const syncPushSubscription = async () => {
+    if (!serviceWorkerRegistration || !user) return;
+    try {
+      const subscription = await serviceWorkerRegistration.pushManager.getSubscription();
+      window.__iqPushSubscribed = Boolean(subscription);
+      if (subscription) {
+        const json = subscription.toJSON();
+        if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) throw new Error('Incomplete push subscription');
+        const { error } = await client.from('push_subscriptions').upsert({ user_id: user.id, endpoint: json.endpoint, p256dh: json.keys.p256dh, auth: json.keys.auth, updated_at: new Date().toISOString() }, { onConflict: 'endpoint' });
+        if (error) throw error;
+      }
+    } catch (error) { console.warn('Push subscription could not be synchronized.', error); }
+    updatePushButton();
+  };
+  pushButton.addEventListener('click', async () => {
+    if (!serviceWorkerRegistration || !user) return;
+    pushButton.disabled = true;
+    try {
+      const current = await serviceWorkerRegistration.pushManager.getSubscription();
+      if (current) {
+        await client.from('push_subscriptions').delete().eq('endpoint', current.endpoint);
+        await current.unsubscribe(); window.__iqPushSubscribed = false;
+        toast(t('Message notifications turned off.', 'تم إيقاف إشعارات الرسائل.'));
+      } else {
+        const permission = Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission;
+        if (permission !== 'granted') throw new Error('Notification permission denied');
+        const subscription = await serviceWorkerRegistration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: decodeBase64Url(vapidPublicKey) });
+        const json = subscription.toJSON();
+        const { error } = await client.from('push_subscriptions').upsert({ user_id: user.id, endpoint: json.endpoint, p256dh: json.keys.p256dh, auth: json.keys.auth, updated_at: new Date().toISOString() }, { onConflict: 'endpoint' });
+        if (error) { await subscription.unsubscribe(); throw error; }
+        window.__iqPushSubscribed = true; toast(t('Message notifications enabled on this device.', 'تم تفعيل إشعارات الرسائل على هذا الجهاز.'));
+      }
+    } catch (error) { console.warn('Push notifications could not be enabled.', error); toast(t('Notifications could not be enabled. Check browser permission and secure connection.', 'تعذر تفعيل الإشعارات. تحقق من إذن المتصفح والاتصال الآمن.')); }
+    updatePushButton();
+  });
   document.querySelector('#contact-search').addEventListener('input', (event) => renderContacts(event.target.value));
   messageInput.addEventListener('input', () => { document.querySelector('#message-counter').textContent = `${messageInput.value.length} / 600`; });
   attachmentButton.addEventListener('click', () => attachmentInput.click());
@@ -336,7 +391,11 @@
     try {
       client = await database();
       const { data: session } = await client.auth.getSession(); user = session.session?.user;
-      if (!user) return;
+      if (!user) { updatePushButton(); return; }
+      const configResponse = await fetch('./public/supabase-public-config.json', { cache: 'no-store' });
+      if (configResponse.ok) vapidPublicKey = (await configResponse.json()).vapidPublicKey || '';
+      if ('serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && vapidPublicKey) { try { serviceWorkerRegistration = await navigator.serviceWorker.register('./service-worker.js'); await navigator.serviceWorker.ready; await syncPushSubscription(); } catch (pushError) { console.warn('Push service worker is unavailable.', pushError); } }
+      updatePushButton();
       const { data, error } = await client.rpc('list_my_conversations'); if (error) throw error;
       contacts = (data || []).map((row) => ({ id: row.other_user_id, name: row.display_name || 'Orbit Member', handle: row.handle || '@member', preview: row.last_message === '[Image]' ? t('Image', 'صورة') : row.last_message === '[Audio]' ? t('Audio', 'صوت') : row.last_message || t('Start a private conversation', 'ابدأ محادثة خاصة'), time: row.last_message_at ? new Intl.DateTimeFormat(window.IQZodiacLanguage?.locale || undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(row.last_message_at)) : '' }));
       if (activeId && !contacts.some((person) => person.id === activeId)) { const { data: matches } = await client.rpc('list_compatible_profiles'); const match = (matches || []).find((row) => row.user_id === activeId); if (match) contacts.unshift({ id: match.user_id, name: match.display_name, handle: match.handle, preview: t('Matched member', 'عضو متطابق') }); }
