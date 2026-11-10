@@ -598,6 +598,15 @@ h1 {
 .comment-delete-button:hover, .comment-delete-button:focus-visible { background: rgba(255,111,125,0.1); color: #ff6f7d; outline: none; }
 .comment-replies { display: grid; gap: 7px; margin-left: 30px; padding-left: 10px; border-left: 1px solid rgba(131,229,232,0.16); }
 .comment-reply-form { max-width: 360px; margin-top: 6px; }
+.comment-reply-form { display: flex; flex-wrap: wrap; align-items: center; max-width: 420px; }
+.comment-reply-form .comment-media-button, .comment-reply-form .comment-record-button { width: 25px; height: 25px; flex: none; border-color: rgba(131,229,232,0.28); color: var(--muted); font-size: 13px; }
+.comment-reply-form .comment-media-button:hover, .comment-reply-form .comment-record-button:hover, .comment-reply-form .comment-record-button.is-recording { color: var(--orange); border-color: rgba(255,170,110,0.55); }
+.comment-media-preview { display: flex; width: 100%; align-items: center; gap: 7px; margin-top: 5px; }
+.comment-media-preview[hidden] { display: none; }
+.comment-preview-media { display: block; width: min(180px, 100%); max-height: 100px; border-radius: 5px; object-fit: cover; }
+.comment-attachment { display: block; max-width: min(280px, 100%); margin-top: 6px; border-radius: 5px; }
+.comment-attachment-image, .comment-attachment-video { max-height: 220px; object-fit: cover; }
+.comment-attachment-audio { width: min(280px, 100%); height: 32px; }
 .comment-avatar { display: grid; flex: none; width: 22px; height: 22px; place-items: center; border-radius: 50%; color: var(--night); font-size: 8px; font-weight: 800; }
 .comment p { margin: 1px 0 0; }
 .comment p strong { margin-right: 3px; color: var(--ink); font-size: 10px; }

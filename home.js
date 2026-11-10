@@ -4,6 +4,9 @@ let toastTimer;
 let composerMedia = null;
 const maxImageBytes = 15 * 1024 * 1024;
 const maxVideoBytes = 50 * 1024 * 1024;
+const maxAudioBytes = 25 * 1024 * 1024;
+const commentMediaBucket = 'iqzodiac-media';
+const commentMediaTypes = new Set(['image', 'video', 'audio']);
 
 const showToast = (message) => {
   toastMessage.textContent = message;
@@ -71,6 +74,31 @@ const editFeedComment = async (post, comment, button) => {
   showToast(feedText('Comment updated.', 'تم تعديل التعليق.'));
 };
 
+const commentMediaType = (file) => file?.type?.startsWith('image/') ? 'image' : file?.type?.startsWith('video/') ? 'video' : file?.type?.startsWith('audio/') ? 'audio' : null;
+const commentMediaSizeLimit = (type) => type === 'image' ? maxImageBytes : type === 'video' ? maxVideoBytes : maxAudioBytes;
+const commentMediaExtension = (file, type) => (file.name?.match(/\.([a-z0-9]+)$/i)?.[1] || (type === 'image' ? 'jpg' : type === 'video' ? 'mp4' : 'webm')).toLowerCase();
+
+const uploadCommentMedia = async (client, file) => {
+  const type = commentMediaType(file);
+  if (!type || !commentMediaTypes.has(type)) throw new Error('unsupported_media_type');
+  if (!file.size || file.size > commentMediaSizeLimit(type)) throw new Error('media_too_large');
+  const path = `${authenticatedUserId}/comment-replies/${crypto.randomUUID()}.${commentMediaExtension(file, type)}`;
+  const { error } = await client.storage.from(commentMediaBucket).upload(path, file, { contentType: file.type, cacheControl: '3600', upsert: false });
+  if (error) throw error;
+  return { media_type: type, media_path: path, media_mime: file.type, media_size_bytes: file.size };
+};
+
+const commentAttachmentNode = (comment) => {
+  if (!comment.media_url || !comment.media_type) return null;
+  if (comment.media_type === 'image') {
+    const image = document.createElement('img'); image.className = 'comment-attachment comment-attachment-image'; image.src = comment.media_url; image.alt = feedText('Attached image', 'صورة مرفقة'); image.loading = 'lazy'; return image;
+  }
+  if (comment.media_type === 'video') {
+    const video = document.createElement('video'); video.className = 'comment-attachment comment-attachment-video'; video.src = comment.media_url; video.controls = true; video.preload = 'metadata'; video.playsInline = true; return video;
+  }
+  const audio = document.createElement('audio'); audio.className = 'comment-attachment comment-attachment-audio'; audio.src = comment.media_url; audio.controls = true; return audio;
+};
+
 const createCommentElement = (comment, post, childrenByParent = {}, submitReply = null) => {
   const wrapper = document.createElement('div'); wrapper.className = 'comment-thread';
   const element = document.createElement('div'); element.className = 'comment'; element.dataset.commentId = comment.comment_id || comment.id || '';
@@ -79,52 +107,56 @@ const createCommentElement = (comment, post, childrenByParent = {}, submitReply 
   if (element.dataset.commentId) element.id = `comment-${element.dataset.commentId}`;
   const avatar = document.createElement('span'); avatar.className = 'comment-avatar home-avatar-small'; avatar.textContent = String(comment.display_name || comment.handle || 'OM').replace(/^@/, '').slice(0, 2).toUpperCase();
   const content = document.createElement('div'); content.className = 'comment-content';
-  const copy = document.createElement('p'); const author = document.createElement('strong'); author.textContent = comment.handle || comment.display_name || '@member';
-  const body = document.createElement('span'); body.textContent = ` ${comment.body || ''}`; body.dir = isArabicComment ? 'rtl' : 'ltr';
-  const time = document.createElement('small'); time.className = 'comment-time'; time.textContent = formatDateTime(comment.created_at); copy.append(author, body, time);
-  const replyButton = document.createElement('button'); replyButton.type = 'button'; replyButton.className = 'comment-reply-button'; replyButton.textContent = 'Reply';
-  const replyForm = document.createElement('form'); replyForm.className = 'comment-form comment-reply-form'; replyForm.hidden = true; replyForm.innerHTML = '<input type="text" maxlength="180" placeholder="Write a reply..." aria-label="Write a reply" /><button type="submit" aria-label="Post reply">↗</button>';
-  replyButton.addEventListener('click', () => { replyForm.hidden = !replyForm.hidden; if (!replyForm.hidden) replyForm.querySelector('input').focus(); });
-  replyForm.addEventListener('submit', async (event) => { event.preventDefault(); const input = replyForm.querySelector('input'); const value = escapeText(input.value); if (!value || !submitReply) return; if (await submitReply(comment.comment_id || comment.id, value)) { input.value = ''; replyForm.hidden = true; } });
-  content.append(copy, replyButton, replyForm);
+  const copy = document.createElement('p'); const author = document.createElement('strong'); author.textContent = comment.handle || comment.display_name || '@member'; copy.append(author);
+  if (comment.body) { const body = document.createElement('span'); body.textContent = ` ${comment.body}`; body.dir = isArabicComment ? 'rtl' : 'ltr'; copy.append(body); }
+  const time = document.createElement('small'); time.className = 'comment-time'; time.textContent = formatDateTime(comment.created_at); copy.append(time);
+  content.append(copy);
+  const attachment = commentAttachmentNode(comment); if (attachment) content.append(attachment);
+  const replyButton = document.createElement('button'); replyButton.type = 'button'; replyButton.className = 'comment-reply-button'; replyButton.textContent = feedText('Reply', 'رد');
+  const replyForm = document.createElement('form'); replyForm.className = 'comment-form comment-reply-form'; replyForm.hidden = true;
+  replyForm.innerHTML = `<input type="text" maxlength="180" placeholder="${feedText('Write a reply...', 'اكتب ردًا...')}" aria-label="${feedText('Write a reply', 'اكتب ردًا')}" /><input class="comment-media-input" type="file" accept="image/*,video/*" hidden /><button class="comment-media-button" type="button" aria-label="${feedText('Attach image or video', 'إرفاق صورة أو فيديو')}">＋</button><button class="comment-record-button" type="button" aria-label="${feedText('Record voice reply', 'تسجيل رد صوتي')}">●</button><button type="submit" aria-label="${feedText('Post reply', 'نشر الرد')}">↗</button><div class="comment-media-preview" hidden></div>`;
+  const input = replyForm.querySelector('input[type="text"]'); const mediaInput = replyForm.querySelector('.comment-media-input'); const preview = replyForm.querySelector('.comment-media-preview'); const mediaButton = replyForm.querySelector('.comment-media-button'); const recordButton = replyForm.querySelector('.comment-record-button');
+  replyForm._replyMedia = null;
+  const showReplyMedia = (file) => { replyForm._replyMedia = file; const node = file.type.startsWith('video/') ? document.createElement('video') : file.type.startsWith('audio/') ? document.createElement('audio') : document.createElement('img'); node.src = URL.createObjectURL(file); node.controls = file.type.startsWith('video/') || file.type.startsWith('audio/'); node.className = 'comment-preview-media'; preview.replaceChildren(node); preview.hidden = false; };
+  mediaButton.addEventListener('click', () => mediaInput.click());
+  mediaInput.addEventListener('change', () => { const [file] = mediaInput.files || []; if (file) showReplyMedia(file); });
+  recordButton.addEventListener('click', async () => {
+    if (replyForm._recording) { replyForm._recorder?.stop(); return; }
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) { showToast(feedText('Voice recording is not supported in this browser.', 'تسجيل الصوت غير مدعوم في هذا المتصفح.')); return; }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); const chunks = []; const recorder = new MediaRecorder(stream); replyForm._recording = true; replyForm._recorder = recorder; recordButton.textContent = '■'; recordButton.classList.add('is-recording');
+      recorder.ondataavailable = (event) => { if (event.data.size) chunks.push(event.data); };
+      recorder.onstop = () => { stream.getTracks().forEach((track) => track.stop()); replyForm._recording = false; replyForm._recorder = null; recordButton.textContent = '●'; recordButton.classList.remove('is-recording'); const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }); showReplyMedia(new File([blob], `voice-${Date.now()}.webm`, { type: blob.type })); };
+      recorder.start();
+    } catch { showToast(feedText('Microphone access was denied.', 'تم رفض الوصول إلى الميكروفون.')); }
+  });
+  replyButton.addEventListener('click', () => { replyForm.hidden = !replyForm.hidden; if (!replyForm.hidden) input.focus(); });
+  replyForm.addEventListener('submit', async (event) => { event.preventDefault(); const value = escapeText(input.value); if ((!value && !replyForm._replyMedia) || !submitReply) return; if (await submitReply(comment.comment_id || comment.id, value, replyForm._replyMedia)) { input.value = ''; mediaInput.value = ''; replyForm._replyMedia = null; preview.replaceChildren(); preview.hidden = true; replyForm.hidden = true; } });
+  content.append(replyButton, replyForm);
   if (String(comment.author_id || '').toLowerCase() === String(authenticatedUserId || '').toLowerCase()) {
     const actions = document.createElement('div'); actions.className = 'comment-owner-actions';
-    const menuButton = document.createElement('button');
-    menuButton.type = 'button'; menuButton.className = 'comment-more-button'; menuButton.textContent = '⋯';
-    menuButton.setAttribute('aria-label', feedText('Comment options', 'خيارات التعليق'));
-    menuButton.setAttribute('aria-haspopup', 'true'); menuButton.setAttribute('aria-expanded', 'false');
+    const menuButton = document.createElement('button'); menuButton.type = 'button'; menuButton.className = 'comment-more-button'; menuButton.textContent = '⋯'; menuButton.setAttribute('aria-label', feedText('Comment options', 'خيارات التعليق')); menuButton.setAttribute('aria-haspopup', 'true'); menuButton.setAttribute('aria-expanded', 'false');
     const menu = document.createElement('div'); menu.className = 'comment-actions-menu'; menu.hidden = true;
-    const editButton = document.createElement('button');
-    editButton.type = 'button'; editButton.className = 'comment-edit-button'; editButton.textContent = feedText('Edit', 'تعديل');
-    editButton.addEventListener('click', () => { menu.hidden = true; menuButton.setAttribute('aria-expanded', 'false'); void editFeedComment(post, comment, editButton); });
-    const deleteButton = document.createElement('button');
-    deleteButton.type = 'button'; deleteButton.className = 'comment-delete-button'; deleteButton.textContent = feedText('Delete', 'مسح');
-    deleteButton.addEventListener('click', () => { menu.hidden = true; menuButton.setAttribute('aria-expanded', 'false'); void deleteFeedComment(post, comment, wrapper, deleteButton); });
-    menu.append(editButton, deleteButton);
-    menuButton.addEventListener('click', () => { menu.hidden = !menu.hidden; menuButton.setAttribute('aria-expanded', String(!menu.hidden)); });
-    menuButton.addEventListener('keydown', (event) => { if (event.key === 'Escape') { menu.hidden = true; menuButton.setAttribute('aria-expanded', 'false'); menuButton.focus(); } });
-    actions.append(menuButton, menu);
-    if (isArabicComment) element.append(avatar, content, actions);
-    else element.append(actions, avatar, content);
+    const editButton = document.createElement('button'); editButton.type = 'button'; editButton.className = 'comment-edit-button'; editButton.textContent = feedText('Edit', 'تعديل'); editButton.addEventListener('click', () => { menu.hidden = true; menuButton.setAttribute('aria-expanded', 'false'); void editFeedComment(post, comment, editButton); });
+    const deleteButton = document.createElement('button'); deleteButton.type = 'button'; deleteButton.className = 'comment-delete-button'; deleteButton.textContent = feedText('Delete', 'مسح'); deleteButton.addEventListener('click', () => { menu.hidden = true; menuButton.setAttribute('aria-expanded', 'false'); void deleteFeedComment(post, comment, wrapper, deleteButton); });
+    menu.append(editButton, deleteButton); menuButton.addEventListener('click', () => { menu.hidden = !menu.hidden; menuButton.setAttribute('aria-expanded', String(!menu.hidden)); }); menuButton.addEventListener('keydown', (event) => { if (event.key === 'Escape') { menu.hidden = true; menuButton.setAttribute('aria-expanded', 'false'); menuButton.focus(); } }); actions.append(menuButton, menu);
+    if (isArabicComment) element.append(avatar, content, actions); else element.append(actions, avatar, content);
   } else element.append(avatar, content);
-  const children = document.createElement('div');
-  children.className = 'comment-replies';
-  (childrenByParent[comment.comment_id || comment.id] || []).forEach((child) => children.append(createCommentElement(child, post, childrenByParent, submitReply)));
-  wrapper.append(element, children);
-  return wrapper;
+  const children = document.createElement('div'); children.className = 'comment-replies'; (childrenByParent[comment.comment_id || comment.id] || []).forEach((child) => children.append(createCommentElement(child, post, childrenByParent, submitReply))); wrapper.append(element, children); return wrapper;
 };
 const renderComments = (post, rows) => {
-  const list = post.querySelector('.comment-list'); list.replaceChildren(); post._commentRows = rows; const byParent = {};
-  rows.forEach((row) => { (byParent[row.parent_comment_id || 'root'] ||= []).push(row); });
-  const submitReply = async (parentCommentId, body) => {
-    const client = await database(); if (!client || !authenticatedUserId) { showToast('Sign in to reply to comments.'); return false; }
-    const { data, error } = await client.from('comments').insert({ post_id: post.dataset.postId, author_id: authenticatedUserId, parent_comment_id: parentCommentId, body }).select('id,post_id,author_id,parent_comment_id,body,created_at').single();
-    if (error) { showToast('Reply could not be saved.'); return false; }
-    const reply = { ...data, display_name: currentPublicIdentity.displayName, handle: currentPublicIdentity.handle, comment_id: data.id };
-    post._commentRows = [...(post._commentRows || []), reply];
-    const target = list.querySelector(`[data-comment-id="${CSS.escape(parentCommentId)}"]`)?.closest('.comment-thread')?.querySelector('.comment-replies');
-    if (target) target.append(createCommentElement(reply, post, {}, submitReply));
-    const count = post.querySelector('.comment-count'); count.textContent = `${formatCount(Number(count.textContent.replace(/[^0-9]/g, '')) + 1)} comments`; showToast('Reply added.'); return true;
+  const list = post.querySelector('.comment-list'); list.replaceChildren(); post._commentRows = rows; const byParent = {}; rows.forEach((row) => { (byParent[row.parent_comment_id || 'root'] ||= []).push(row); });
+  const submitReply = async (parentCommentId, body, mediaFile) => {
+    const client = await database(); if (!client || !authenticatedUserId) { showToast(feedText('Sign in to reply to comments.', 'سجّل الدخول للرد على التعليقات.')); return false; }
+    let media = null;
+    try { if (mediaFile) media = await uploadCommentMedia(client, mediaFile); } catch (error) { showToast(error.message === 'media_too_large' ? feedText('The selected file is too large.', 'الملف المحدد كبير جدًا.') : feedText('Media could not be uploaded.', 'تعذّر رفع الوسائط.')); return false; }
+    const payload = { post_id: post.dataset.postId, author_id: authenticatedUserId, parent_comment_id: parentCommentId, body, ...(media || {}) };
+    const { data, error } = await client.from('comments').insert(payload).select('id,post_id,author_id,parent_comment_id,body,created_at,media_type,media_path,media_mime,media_size_bytes').single();
+    if (error) { if (media?.media_path) await client.storage.from(commentMediaBucket).remove([media.media_path]); showToast(feedText('Reply could not be saved.', 'تعذّر حفظ الرد.')); return false; }
+    if (data.media_path) { const { data: signed } = await client.storage.from(commentMediaBucket).createSignedUrl(data.media_path, 3600); data.media_url = signed?.signedUrl || ''; }
+    const reply = { ...data, display_name: currentPublicIdentity.displayName, handle: currentPublicIdentity.handle, comment_id: data.id }; post._commentRows = [...(post._commentRows || []), reply];
+    const target = list.querySelector(`[data-comment-id="${CSS.escape(parentCommentId)}"]`)?.closest('.comment-thread')?.querySelector('.comment-replies'); if (target) target.append(createCommentElement(reply, post, {}, submitReply));
+    const count = post.querySelector('.comment-count'); count.textContent = `${formatCount(Number(count.textContent.replace(/[^0-9]/g, '')) + 1)} comments`; showToast(feedText('Reply added.', 'تمت إضافة الرد.')); return true;
   };
   (byParent.root || []).forEach((comment) => list.append(createCommentElement(comment, post, byParent, submitReply)));
 };
@@ -268,7 +300,7 @@ const bindPost = (post) => {
     if (!value) return;
     const client = await database();
     if (!client || !authenticatedUserId || !/^[0-9a-f-]{36}$/i.test(post.dataset.postId || '')) { showToast('Sign in to comment on shared posts.'); return; }
-    const { data, error } = await client.from('comments').insert({ post_id: post.dataset.postId, author_id: authenticatedUserId, body: value }).select('id,post_id,author_id,parent_comment_id,body,created_at').single();
+    const { data, error } = await client.from('comments').insert({ post_id: post.dataset.postId, author_id: authenticatedUserId, body: value }).select('id,post_id,author_id,parent_comment_id,body,created_at,media_type,media_path,media_mime,media_size_bytes').single();
     if (error) { showToast('Comment could not be saved.'); return; }
     const comment = { ...data, comment_id: data.id, display_name: currentPublicIdentity.displayName, handle: currentPublicIdentity.handle };
     renderComments(post, [...(post._commentRows || []), comment]);
@@ -481,10 +513,15 @@ if ('IntersectionObserver' in window && !reduceMotion) {
       if (!commentsError) {
         comments = enrichedComments || [];
       } else {
-        const { data: basicComments, error: basicCommentsError } = await client.from('comments').select('id,post_id,author_id,body,created_at').in('post_id', postIds).order('created_at', { ascending: true });
+        const { data: basicComments, error: basicCommentsError } = await client.from('comments').select('id,post_id,author_id,parent_comment_id,body,created_at,media_type,media_path,media_mime,media_size_bytes').in('post_id', postIds).order('created_at', { ascending: true });
         if (basicCommentsError) throw basicCommentsError;
         comments = (basicComments || []).map((comment) => ({ ...comment, handle: comment.author_id === authenticatedUserId ? currentPublicIdentity.handle : '@member' }));
       }
+      comments = await Promise.all(comments.map(async (comment) => {
+        if (!comment.media_path) return comment;
+        const { data: signed } = await client.storage.from(commentMediaBucket).createSignedUrl(comment.media_path, 3600);
+        return { ...comment, media_url: signed?.signedUrl || '' };
+      }));
       document.querySelectorAll('#feed-list .post-card').forEach((post) => renderComments(post, comments.filter((comment) => comment.post_id === post.dataset.postId)));
     }
     if (notificationPostId) requestAnimationFrame(focusNotificationTarget);
