@@ -354,29 +354,44 @@
     expiryChangeInFlight = true;
     expirySelect.disabled = true;
     expirySelect.setAttribute('aria-busy', 'true');
+    document.querySelector('.disappearing-setting')?.classList.add('is-saving');
     let timeoutId;
+    let settled = false;
+    const rpcPromise = client.rpc('iqzodiac_set_message_expiry', { p_conversation_id: conversationId, p_duration: duration });
     try {
       const result = await Promise.race([
-        client.rpc('iqzodiac_set_message_expiry', { p_conversation_id: conversationId, p_duration: duration }),
-        new Promise((_, reject) => { timeoutId = window.setTimeout(() => reject(new Error('expiry-setting-timeout')), 12000); }),
+        rpcPromise,
+        new Promise((_, reject) => { timeoutId = window.setTimeout(() => reject(new Error('expiry-setting-timeout')), 10000); }),
       ]);
+      settled = true;
       if (result.error) throw result.error;
+      if (activeConversation !== conversationId) return;
       currentExpiryDuration = duration;
+      expirySelect.value = duration;
       toast(t('Disappearing-message setting updated.', 'تم تحديث إعداد الرسائل ذاتية الاختفاء.'));
-      // The RPC inserts a system notice and updates the settings row. Realtime
-      // already schedules a refresh; debounce here as a fallback, not a second
-      // synchronous full conversation render.
+      // Realtime normally refreshes this conversation. Schedule one debounced
+      // fallback only after the RPC succeeds, avoiding a render storm while the
+      // setting request is still pending.
       scheduleRenderMessages();
     } catch (error) {
       console.warn('Disappearing-message setting could not be saved.', error);
-      expirySelect.value = currentExpiryDuration;
-      toast(t('The disappearing-message setting could not be saved.', 'تعذر حفظ إعداد الرسائل ذاتية الاختفاء.'));
+      if (activeConversation === conversationId) {
+        expirySelect.value = currentExpiryDuration;
+        const timedOut = error?.message === 'expiry-setting-timeout';
+        toast(t(timedOut ? 'The server took too long to save this setting. Please try again.' : 'The disappearing-message setting could not be saved.', timedOut ? 'استغرق الخادم وقتًا طويلًا لحفظ الإعداد. حاول مرة أخرى.' : 'تعذر حفظ إعداد الرسائل ذاتية الاختفاء.'));
+      }
+      // A timed-out request may still complete on the server. Refresh later
+      // without blocking the UI, so the control cannot remain visually stale.
       if (error?.message === 'expiry-setting-timeout') scheduleRenderMessages();
     } finally {
       window.clearTimeout(timeoutId);
       expiryChangeInFlight = false;
       expirySelect.disabled = false;
       expirySelect.removeAttribute('aria-busy');
+      document.querySelector('.disappearing-setting')?.classList.remove('is-saving');
+      // Avoid an unhandled rejection if the timeout won the race and the
+      // Supabase promise rejects after the control has already recovered.
+      if (!settled) void rpcPromise.catch(() => {});
     }
   });
   document.querySelector('#select-all-messages').addEventListener('click', () => { selectionMode = true; selectedMessageIds = new Set(visibleMessageIds.map((message) => message.id)); messageList.classList.add('is-selecting'); updateSelectionToolbar(); renderMessageBubbles(); });

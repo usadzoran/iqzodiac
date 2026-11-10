@@ -40,6 +40,28 @@
 .message-form{flex-wrap:wrap}.message-form input#message-input{flex:1 1 170px}.composer-icon-button{display:grid;flex:none;width:34px;height:34px;place-items:center;padding:0;border:1px solid rgba(131,229,232,.2);border-radius:10px;background:rgba(131,229,232,.06);color:var(--cyan);font:700 18px Manrope,sans-serif;cursor:pointer}.composer-icon-button:hover{border-color:rgba(131,229,232,.55);background:rgba(131,229,232,.14)}.record-audio-button{color:#ffaaa9}.record-audio-button.is-recording{border-color:rgba(255,112,126,.7);background:rgba(255,112,126,.18);animation:record-pulse 1.3s ease-in-out infinite}.record-audio-button.is-recording span{font-size:13px}.message-form button:disabled,.composer-icon-button:disabled{opacity:.55;cursor:wait}.pending-attachments{display:flex;flex-wrap:wrap;gap:7px;margin:8px 18px 0}.pending-attachments[hidden]{display:none}.pending-attachment{display:flex;align-items:center;gap:8px;max-width:100%;padding:6px 8px;border:1px solid rgba(131,229,232,.16);border-radius:10px;background:rgba(131,229,232,.045);color:var(--muted);font-size:9px}.pending-attachment-name{max-width:min(58vw,230px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pending-attachment-remove{width:21px;height:21px;padding:0;border:0;border-radius:50%;background:rgba(255,112,126,.12);color:#ff9da7;font-size:14px;cursor:pointer}.message-attachment{display:grid;gap:7px;min-width:0;margin-top:5px}.message-attachment-image-link{display:block;overflow:hidden;max-width:min(100%,340px);border:1px solid rgba(218,225,255,.13);border-radius:12px;background:rgba(3,7,16,.45)}.message-attachment-image{display:block;width:auto;max-width:100%;max-height:320px;object-fit:contain}.message-attachment-audio{display:block;width:min(100%,310px);height:38px;filter:sepia(.12) saturate(.65)}.message-attachment-file{display:flex;align-items:center;gap:9px;max-width:min(100%,340px);padding:9px 11px;border:1px solid rgba(131,229,232,.16);border-radius:11px;background:rgba(3,7,16,.32);color:var(--cyan);text-decoration:none;font-size:10px}.message-attachment-file:hover{text-decoration:underline}.message-attachment-file-icon{flex:none;font-size:18px}.message-attachment-file-name{min-width:0;overflow-wrap:anywhere}.attachment-unavailable{color:var(--dim);font-size:9px}.message-bubble .message-body{display:block}.message-bubble .message-body:empty{display:none}.message-bubble .message-meta{grid-column:1/-1}.message-list.is-selecting .message-bubble .message-meta{grid-column:2}@keyframes record-pulse{50%{box-shadow:0 0 0 5px rgba(255,112,126,.13)}}
 @media(max-width:760px){.message-form{gap:6px;margin:0 10px}.pending-attachments{margin-right:10px;margin-left:10px}.message-attachment-image{max-height:260px}}
 @media(max-width:430px){.composer-icon-button{width:31px;height:31px}.message-form input#message-input{flex:1 1 100px}.message-form button[type=submit]{padding:8px}.message-attachment-audio{width:min(100%,250px)}}
+
+/* WhatsApp-inspired conversation skin: calm dark canvas, compact bubbles,
+   clear outgoing/incoming contrast, and a composer that stays light to use. */
+.messages-page{--chat-canvas:#0b141a;--chat-panel:#111b21;--chat-header:#202c33;--chat-incoming:#202c33;--chat-outgoing:#005c4b;--chat-muted:#8696a0}
+.messages-page .messages-panel{border-color:rgba(134,150,160,.18);border-radius:18px;background:var(--chat-panel);box-shadow:0 24px 70px rgba(0,0,0,.34);backdrop-filter:none}
+.messages-page .conversation-sidebar{background:#111b21;border-right-color:rgba(134,150,160,.16)}
+.messages-page .conversation-search,.messages-page .message-form{border-color:rgba(134,150,160,.2);background:#202c33}
+.messages-page .contact-item:hover,.messages-page .contact-item.is-active{border-color:transparent;background:#2a3942}
+.messages-page .conversation-view{background:var(--chat-canvas)}
+.messages-page .conversation-topbar{background:var(--chat-header);border-bottom-color:rgba(134,150,160,.16)}
+.messages-page .message-list{background-color:var(--chat-canvas);background-image:radial-gradient(rgba(134,150,160,.055) .7px,transparent .7px);background-size:13px 13px}
+.messages-page .message-bubble{max-width:min(78%,520px);padding:8px 10px 6px;border:0;border-radius:8px 8px 8px 2px;background:var(--chat-incoming);box-shadow:0 1px 1px rgba(0,0,0,.18);font-size:12px;line-height:1.52}
+.messages-page .message-bubble.is-mine{border:0;border-radius:8px 8px 2px 8px;background:var(--chat-outgoing)}
+.messages-page .message-meta{color:#b7c5cb;font-size:8px}
+.messages-page .message-day-divider{padding:5px 9px;border-radius:8px;background:#18252c;color:#b7c5cb}
+.messages-page .disappearing-setting{background:rgba(131,229,232,.06)}
+.messages-page .disappearing-setting.is-saving{opacity:.7;pointer-events:none}
+.messages-page .disappearing-setting.is-saving>span:first-child{animation:chat-setting-pulse 1s ease-in-out infinite}
+.messages-page .message-form{border-radius:16px}
+.messages-page .message-form button{background:#00a884;color:#062c25}
+.messages-page .composer-icon-button{border-color:rgba(134,150,160,.28);background:transparent;color:#b7c5cb}
+@keyframes chat-setting-pulse{50%{opacity:.35;transform:rotate(18deg)}}
 @media(prefers-reduced-motion:reduce){.record-audio-button.is-recording{animation:none}}
 
 .push-notifications-button{white-space:nowrap}.push-notifications-button[aria-pressed="true"]{border-color:rgba(131,229,232,.48);background:rgba(131,229,232,.13);color:#a8f3e6}.push-notifications-button:disabled{opacity:.55;cursor:not-allowed}@media(max-width:430px){.conversation-tools .push-notifications-button{max-width:100%;font-size:8px;padding:6px 7px}}
