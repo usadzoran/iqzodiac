@@ -78,6 +78,49 @@ const commentMediaType = (file) => file?.type?.startsWith('image/') ? 'image' : 
 const commentMediaSizeLimit = (type) => type === 'image' ? maxImageBytes : type === 'video' ? maxVideoBytes : maxAudioBytes;
 const commentMediaExtension = (file, type) => (file.name?.match(/\.([a-z0-9]+)$/i)?.[1] || (type === 'image' ? 'jpg' : type === 'video' ? 'mp4' : 'webm')).toLowerCase();
 
+const appendCommentBody = (container, value) => {
+  const text = String(value || '');
+  const mentionPattern = /(^|\s)(@[a-z0-9._-]{1,24})\b/gi;
+  let cursor = 0; let match;
+  while ((match = mentionPattern.exec(text))) {
+    const mentionStart = match.index + match[1].length;
+    container.append(document.createTextNode(text.slice(cursor, mentionStart)));
+    const mention = document.createElement('span'); mention.className = 'comment-mention'; mention.textContent = match[2]; mention.title = feedText('Mentioned user', 'مستخدم تمت الإشارة إليه'); container.append(mention);
+    cursor = mentionStart + match[2].length;
+  }
+  container.append(document.createTextNode(text.slice(cursor)));
+};
+
+const setupMentionAutocomplete = (input, menu) => {
+  let timer = 0;
+  const close = () => { menu.hidden = true; menu.replaceChildren(); };
+  input.addEventListener('input', () => {
+    const beforeCaret = input.value.slice(0, input.selectionStart ?? input.value.length);
+    const match = beforeCaret.match(/(^|\s)@([a-z0-9._-]{0,24})$/i);
+    if (!match || !match[2]) { close(); return; }
+    window.clearTimeout(timer);
+    timer = window.setTimeout(async () => {
+      const client = await database(); if (!client) return;
+      const { data } = await client.rpc('search_mention_profiles', { p_query: match[2], p_limit: 6 });
+      menu.replaceChildren();
+      (data || []).forEach((profile) => {
+        const option = document.createElement('button'); option.type = 'button'; option.className = 'mention-suggestion'; option.setAttribute('role', 'option');
+        const handle = profile.handle || '@member'; option.innerHTML = `<strong>${escapeHTML(handle)}</strong><span>${escapeHTML(profile.display_name || '')}</span>`;
+        option.addEventListener('mousedown', (event) => event.preventDefault());
+        option.addEventListener('click', () => {
+          const start = (input.selectionStart ?? input.value.length) - match[2].length - 1;
+          const end = input.selectionStart ?? input.value.length;
+          input.value = `${input.value.slice(0, start)}${handle} ${input.value.slice(end)}`;
+          input.setSelectionRange(start + handle.length + 1, start + handle.length + 1); input.focus(); close();
+        });
+        menu.append(option);
+      });
+      menu.hidden = !menu.children.length;
+    }, 140);
+  });
+  input.addEventListener('blur', () => window.setTimeout(close, 160));
+};
+
 const uploadCommentMedia = async (client, file) => {
   const type = commentMediaType(file);
   if (!type || !commentMediaTypes.has(type)) throw new Error('unsupported_media_type');
@@ -108,14 +151,14 @@ const createCommentElement = (comment, post, childrenByParent = {}, submitReply 
   const avatar = document.createElement('span'); avatar.className = 'comment-avatar home-avatar-small'; avatar.textContent = String(comment.display_name || comment.handle || 'OM').replace(/^@/, '').slice(0, 2).toUpperCase();
   const content = document.createElement('div'); content.className = 'comment-content';
   const copy = document.createElement('p'); const author = document.createElement('strong'); author.textContent = comment.handle || comment.display_name || '@member'; copy.append(author);
-  if (comment.body) { const body = document.createElement('span'); body.textContent = ` ${comment.body}`; body.dir = isArabicComment ? 'rtl' : 'ltr'; copy.append(body); }
+  if (comment.body) { const body = document.createElement('span'); body.append(document.createTextNode(' ')); appendCommentBody(body, comment.body); body.dir = isArabicComment ? 'rtl' : 'ltr'; copy.append(body); }
   const time = document.createElement('small'); time.className = 'comment-time'; time.textContent = formatDateTime(comment.created_at); copy.append(time);
   content.append(copy);
   const attachment = commentAttachmentNode(comment); if (attachment) content.append(attachment);
   const replyButton = document.createElement('button'); replyButton.type = 'button'; replyButton.className = 'comment-reply-button'; replyButton.textContent = feedText('Reply', 'رد');
   const replyForm = document.createElement('form'); replyForm.className = 'comment-form comment-reply-form'; replyForm.hidden = true;
-  replyForm.innerHTML = `<input type="text" maxlength="180" placeholder="${feedText('Write a reply...', 'اكتب ردًا...')}" aria-label="${feedText('Write a reply', 'اكتب ردًا')}" /><input class="comment-media-input" type="file" accept="image/*,video/*" hidden /><button class="comment-media-button" type="button" aria-label="${feedText('Attach image or video', 'إرفاق صورة أو فيديو')}">＋</button><button class="comment-record-button" type="button" aria-label="${feedText('Record voice reply', 'تسجيل رد صوتي')}">●</button><button type="submit" aria-label="${feedText('Post reply', 'نشر الرد')}">↗</button><div class="comment-media-preview" hidden></div>`;
-  const input = replyForm.querySelector('input[type="text"]'); const mediaInput = replyForm.querySelector('.comment-media-input'); const preview = replyForm.querySelector('.comment-media-preview'); const mediaButton = replyForm.querySelector('.comment-media-button'); const recordButton = replyForm.querySelector('.comment-record-button');
+  replyForm.innerHTML = `<input type="text" maxlength="180" placeholder="${feedText('Write a reply...', 'اكتب ردًا...')}" aria-label="${feedText('Write a reply', 'اكتب ردًا')}" /><div class="mention-suggestions" role="listbox" hidden></div><input class="comment-media-input" type="file" accept="image/*,video/*" hidden /><button class="comment-media-button" type="button" aria-label="${feedText('Attach image or video', 'إرفاق صورة أو فيديو')}">＋</button><button class="comment-record-button" type="button" aria-label="${feedText('Record voice reply', 'تسجيل رد صوتي')}">●</button><button type="submit" aria-label="${feedText('Post reply', 'نشر الرد')}">↗</button><div class="comment-media-preview" hidden></div>`;
+  const input = replyForm.querySelector('input[type="text"]'); const mentionMenu = replyForm.querySelector('.mention-suggestions'); setupMentionAutocomplete(input, mentionMenu); const mediaInput = replyForm.querySelector('.comment-media-input'); const preview = replyForm.querySelector('.comment-media-preview'); const mediaButton = replyForm.querySelector('.comment-media-button'); const recordButton = replyForm.querySelector('.comment-record-button');
   replyForm._replyMedia = null;
   const showReplyMedia = (file) => { replyForm._replyMedia = file; const node = file.type.startsWith('video/') ? document.createElement('video') : file.type.startsWith('audio/') ? document.createElement('audio') : document.createElement('img'); node.src = URL.createObjectURL(file); node.controls = file.type.startsWith('video/') || file.type.startsWith('audio/'); node.className = 'comment-preview-media'; preview.replaceChildren(node); preview.hidden = false; };
   mediaButton.addEventListener('click', () => mediaInput.click());
