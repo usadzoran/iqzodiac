@@ -21,7 +21,7 @@
   const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const routeParams = new URLSearchParams(window.location.search);
   const targetMessageId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(routeParams.get('message') || '') ? routeParams.get('message') : '';
-  let client; let user; let contacts = []; let activeId = routeParams.get('match'); let activeConversation = null; let timerInterval; let elapsedSeconds = 0;
+  let client; let user; let contacts = []; let activeId = routeParams.get('match'); let activeConversation = null; let timerInterval; let elapsedSeconds = 0; let currentExpiryDuration = 'off'; let expiryChangeInFlight = false;
   let realtimeChannel = null; let renderTimer = null; let expiryRenderTimer = null; let renderRevision = 0; let longPressTimer = null; let suppressNextClick = false; let selectionMode = false; let selectedMessageIds = new Set(); let visibleMessageIds = [];
   let pendingAttachments = []; const refreshedAttachmentPaths = new Set(); const signedUrlExpiries = new Map(); let mediaRecorder = null; let recordingStream = null; let recordedChunks = []; let recordingConversationId = null; let sendingMessages = false; let vapidPublicKey = ''; let serviceWorkerRegistration = null;
   const expiryValues = ['off', '1h', '24h', '7d'];
@@ -254,7 +254,8 @@
     window.clearTimeout(expiryRenderTimer);
     const nextExpiry = messages.reduce((nearest, message) => { const expiry = message.expires_at ? new Date(message.expires_at).getTime() : Infinity; return expiry < nearest ? expiry : nearest; }, Infinity);
     if (Number.isFinite(nextExpiry)) expiryRenderTimer = window.setTimeout(scheduleRenderMessages, Math.max(0, nextExpiry - Date.now() + 25));
-    expirySelect.value = expiryValues.includes(settings?.expiry_duration) ? settings.expiry_duration : 'off';
+    currentExpiryDuration = expiryValues.includes(settings?.expiry_duration) ? settings.expiry_duration : 'off';
+    expirySelect.value = currentExpiryDuration;
     const fragment = document.createDocumentFragment(); const divider = document.createElement('div'); divider.className = 'message-day-divider'; divider.textContent = t('PRIVATE CONVERSATION', 'محادثة خاصة'); fragment.append(divider);
     const renderedBubbles = await Promise.all(messages.map((message) => appendMessage(message, signedUrls.get(message.attachment_path))));
     if (revision !== renderRevision || activeConversation !== renderingConversation || activeId !== renderingMember) return;
@@ -347,13 +348,36 @@
     finally { setComposerBusy(false); }
   });
   expirySelect.addEventListener('change', async () => {
-    if (!activeConversation) return;
+    const conversationId = activeConversation;
+    const duration = expirySelect.value;
+    if (!conversationId || expiryChangeInFlight) { expirySelect.value = currentExpiryDuration; return; }
+    expiryChangeInFlight = true;
     expirySelect.disabled = true;
-    const { error } = await client.rpc('iqzodiac_set_message_expiry', { p_conversation_id: activeConversation, p_duration: expirySelect.value });
-    expirySelect.disabled = false;
-    if (error) { toast(t('The disappearing-message setting could not be saved.', 'تعذر حفظ إعداد الرسائل ذاتية الاختفاء.')); await renderMessages(); return; }
-    toast(t('Disappearing-message setting updated.', 'تم تحديث إعداد الرسائل ذاتية الاختفاء.'));
-    await renderMessages();
+    expirySelect.setAttribute('aria-busy', 'true');
+    let timeoutId;
+    try {
+      const result = await Promise.race([
+        client.rpc('iqzodiac_set_message_expiry', { p_conversation_id: conversationId, p_duration: duration }),
+        new Promise((_, reject) => { timeoutId = window.setTimeout(() => reject(new Error('expiry-setting-timeout')), 12000); }),
+      ]);
+      if (result.error) throw result.error;
+      currentExpiryDuration = duration;
+      toast(t('Disappearing-message setting updated.', 'تم تحديث إعداد الرسائل ذاتية الاختفاء.'));
+      // The RPC inserts a system notice and updates the settings row. Realtime
+      // already schedules a refresh; debounce here as a fallback, not a second
+      // synchronous full conversation render.
+      scheduleRenderMessages();
+    } catch (error) {
+      console.warn('Disappearing-message setting could not be saved.', error);
+      expirySelect.value = currentExpiryDuration;
+      toast(t('The disappearing-message setting could not be saved.', 'تعذر حفظ إعداد الرسائل ذاتية الاختفاء.'));
+      if (error?.message === 'expiry-setting-timeout') scheduleRenderMessages();
+    } finally {
+      window.clearTimeout(timeoutId);
+      expiryChangeInFlight = false;
+      expirySelect.disabled = false;
+      expirySelect.removeAttribute('aria-busy');
+    }
   });
   document.querySelector('#select-all-messages').addEventListener('click', () => { selectionMode = true; selectedMessageIds = new Set(visibleMessageIds.map((message) => message.id)); messageList.classList.add('is-selecting'); updateSelectionToolbar(); renderMessageBubbles(); });
   document.querySelector('#clear-message-selection').addEventListener('click', () => setSelectionMode(false));
