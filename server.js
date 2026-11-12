@@ -38,7 +38,7 @@ const routeFiles = {
   '/gift-store': 'gift-store.html',
   '/wallet': 'wallet.html',
   '/youtube': 'youtube.html',
-  '/admin': 'admin.html',
+  '/iqz-control-7f3a91c2': 'iqz-control-7f3a91c2.html',
 };
 const fetchText = (url) => new Promise((resolve, reject) => {
   const request = https.get(url, { headers: { 'User-Agent': 'IQZodiac Daily/1.0' } }, (res) => {
