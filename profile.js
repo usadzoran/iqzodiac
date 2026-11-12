@@ -309,7 +309,15 @@ galleryConfirm.addEventListener('click', async () => {
   try {
     for (const file of queue) {
       const info = galleryFileInfo(file);
-      await adapter.uploadMedia(file, info.mediaType, { ...options, mimeType: info.mimeType });
+      await adapter.uploadMedia(file, info.mediaType, {
+        ...options,
+        mimeType: info.mimeType,
+        onProgress: (uploadedBytes, totalBytes) => {
+          const filePercent = Math.round((uploadedBytes / totalBytes) * 100);
+          const overallPercent = Math.round(((completed + filePercent / 100) / total) * 100);
+          galleryUploadStatus.textContent = `Uploading ${file.name}… ${overallPercent}% (${completed + 1}/${total})`;
+        },
+      });
       completed += 1; pendingGalleryFiles = pendingGalleryFiles.filter((candidate) => candidate !== file);
       const percent = Math.round((completed / total) * 100);
       galleryUploadStatus.textContent = `Uploading media… ${percent}% (${completed}/${total})`; renderPendingFiles();

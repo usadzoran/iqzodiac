@@ -71,6 +71,91 @@
     const { data } = await client.auth.getUser();
     return { client, user: data.user || null };
   };
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const bytesToBase64 = (value) => {
+    const bytes = new TextEncoder().encode(String(value));
+    let binary = '';
+    for (let index = 0; index < bytes.length; index += 0x8000) binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+    return btoa(binary);
+  };
+  const isRetryableUploadStatus = (status) => status === 408 || status === 409 || status === 425 || status === 429 || status >= 500;
+  const uploadLargeMedia = async (client, bucket, path, file, options = {}) => {
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+    if (sessionError || !accessToken) throw new Error('Your sign-in session expired. Please sign in again and retry the upload.');
+    const storageUrl = client.storage?.url;
+    if (!storageUrl) throw new Error('Storage configuration is unavailable. Please refresh the page and try again.');
+    const endpoint = `${storageUrl.replace(/\/$/, '')}/upload/resumable`;
+    const metadata = [
+      `bucketName ${bytesToBase64(bucket)}`,
+      `objectName ${bytesToBase64(path)}`,
+      `contentType ${bytesToBase64(options.contentType || file.type || 'application/octet-stream')}`,
+      `cacheControl ${bytesToBase64(options.cacheControl || '3600')}`,
+    ].join(',');
+    let response;
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      try {
+        response = await fetch(endpoint, { method: 'POST', headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Tus-Resumable': '1.0.0',
+          'Upload-Length': String(file.size),
+          'Upload-Metadata': metadata,
+          'x-upsert': 'false',
+        } });
+        if (response.ok) break;
+        if (!isRetryableUploadStatus(response.status) || attempt === 3) throw new Error(`Unable to start the upload (HTTP ${response.status}).`);
+      } catch (error) {
+        if (attempt === 3) throw new Error(error.message || 'The connection dropped while starting the upload.');
+      }
+      await sleep(800 * (2 ** attempt));
+    }
+    const location = response.headers.get('Location');
+    if (!location) throw new Error('The upload server did not return a resumable upload URL.');
+    const uploadUrl = new URL(location, endpoint).toString();
+    let offset = Number(response.headers.get('Upload-Offset') || 0);
+    const chunkSize = 5 * 1024 * 1024;
+    while (offset < file.size) {
+      const chunk = file.slice(offset, Math.min(offset + chunkSize, file.size));
+      let chunkResponse = null;
+      for (let attempt = 0; attempt < 4; attempt += 1) {
+        try {
+          chunkResponse = await fetch(uploadUrl, { method: 'PATCH', headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Tus-Resumable': '1.0.0',
+            'Upload-Offset': String(offset),
+            'Content-Type': 'application/offset+octet-stream',
+          }, body: chunk });
+          if (chunkResponse.ok) break;
+          if (chunkResponse.status === 409) {
+            const head = await fetch(uploadUrl, { method: 'HEAD', headers: { Authorization: `Bearer ${accessToken}`, 'Tus-Resumable': '1.0.0' } });
+            const serverOffset = Number(head.headers.get('Upload-Offset'));
+            if (head.ok && Number.isFinite(serverOffset) && serverOffset > offset) { offset = serverOffset; chunkResponse = null; break; }
+          }
+          if (!isRetryableUploadStatus(chunkResponse.status) || attempt === 3) throw new Error(`The upload failed (HTTP ${chunkResponse.status}).`);
+        } catch (error) {
+          if (attempt === 3) throw new Error(error.message || 'The connection dropped during upload. Please retry.');
+        }
+        await sleep(800 * (2 ** attempt));
+      }
+      if (!chunkResponse) { options.onProgress?.(offset, file.size); continue; }
+      const nextOffset = Number(chunkResponse.headers.get('Upload-Offset'));
+      offset = Number.isFinite(nextOffset) && nextOffset > offset ? nextOffset : offset + chunk.size;
+      options.onProgress?.(offset, file.size);
+    }
+  };
+  const uploadMediaObject = async (client, bucket, path, file, options = {}) => {
+    if (file.size > 6 * 1024 * 1024) {
+      await uploadLargeMedia(client, bucket, path, file, options);
+      return;
+    }
+    const { error } = await client.storage.from(bucket).upload(path, file, {
+      contentType: options.contentType || file.type || 'application/octet-stream',
+      upsert: false,
+      cacheControl: options.cacheControl || '3600',
+    });
+    if (error) throw error;
+    options.onProgress?.(file.size, file.size);
+  };
   const toPublicProfile = (profile = {}) => {
     const displayName = String(profile.pseudonym || profile.publicName || (profile.privacyProfileVersion === 2 ? profile.displayName : '') || 'Orbit Member').trim().slice(0, 32) || 'Orbit Member';
     const requestedHandle = profile.pseudonymousHandle || profile.publicHandle || (profile.privacyProfileVersion === 2 ? profile.handle : '@orbit-member');
@@ -171,8 +256,12 @@
       const section = ['public', 'private', 'sale'].includes(options.section) ? options.section : (mediaType === 'avatar' ? 'private' : 'private');
       const salePrice = section === 'sale' ? Number(options.salePrice) : null;
       if (section === 'sale' && (!Number.isFinite(salePrice) || salePrice <= 0)) throw new Error('Enter a valid sale price before uploading.');
-      const upload = await client.storage.from('iqzodiac-media').upload(path, file, { contentType: mimeType, upsert: false, cacheControl: '3600' });
-      if (upload.error) throw upload.error;
+      try {
+        await uploadMediaObject(client, 'iqzodiac-media', path, file, { contentType: mimeType, cacheControl: '3600', onProgress: options.onProgress });
+      } catch (error) {
+        await client.storage.from('iqzodiac-media').remove([path]).catch(() => {});
+        throw error;
+      }
       const row = await client.from('profile_media').insert({ user_id: user.id, storage_path: path, media_type: mediaType, mime_type: mimeType, size_bytes: file.size, is_public: section === 'public', gallery_section: section, description: String(options.description || '').trim().slice(0, 500), sale_price: salePrice, currency_code: String(options.currency || 'USD').toUpperCase(), sale_active: section === 'sale' }).select('id,storage_path,preview_storage_path,media_type,mime_type,size_bytes,is_public,gallery_section,description,sale_price,currency_code,sale_active,created_at').single();
       if (row.error) { await client.storage.from('iqzodiac-media').remove([path]); throw row.error; }
       const signed = await client.storage.from('iqzodiac-media').createSignedUrl(path, 3600);
