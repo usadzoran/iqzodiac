@@ -406,6 +406,13 @@ h1 {
 .save-note { margin: 0; color: var(--dim); font: 10px "DM Mono", monospace; letter-spacing: 0.04em; }
 .save-note .status-dot { margin-right: 8px; }
 .save-button { min-width: 154px; }
+.save-status { flex: 1 1 auto; margin: 0; color: var(--cyan); font: 10px/1.5 "DM Mono", monospace; letter-spacing: .03em; }
+.save-status[data-state="saving"] { color: var(--muted); }
+.save-status[data-state="error"] { color: var(--orange); }
+.profile-logout-slot { flex: 0 0 auto; }
+.profile-logout { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 0 15px; border: 1px solid rgba(242,167,124,.38); border-radius: 3px; background: rgba(242,167,124,.05); color: var(--orange); cursor: pointer; font: 9px "DM Mono", monospace; letter-spacing: .06em; text-transform: uppercase; }
+.profile-logout:hover, .profile-logout:focus-visible { border-color: var(--orange); background: rgba(242,167,124,.12); color: var(--ink); outline: none; }
+.profile-logout:disabled { cursor: wait; opacity: .55; }
 .profile-footer { margin-top: 70px; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .social-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 17px; margin-top: 17px; }

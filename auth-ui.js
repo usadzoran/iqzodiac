@@ -20,12 +20,14 @@
 
   const addLogoutButton = () => {
     const navigation = document.querySelector('.site-nav');
-    if (!navigation || navigation.querySelector('[data-logout]')) return;
+    const profilePage = document.body?.classList.contains('profile-page');
+    const target = profilePage ? document.querySelector('#profile-logout-slot') : navigation;
+    if (!target || target.querySelector('[data-logout]')) return;
 
     const button = document.createElement('button');
     button.type = 'button';
     button.dataset.logout = 'true';
-    button.className = 'site-logout';
+    button.className = profilePage ? 'site-logout profile-logout' : 'site-logout';
     button.innerHTML = '<span class="nav-glyph" aria-hidden="true">↪</span><span data-logout-label></span>';
     updateLabel(button);
     button.addEventListener('click', async () => {
@@ -43,7 +45,7 @@
         button.removeAttribute('aria-busy');
       }
     });
-    navigation.append(button);
+    target.append(button);
     document.addEventListener('iqzodiac:languagechange', () => updateLabel(button));
   };
 

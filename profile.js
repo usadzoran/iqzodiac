@@ -187,11 +187,19 @@ const zodiac = document.querySelector('#zodiac-sign'); const element = document.
 })();
 
 const saveProfileButton = document.querySelector('#save-profile');
+const saveStatus = document.querySelector('#save-status');
+const setSaveStatus = (message, state = 'success') => {
+  if (!saveStatus) return;
+  saveStatus.hidden = !message;
+  saveStatus.textContent = message || '';
+  saveStatus.dataset.state = state;
+};
 saveProfileButton.addEventListener('click', async () => {
   if (saveProfileButton.disabled) return;
   const label = saveProfileButton.querySelector('span');
   const originalLabel = label?.textContent || 'Save changes';
   saveProfileButton.disabled = true;
+  setSaveStatus('Saving your changes…', 'saving');
   if (label) label.textContent = 'Saving…';
   try {
     saveChoice('gallery-visible', galleryVisibility.checked);
@@ -202,9 +210,11 @@ saveProfileButton.addEventListener('click', async () => {
       await adapter.updatePrivacyPreferences({ photosPublic: galleryVisibility.checked });
       await adapter.updateCompatibilityProfile({ zodiac: zodiac.value, element: element.value, interests: interestsInput.value.split(',').map((item) => item.trim()).filter(Boolean) });
     }
-    showToast('Your information was saved successfully.');
+    setSaveStatus('✓ Your changes were saved successfully.', 'success');
+    showToast('Your changes were saved successfully.');
   } catch (error) {
     console.error('Profile could not be saved.', error);
+    setSaveStatus('Could not save your changes. Please try again.', 'error');
     showToast(error?.message || 'Profile could not be saved. Please try again.');
   } finally {
     saveProfileButton.disabled = false;
