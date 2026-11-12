@@ -1,6 +1,6 @@
 const form = document.querySelector('#login-form');
 const status = document.querySelector('#login-status');
-const next = new URLSearchParams(window.location.search).get('next');
+const next = new URLSearchParams(window.location.search).get('next') || (window.location.pathname.endsWith('/iqz-admin-login.html') ? './iqz-control-7f3a91c2.html' : null);
 const confirmed = new URLSearchParams(window.location.search).get('confirmed');
 
 const setStatus = (message, isError = false) => {
