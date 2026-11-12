@@ -99,10 +99,10 @@
     const form = document.querySelector('#admin-passcode-form');
     const input = document.querySelector('#admin-passcode');
     const statusNode = document.querySelector('#admin-passcode-status');
-    const showControlRoom = async () => { gate.hidden = true; content.hidden = false; bind(); await refresh(); };
-    if (window.sessionStorage.getItem('iqz_admin_second_factor') === 'verified') { await showControlRoom(); return; }
+    const showControlRoom = () => { loading.hidden = true; gate.hidden = true; content.hidden = false; content.removeAttribute('hidden'); content.style.display = 'block'; bind(); void refresh(); };
+    if (window.sessionStorage.getItem('iqz_admin_second_factor') === 'verified') { showControlRoom(); return; }
     loading.hidden = true; gate.hidden = false; input.focus();
-    form.addEventListener('submit', async (event) => { event.preventDefault(); const button = form.querySelector('button'); button.disabled = true; statusNode.textContent = 'Checking…'; const password = input.value.trim(); const { data, error } = await client.rpc('iqzodiac_verify_admin_second_factor', { p_password: password }); const verified = data === true || data === 'true'; if (error || !verified) { statusNode.textContent = error?.message || 'Incorrect password or unavailable verification.'; input.value = ''; input.focus(); button.disabled = false; return; } window.sessionStorage.setItem('iqz_admin_second_factor', 'verified'); await showControlRoom(); });
+    form.addEventListener('submit', async (event) => { event.preventDefault(); const button = form.querySelector('button'); button.disabled = true; statusNode.textContent = 'Checking…'; const password = input.value.trim(); const { data, error } = await client.rpc('iqzodiac_verify_admin_second_factor', { p_password: password }); const verified = data === true || data === 'true'; if (error || !verified) { statusNode.textContent = error?.message || 'Incorrect password or unavailable verification.'; input.value = ''; input.focus(); button.disabled = false; return; } window.sessionStorage.setItem('iqz_admin_second_factor', 'verified'); showControlRoom(); });
   };
   const refresh = async () => { try { await Promise.all([loadOverview(), loadMembers(), loadCategories(), loadVip()]); await loadModeration(); await loadMarket(); await loadAudit(); } catch(error) { console.warn('Admin data load failed.',error); showToast(error.message||'Some admin data could not be loaded.'); } };
   const bind = () => {
