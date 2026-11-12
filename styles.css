@@ -1360,3 +1360,5 @@ table { display: block; max-width: 100%; overflow-x: auto; border-collapse: coll
 .profile-saved-reel button { flex: 0 0 auto; padding: 0; border: 0; background: transparent; color: var(--orange); cursor: pointer; font: 8px "DM Mono", monospace; }
 .profile-page > .profile-private-shortcuts[hidden], .profile-page > .profile-grid[hidden], .profile-page > .compatibility-card[hidden], .profile-page > .reel-profile-link-card[hidden], .profile-page > .reel-collections-card[hidden], .profile-page > .profile-wallet-card[hidden], .profile-page > .social-grid[hidden], .profile-page > .profile-actions[hidden] { display: none; }
 @media (max-width: 600px) { .profile-activity-shell { margin-inline: -2px; padding-inline: 11px; } .profile-tab { padding-top: 14px; font-size: 9px; } .profile-saved-reels-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .profile-remove-save { font-size: 7px; } }
+
+.profile-page .reel-collections-card { display: none; }

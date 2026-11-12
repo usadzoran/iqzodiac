@@ -206,7 +206,9 @@ document.querySelector('#avatar-input').addEventListener('change', async (event)
   const optionsRow = document.querySelector('.profile-feed-options-row');
   const menu = document.querySelector('#profile-feed-menu');
   const optionsButton = document.querySelector('#profile-feed-options');
-  const aboutNodes = [...document.querySelectorAll('.profile-private-shortcuts, .profile-grid, .compatibility-card, .reel-profile-link-card, .reel-collections-card, .profile-wallet-card, .social-grid, .profile-actions')];
+  const legacyReelCollections = document.querySelector('.reel-collections-card');
+  if (legacyReelCollections) legacyReelCollections.hidden = true;
+  const aboutNodes = [...document.querySelectorAll('.profile-private-shortcuts, .profile-grid, .compatibility-card, .reel-profile-link-card, .profile-wallet-card, .social-grid, .profile-actions')];
   const escape = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
   const date = (value) => value ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '';
   const status = (element, text) => { if (element) element.innerHTML = `<p class="profile-tab-status">${escape(text)}</p>`; };
