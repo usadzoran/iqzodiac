@@ -98,6 +98,12 @@
   };
   const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const initials = (value) => String(value || 'OM').replace(/^@/, '').split(/[\s_-]+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'OM';
+  const commentMediaLimits = { image: 15 * 1024 * 1024, video: 50 * 1024 * 1024, audio: 20 * 1024 * 1024 };
+  const commentMediaType = (file) => file?.type?.startsWith('image/') ? 'image' : file?.type?.startsWith('video/') ? 'video' : file?.type?.startsWith('audio/') ? 'audio' : '';
+  const validateCommentFile = (file) => { const type = commentMediaType(file); if (!type || file.size > commentMediaLimits[type]) throw new Error('comment-media-invalid'); return type; };
+  const uploadReelCommentMedia = async (file) => { const type = validateCommentFile(file); const extension = (file.name.match(/\.([a-z0-9]+)$/i)?.[1] || type).toLowerCase(); const path = `${authenticatedUserId}/comments/${crypto.randomUUID()}.${extension}`; const { error } = await client.storage.from(MEDIA_BUCKET).upload(path, file, { contentType: file.type, cacheControl: '3600', upsert: false }); if (error) throw error; const { data } = await client.storage.from(MEDIA_BUCKET).createSignedUrl(path, 3600); return { media_type: type, media_path: path, media_mime: file.type, media_size_bytes: file.size, media_url: data?.signedUrl || '' }; };
+  const attachReelCommentMedia = (body, comment) => { if (!comment?.media_path || !comment.media_url) return; const media = comment.media_type === 'image' ? document.createElement('img') : comment.media_type === 'video' ? document.createElement('video') : document.createElement('audio'); media.className = 'reel-comment-media'; media.src = comment.media_url; media.controls = true; if (comment.media_type === 'image') media.alt = t('comment'); body.append(media); };
+  const setupReelCommentMediaControls = (form) => { const input = form.querySelector('[data-comment-media-input]'); const pick = form.querySelector('[data-comment-media-pick]'); const record = form.querySelector('[data-comment-media-record]'); const status = form.querySelector('[data-comment-media-status]'); if (!input) return; pick?.addEventListener('click', () => input.click()); input.addEventListener('change', () => { const file = input.files?.[0]; if (!file) return; try { validateCommentFile(file); form._mediaFile = file; if (status) status.textContent = file.name; } catch { input.value = ''; form._mediaFile = null; showToast(language() === 'ar' ? 'اختر ملف صورة أو فيديو أو صوت ضمن الحد المسموح.' : 'Choose an image, video or audio file within the limit.'); } }); record?.addEventListener('click', async () => { if (form._recorder) { form._recorder.stop(); return; } if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) { showToast(language() === 'ar' ? 'تسجيل الصوت غير مدعوم.' : 'Audio recording is not supported.'); return; } try { const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); const recorder = new MediaRecorder(stream); const chunks = []; form._recorder = recorder; recorder.ondataavailable = (event) => { if (event.data.size) chunks.push(event.data); }; recorder.onstop = () => { stream.getTracks().forEach((track) => track.stop()); form._recorder = null; form._mediaFile = new File(chunks, `reel-comment-${Date.now()}.webm`, { type: recorder.mimeType || 'audio/webm' }); if (status) status.textContent = language() === 'ar' ? 'تم تجهيز التسجيل' : 'Audio ready'; if (record) record.textContent = '●'; }; recorder.start(); if (status) status.textContent = language() === 'ar' ? 'جارٍ التسجيل… اضغط للإيقاف' : 'Recording… click to stop'; if (record) record.textContent = '■'; } catch { showToast(language() === 'ar' ? 'تم رفض الوصول للميكروفون.' : 'Microphone access was denied.'); } }); };
   const numeric = (value) => Number.isFinite(Number(value)) ? Number(value) : 0;
   const formatDate = (value) => {
     try { return new Intl.DateTimeFormat(language() === 'ar' ? 'ar' : 'en', { dateStyle: 'medium' }).format(new Date(value)); }
@@ -680,7 +686,7 @@
     const body = document.createElement('div'); body.className = 'reel-comment-body';
     const author = document.createElement('strong'); author.textContent = displayName;
     const text = document.createElement('p'); text.textContent = comment.body;
-    const date = document.createElement('small'); date.textContent = formatDate(comment.created_at);
+    const date = document.createElement('small'); date.textContent = formatDate(comment.created_at); attachReelCommentMedia(body, comment);
     const controls = document.createElement('div'); controls.className = 'reel-comment-controls';
     const repliesList = document.createElement('ul'); repliesList.className = 'reel-comment-replies'; repliesList.setAttribute('aria-label', t('replies'));
     replies.forEach((reply) => repliesList.append(createCommentItem(reply, profileMap.get(reply.author_id), [], profileMap)));
@@ -693,26 +699,30 @@
         if (existing) { existing.remove(); return; }
         const editor = document.createElement('form'); editor.className = 'reel-comment-reply-form';
         const input = document.createElement('input'); input.type = 'text'; input.maxLength = 180; input.placeholder = t('replyPlaceholder'); input.setAttribute('aria-label', t('replyPlaceholder'));
+        editor.innerHTML = '<input type="file" data-comment-media-input accept="image/*,video/*,audio/*" hidden /><button type="button" data-comment-media-pick>＋</button><button type="button" data-comment-media-record>●</button><span data-comment-media-status></span>';
+        setupReelCommentMediaControls(editor);
         const actions = document.createElement('div'); actions.className = 'reel-comment-editor-actions';
         const send = document.createElement('button'); send.type = 'submit'; send.textContent = t('postReply');
         const cancel = document.createElement('button'); cancel.type = 'button'; cancel.className = 'is-secondary'; cancel.textContent = t('cancelEdit');
         cancel.addEventListener('click', () => editor.remove());
         editor.addEventListener('submit', async (event) => {
           event.preventDefault();
-          const replyBody = input.value.trim().slice(0, 180);
-          if (!replyBody || !authenticatedUserId) { if (!authenticatedUserId) showToast(t('signIn')); input.focus(); return; }
+          const replyBody = input.value.trim().slice(0, 180); const mediaFile = editor._mediaFile;
+          if ((!replyBody && !mediaFile) || !authenticatedUserId) { if (!authenticatedUserId) showToast(t('signIn')); input.focus(); return; }
           send.disabled = true; cancel.disabled = true;
+          let media = {}; let mediaPath = '';
           try {
-            const { data, error } = await client.from('reel_comments').insert({ reel_id: comment.reel_id, author_id: authenticatedUserId, parent_comment_id: comment.id, body: replyBody }).select('id,reel_id,author_id,body,created_at,parent_comment_id').single();
-            if (error) throw error;
+            if (mediaFile) { media = await uploadReelCommentMedia(mediaFile); mediaPath = media.media_path; }
+            const { data, error } = await client.from('reel_comments').insert({ reel_id: comment.reel_id, author_id: authenticatedUserId, parent_comment_id: comment.id, body: replyBody, ...media }).select('id,reel_id,author_id,body,created_at,parent_comment_id,media_type,media_path,media_mime,media_size_bytes').single();
+            if (error) throw error; const replyData = { ...data, ...media };
             const profileMap = await getPublicProfiles([authenticatedUserId]);
             if (!repliesList.isConnected) body.append(repliesList);
-            repliesList.append(createCommentItem(data, profileMap.get(authenticatedUserId), [], profileMap));
+            repliesList.append(createCommentItem(replyData, profileMap.get(authenticatedUserId), [], profileMap));
             editor.remove();
             const reel = reelById.get(comment.reel_id);
             if (reel) { reel.comment_count = numeric(reel.comment_count) + 1; updateCommentButton(document.querySelector(`.reel-card[data-reel-id="${CSS.escape(comment.reel_id)}"]`), reel.comment_count); }
             showToast(t('replySaved'));
-          } catch (error) { console.warn('Reel reply could not be saved.', error); send.disabled = false; cancel.disabled = false; showToast(t('replyFailed')); }
+          } catch (error) { if (mediaPath) await client.storage.from(MEDIA_BUCKET).remove([mediaPath]); console.warn('Reel reply could not be saved.', error); send.disabled = false; cancel.disabled = false; showToast(t('replyFailed')); }
         });
         actions.append(send, cancel); editor.append(input, actions); body.insertBefore(editor, controls); input.focus();
       });
@@ -771,7 +781,7 @@
     loading.className = 'reel-comments-empty';
     loading.textContent = t('loading');
     commentsList.append(loading);
-    const commentColumns = 'id,reel_id,author_id,body,created_at,parent_comment_id';
+    const commentColumns = 'id,reel_id,author_id,body,created_at,parent_comment_id,media_type,media_path,media_mime,media_size_bytes';
     const { data, error } = await client.from('reel_comments').select(commentColumns).eq('reel_id', row.id).order('created_at', { ascending: false }).limit(50);
     if (error) {
       commentsList.replaceChildren();
@@ -799,6 +809,7 @@
       commentsList.replaceChildren(empty);
       return;
     }
+    for (const comment of comments) { if (comment.media_path) { const { data: signed } = await client.storage.from(MEDIA_BUCKET).createSignedUrl(comment.media_path, 3600); comment.media_url = signed?.signedUrl || ''; } }
     const profileMap = await getPublicProfiles(comments.map((comment) => comment.author_id));
     const repliesByParent = new Map();
     const topLevelComments = [];
@@ -1215,23 +1226,25 @@
       const body = commentInput.value.trim().slice(0, 180);
       if (!body) return;
       if (!authenticatedUserId) { showToast(t('signIn')); return; }
-      const button = byId('reel-comment-submit');
-      button.disabled = true;
+      const button = byId('reel-comment-submit'); const mediaFile = commentForm._mediaFile;
+      if (!body && !mediaFile) return;
+      button.disabled = true; let media = {}; let mediaPath = '';
       try {
+        if (mediaFile) { media = await uploadReelCommentMedia(mediaFile); mediaPath = media.media_path; }
         const { data, error } = await client.from('reel_comments')
-          .insert({ reel_id: selectedCommentReel.id, author_id: authenticatedUserId, body })
-          .select('id,reel_id,author_id,body,created_at').single();
-        if (error) throw error;
+          .insert({ reel_id: selectedCommentReel.id, author_id: authenticatedUserId, body, ...media })
+          .select('id,reel_id,author_id,body,created_at,parent_comment_id,media_type,media_path,media_mime,media_size_bytes').single();
+        if (error) throw error; const commentData = { ...data, ...media };
         const profileMap = await getPublicProfiles([authenticatedUserId]);
         const empty = commentsList.querySelector('.reel-comments-empty');
         empty?.remove();
-        commentsList.prepend(createCommentItem(data, profileMap.get(authenticatedUserId)));
-        commentInput.value = '';
+        commentsList.prepend(createCommentItem(commentData, profileMap.get(authenticatedUserId)));
+        commentInput.value = ''; commentForm._mediaFile = null; commentForm.querySelector('[data-comment-media-input]').value = '';
         selectedCommentReel.comment_count = numeric(selectedCommentReel.comment_count) + 1;
         const card = document.querySelector(`.reel-card[data-reel-id="${CSS.escape(selectedCommentReel.id)}"]`);
         updateCommentButton(card, selectedCommentReel.comment_count);
         showToast(t('commentSaved'));
-      } catch { showToast(t('commentFailed')); }
+      } catch { if (mediaPath) await client.storage.from(MEDIA_BUCKET).remove([mediaPath]); showToast(t('commentFailed')); }
       finally { button.disabled = false; }
     });
   };
@@ -1250,6 +1263,7 @@
       if (error) throw error;
       authenticatedUserId = data.session?.user?.id || null;
       bindEditor();
+      setupReelCommentMediaControls(commentForm);
       bindCommentsForm();
       setupObservers();
       localizeEditor();

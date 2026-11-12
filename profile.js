@@ -1,17 +1,58 @@
 const toast = document.querySelector('.toast');
 const toastMessage = document.querySelector('.toast-message');
-const mediaGrid = document.querySelector('.media-grid');
-const mediaInput = document.querySelector('#media-input');
-const addMediaButton = document.querySelector('#add-media');
-const mediaCount = document.querySelector('#media-count');
-let toastTimer;
-let uploadedMediaCount = 0;
 
-const showToast = (message) => { toastMessage.textContent = message; toast.classList.add('is-visible'); window.clearTimeout(toastTimer); toastTimer = window.setTimeout(() => toast.classList.remove('is-visible'), 2800); };
-const saveChoice = (key, value) => window.localStorage.setItem(`iqzodiac:${key}`, String(value));
-const readChoice = (key) => window.localStorage.getItem(`iqzodiac:${key}`) === 'true';
-const readNumber = (key, fallback) => Number(window.localStorage.getItem(`iqzodiac:${key}`) || fallback);
-const formatFileSize = (bytes) => bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+const setupProfileTabs = () => {
+  const heading = document.querySelector('.profile-heading');
+  const shell = document.querySelector('.profile-shell');
+  const profileGrid = document.querySelector('.profile-grid');
+  const identityCard = document.querySelector('.identity-card');
+  const galleryCard = document.querySelector('.gallery-card');
+  const compatibilityCard = document.querySelector('.compatibility-card');
+  const reelLinkCard = document.querySelector('.reel-profile-link-card');
+  const reelCollectionsCard = document.querySelector('.reel-collections-card');
+  const walletCard = document.querySelector('.profile-wallet-card');
+  const socialGrid = document.querySelector('.social-grid');
+  const communityCard = document.querySelector('.community-card');
+  const notificationsCard = document.querySelector('.notifications-card');
+  const actions = document.querySelector('.profile-actions');
+  const shortcuts = document.querySelector('.profile-private-shortcuts');
+  if (!heading || !shell || !profileGrid || !identityCard || shell.querySelector('#profile-tab-nav')) return;
+
+  const tabs = [
+    ['overview', '◉', 'Overview'], ['gallery', '▧', 'Photos'], ['reels', '▶', 'Reels'],
+    ['community', '◎', 'Community'], ['notifications', '◌', 'Notifications'], ['privacy', '◇', 'Privacy'], ['account', '◈', 'Account'],
+  ];
+  const nav = document.createElement('nav');
+  nav.id = 'profile-tab-nav'; nav.className = 'profile-tab-nav'; nav.setAttribute('aria-label', 'Profile sections'); nav.setAttribute('role', 'tablist');
+  tabs.forEach(([id, icon, label], index) => { const button = document.createElement('button'); button.type = 'button'; button.className = `profile-tab${index === 0 ? ' is-active' : ''}`; button.dataset.profileTab = id; button.setAttribute('role', 'tab'); button.setAttribute('aria-selected', String(index === 0)); button.id = `profile-tab-${id}`; button.innerHTML = `<span aria-hidden="true">${icon}</span><span>${label}</span>`; nav.append(button); });
+  heading.after(nav);
+
+  const panels = document.createElement('div'); panels.id = 'profile-tab-panels'; panels.className = 'profile-tab-panels'; nav.after(panels);
+  const panelFor = (id) => { const panel = document.createElement('section'); panel.id = `profile-panel-${id}`; panel.className = `profile-tab-panel${id === 'overview' ? ' is-active' : ''}`; panel.dataset.profilePanel = id; panel.setAttribute('role', 'tabpanel'); panel.setAttribute('aria-labelledby', `profile-tab-${id}`); panel.hidden = id !== 'overview'; panels.append(panel); return panel; };
+  const panel = Object.fromEntries(tabs.map(([id]) => [id, panelFor(id)]));
+
+  panel.overview.append(shortcuts, profileGrid);
+  panel.gallery.append(galleryCard);
+  panel.reels.append(reelLinkCard, reelCollectionsCard);
+  panel.community.append(communityCard);
+  panel.notifications.append(notificationsCard);
+  panel.privacy.append(document.querySelector('#private-info'), document.querySelector('#gallery-privacy-settings'));
+  panel.account.append(compatibilityCard, walletCard, actions);
+  if (socialGrid) socialGrid.remove();
+
+  const activate = (id, updateHash = true) => {
+    const valid = panel[id] ? id : 'overview';
+    nav.querySelectorAll('.profile-tab').forEach((button) => { const active = button.dataset.profileTab === valid; button.classList.toggle('is-active', active); button.setAttribute('aria-selected', String(active)); });
+    Object.entries(panel).forEach(([key, element]) => { const active = key === valid; element.hidden = !active; element.classList.toggle('is-active', active); });
+    if (updateHash && window.history.replaceState) window.history.replaceState(null, '', `#${valid}`);
+  };
+  nav.addEventListener('click', (event) => { const button = event.target.closest('[data-profile-tab]'); if (button) activate(button.dataset.profileTab); });
+  shortcuts?.querySelectorAll('a[href^="#"]').forEach((link) => link.addEventListener('click', (event) => { const target = link.getAttribute('href'); const tab = target === '#gallery-title' || target === '#gallery-privacy-settings' ? 'gallery' : target === '#private-info' ? 'privacy' : 'overview'; event.preventDefault(); activate(tab); document.querySelector(target)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }));
+  activate(window.location.hash.slice(1), false);
+};
+setupProfileTabs();
+
+
 const displayNameInput = document.querySelector('#display-name');
 const usernameInput = document.querySelector('#username');
 const firstNameInput = document.querySelector('#first-name');
