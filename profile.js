@@ -96,7 +96,7 @@ const renderCompactNotifications = (rows) => {
     entry.append(item, deleteButton); notificationPopoverList.append(entry);
   });
 };
-notificationTrigger?.addEventListener('click', () => { const open = notificationPopover.hidden; notificationPopover.hidden = !open; notificationTrigger.setAttribute('aria-expanded', String(open)); });
+notificationTrigger?.addEventListener('click', () => { const open = notificationPopover.hidden; notificationPopover.hidden = !open; notificationTrigger.setAttribute('aria-expanded', String(open)); if (open) void loadNotifications(); });
 document.addEventListener('click', (event) => { if (!event.target.closest('#notification-menu')) { notificationPopover.hidden = true; notificationTrigger?.setAttribute('aria-expanded', 'false'); } });
 document.querySelector('#popover-mark-read')?.addEventListener('click', () => document.querySelector('#mark-all-read').click());
 updateSocialPreview(); updateNotificationCount(); updateNotificationBadge();
@@ -114,12 +114,23 @@ const renderNotifications = (rows) => {
   });
   updateNotificationCount(); updateNotificationBadge(); renderCompactNotifications(rows);
 };
+let notificationsLoading = false;
+let notificationsLoaded = false;
 const loadNotifications = async () => {
-  try { const client = await window.IQZodiacSupabase.ready; const { data: userData } = await client.auth.getUser(); if (!userData?.user?.id) return; const { data, error } = await client.from('notifications').select('id,notification_type,post_id,comment_id,reel_id,reel_comment_id,message,read_at,created_at').eq('recipient_id', userData.user.id).order('created_at', { ascending: false }).limit(30); if (error) throw error; renderNotifications(data || []);
+  if (notificationsLoading || notificationsLoaded) return;
+  notificationsLoading = true;
+  try {
+    const client = await window.IQZodiacSupabase.ready;
+    const { data: userData } = await client.auth.getUser();
+    if (!userData?.user?.id) return;
+    const { data, error } = await client.from('notifications').select('id,notification_type,post_id,comment_id,reel_id,reel_comment_id,message,read_at,created_at').eq('recipient_id', userData.user.id).order('created_at', { ascending: false }).limit(30);
+    if (error) throw error;
+    renderNotifications(data || []);
     client.channel(`notifications:${userData.user.id}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `recipient_id=eq.${userData.user.id}` }, (payload) => { renderNotifications([payload.new, ...[...notificationItems].map((item) => ({ id: item.dataset.notificationId, message: item.dataset.notification, reel_id: item.dataset.reelId, read_at: item.classList.contains('is-unread') ? null : new Date().toISOString(), created_at: new Date().toISOString() }))]); showToast(payload.new.message); }).subscribe();
+    notificationsLoaded = true;
   } catch { /* Notifications remain empty if the account service is unavailable. */ }
+  finally { notificationsLoading = false; }
 };
-void loadNotifications();
 followButton.disabled = true;
 likeProfile.disabled = true;
 followLabel.textContent = 'Use Match to connect';
@@ -127,24 +138,34 @@ likeLabel.textContent = 'Member interactions appear in Match';
 
 const adapter = window.IQZodiacData?.adapter;
 const zodiac = document.querySelector('#zodiac-sign'); const element = document.querySelector('#personality-element'); const interestsInput = document.querySelector('#match-interests');
-(async () => {
-  if (!adapter) return;
-  const profile = await adapter.getCurrentProfile();
-  displayNameInput.value = profile.displayName || profile.pseudonym || profile.name || 'Orbit Member';
-  usernameInput.value = String(profile.handle || '@orbit-member').replace(/^@/, '');
-  firstNameInput.value = profile.firstName || '';
-  lastNameInput.value = profile.lastName || '';
-  countryInput.value = countryCodeFor(profile.residenceCountry || profile.country);
-  populateCities(countryInput, cityInput, profile.residenceCity || profile.city || '');
-  birthCountryInput.value = countryCodeFor(profile.birthCountry);
-  populateCities(birthCountryInput, birthCityInput, profile.birthCity || '');
-  preferredLanguageInput.value = profile.preferredLanguage === 'ar' ? 'ar' : 'en';
-  document.querySelector('#avatar-preview .avatar-initials').textContent = profile.initials || 'OM';
-  zodiac.value = profile.zodiac || ''; element.value = profile.element || ''; interestsInput.value = (profile.interests || []).join(', ');
-  const access = await adapter.getAccountAccess();
-  document.querySelector('#account-role-badge').textContent = access.role.toUpperCase();
-  document.querySelector('#vip-access-copy').textContent = access.role === 'vip' ? 'VIP access is active. Priority matching and future private sections are enabled.' : 'VIP will unlock special sections and priority matching after checkout is connected.';
-})();
+const profileSaveButton = document.querySelector('#save-profile');
+if (adapter && profileSaveButton) profileSaveButton.disabled = true;
+let profileDataLoaded = false;
+const loadProfileDetails = async () => {
+  if (!adapter || profileDataLoaded) return;
+  try {
+    const profile = await adapter.getCurrentProfile();
+    displayNameInput.value = profile.displayName || profile.pseudonym || profile.name || 'Orbit Member';
+    usernameInput.value = String(profile.handle || '@orbit-member').replace(/^@/, '');
+    firstNameInput.value = profile.firstName || '';
+    lastNameInput.value = profile.lastName || '';
+    countryInput.value = countryCodeFor(profile.residenceCountry || profile.country);
+    populateCities(countryInput, cityInput, profile.residenceCity || profile.city || '');
+    birthCountryInput.value = countryCodeFor(profile.birthCountry);
+    populateCities(birthCountryInput, birthCityInput, profile.birthCity || '');
+    preferredLanguageInput.value = profile.preferredLanguage === 'ar' ? 'ar' : 'en';
+    document.querySelector('#avatar-preview .avatar-initials').textContent = profile.initials || 'OM';
+    if (typeof profile.privacy?.photosPublic === 'boolean') galleryVisibility.checked = profile.privacy.photosPublic;
+    updatePrivacyPreview();
+    zodiac.value = profile.zodiac || ''; element.value = profile.element || ''; interestsInput.value = (profile.interests || []).join(', ');
+    const access = await adapter.getAccountAccess();
+    document.querySelector('#account-role-badge').textContent = access.role.toUpperCase();
+    document.querySelector('#vip-access-copy').textContent = access.role === 'vip' ? 'VIP access is active. Priority matching and future private sections are enabled.' : 'VIP will unlock special sections and priority matching after checkout is connected.';
+    profileDataLoaded = true;
+  } catch (error) {
+    console.warn('Profile details could not be loaded.', error);
+  }
+};
 
 document.querySelector('#save-profile').addEventListener('click', async () => {
   saveChoice('gallery-visible', galleryVisibility.checked);
@@ -180,4 +201,17 @@ const loadMedia = async () => { if (!adapter) return; const items = await adapte
 addMediaButton.addEventListener('click', () => mediaInput.click());
 mediaInput.addEventListener('change', async (event) => { const files = Array.from(event.target.files || []); if (!files.length || !adapter) return; try { for (const file of files) await adapter.uploadMedia(file, file.type.startsWith('video/') ? 'video' : 'photo'); await loadMedia(); showToast(`${files.length} ${files.length === 1 ? 'file' : 'files'} saved to your private gallery.`); } catch (error) { showToast(error?.message || 'Media could not be uploaded.'); } finally { mediaInput.value = ''; } });
 document.querySelector('#avatar-input').addEventListener('change', async (event) => { const [file] = event.target.files; if (!file || !adapter) return; try { const item = await adapter.uploadMedia(file, 'avatar'); const avatar = document.querySelector('#avatar-preview'); avatar.style.backgroundImage = `url(${item.url})`; avatar.classList.add('has-photo'); avatar.querySelector('.avatar-initials').hidden = true; showToast('Profile photo saved securely.'); } catch (error) { showToast(error?.message || 'Profile photo could not be uploaded.'); } finally { event.target.value = ''; } });
-(async () => { await loadMedia(); })();
+let aboutLoadPromise = null;
+const initializeAbout = () => {
+  if (aboutLoadPromise) return aboutLoadPromise;
+  const panel = document.querySelector('#profile-panel-about');
+  panel?.setAttribute('aria-busy', 'true');
+  aboutLoadPromise = Promise.allSettled([loadProfileDetails(), loadMedia(), loadNotifications()]).finally(() => {
+    panel?.setAttribute('aria-busy', 'false');
+    if (profileSaveButton && (!adapter || profileDataLoaded)) profileSaveButton.disabled = false;
+  });
+  return aboutLoadPromise;
+};
+document.addEventListener('iqzodiac:profiletabchange', (event) => {
+  if (event.detail?.tab === 'about') void initializeAbout();
+});

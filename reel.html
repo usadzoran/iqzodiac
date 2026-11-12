@@ -4,53 +4,34 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="description" content="Share and discover short videos on IQZodiac." />
-  <title>Reel — IQZodiac</title>
+  <title>Reels — IQZodiac</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=reels-vertical-20261107" />
-  <link rel="stylesheet" href="./reel.css?v=instagram-mobile-20261108" />
+  <link rel="stylesheet" href="./styles.css?v=saved-items-20261112" />
+  <link rel="stylesheet" href="./reel.css?v=saved-reels-20261112" />
 </head>
-<body class="has-site-nav reel-page">
-  <div class="aurora aurora-one" aria-hidden="true"></div>
-  <div class="aurora aurora-two" aria-hidden="true"></div>
-  <div class="grain" aria-hidden="true"></div>
-
+<body class="reel-page">
   <main class="reel-shell" data-i18n-skip>
-    <header class="reel-mobile-header" aria-label="Reels controls">
-      <a class="reel-mobile-back" href="./home.html" aria-label="Back to IQZodiac"><span aria-hidden="true">←</span></a>
-      <div class="reel-mobile-heading"><strong id="reel-mobile-title">Reels</strong><span id="reel-mobile-subtitle">Your orbit</span></div>
-      <div id="reel-creator-orbit" class="reel-creator-orbit" aria-label="People who posted Reels"></div>
-      <a class="reel-mobile-icon reel-mobile-stats" href="./reel-stats.html" aria-label="My Reel statistics"><span aria-hidden="true">▥</span></a>
-      <button class="reel-mobile-icon reel-create-trigger" type="button" aria-label="Create a Reel" aria-haspopup="dialog" aria-controls="reel-create-dialog"><span aria-hidden="true">＋</span></button>
-    </header>
-    <header class="reel-topbar">
-      <a class="mini-mark" href="./home.html" aria-label="IQZodiac home"><span class="mini-mark-orbit" aria-hidden="true"></span><span>IQZ</span></a>
+    <header class="reel-topbar" aria-label="Reels controls">
+      <a class="reel-home-link" href="./home.html" aria-label="Back to IQZodiac"><span aria-hidden="true">←</span></a>
+      <h1 id="reel-page-title" class="reel-page-title">Reels</h1>
       <div class="reel-topbar-actions">
-        <a class="reel-stats-shortcut" href="./reel-stats.html"><span id="reel-stats-shortcut-label">My Reel statistics</span><span aria-hidden="true">↗</span></a>
+        <a class="reel-stats-shortcut" href="./reel-stats.html" aria-label="My Reel statistics">
+          <span class="reel-stats-icon" aria-hidden="true">▥</span>
+          <span id="reel-stats-shortcut-label" class="reel-stats-shortcut-label">My Reel statistics</span>
+        </a>
+        <button id="reel-create-open" class="reel-create-open reel-create-trigger" type="button" aria-label="Create a Reel" aria-haspopup="dialog" aria-controls="reel-create-dialog">
+          <span aria-hidden="true">＋</span><span id="reel-create-open-label">Create Reel</span>
+        </button>
       </div>
-      <button id="reel-create-open" class="reel-create-open reel-create-trigger" type="button" aria-label="Create a Reel" aria-haspopup="dialog" aria-controls="reel-create-dialog"><span aria-hidden="true">＋</span><span id="reel-create-open-label">Create Reel</span></button>
     </header>
 
-    <section class="reel-hero" aria-labelledby="reel-title">
-      <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span><span id="reel-kicker">SHORT FORM · YOUR ORBIT</span></p>
-      <h1 id="reel-title">Reels <span>in motion.</span></h1>
-      <p id="reel-intro">Swipe vertically to move between recent videos from your orbit.</p>
-    </section>
-
-    <section class="reel-feed-section" aria-labelledby="reel-feed-title">
-      <div class="reel-section-heading">
-        <div><p class="card-kicker" id="reel-feed-kicker">FROM YOUR ORBIT</p><h2 id="reel-feed-title">Recent Reels</h2></div>
-        <span id="reel-count" class="reel-count"></span>
-      </div>
-      <p id="reel-shared-warning" class="reel-shared-warning" role="status" hidden></p>
-      <div id="reel-feed" class="reel-feed" role="region" tabindex="0" aria-label="Reel video feed" aria-busy="true">
-        <p class="reel-empty" id="reel-loading" role="status">Loading Reels…</p>
-      </div>
-    </section>
-
-    <footer class="footer reel-footer"><span>© 2026 IQZodiac</span><span class="footer-orbit" aria-hidden="true"><i></i><i></i><i></i></span><span id="reel-footer-tagline">Look inward. Move forward.</span><button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>
+    <p id="reel-shared-warning" class="reel-shared-warning" role="status" hidden></p>
+    <div id="reel-feed" class="reel-feed" role="region" tabindex="0" aria-label="Reels" aria-busy="true">
+      <p class="reel-empty" id="reel-loading" role="status">Loading Reels…</p>
+    </div>
 
     <dialog id="reel-create-dialog" class="reel-create-dialog" aria-labelledby="reel-create-title">
       <div class="reel-dialog-heading">
@@ -89,7 +70,8 @@
   <script src="./auth-ui.js" defer></script>
   <script src="./i18n-data.js?v=20261107-reel" defer></script>
   <script src="./language.js?v=20261107-reel" defer></script>
-  <script src="./reel.js?v=instagram-mobile-20261108" defer></script>
+  <script src="./saved-items.js?v=saved-items-20261112" defer></script>
+  <script src="./reel.js?v=reel-saves-20261112" defer></script>
   <script src="./nav-performance.js" defer></script>
 </body>
 </html>

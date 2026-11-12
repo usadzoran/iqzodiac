@@ -113,6 +113,7 @@ const bindPost = (post) => {
   const likeButton = post.querySelector('.like-button');
   const commentButton = post.querySelector('.comment-focus');
   const shareButton = post.querySelector('.share-action');
+  const saveButton = post.querySelector('.save-action');
   const likeCount = post.querySelector('.like-count');
   const commentCount = post.querySelector('.comment-count');
   const commentForm = post.querySelector('.comment-form');
@@ -142,6 +143,28 @@ const bindPost = (post) => {
     try { await navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#post-${post.dataset.postId}`); showToast('Post link copied to your orbit.'); } catch { showToast('Copy is unavailable in this browser.'); }
   });
 
+  const setSavedState = (saved) => {
+    saveButton.dataset.saved = String(saved);
+    saveButton.setAttribute('aria-pressed', String(saved));
+    saveButton.classList.toggle('is-saved', saved);
+    saveButton.querySelector('.save-label').textContent = saved ? (window.IQZodiacLanguage?.language === 'ar' ? 'تم الحفظ' : 'Saved') : (window.IQZodiacLanguage?.language === 'ar' ? 'حفظ' : 'Save');
+    saveButton.setAttribute('aria-label', saveButton.querySelector('.save-label').textContent);
+  };
+  saveButton.addEventListener('click', async () => {
+    if (!authenticatedUserId || !window.IQZodiacSavedItems) { showToast('Sign in to save posts.'); return; }
+    const current = saveButton.dataset.saved === 'true';
+    saveButton.disabled = true;
+    try {
+      const saved = await window.IQZodiacSavedItems.toggle(await database(), authenticatedUserId, 'post', post.dataset.postId, current);
+      setSavedState(saved);
+      showToast(saved ? (window.IQZodiacLanguage?.language === 'ar' ? 'تم حفظ المنشور.' : 'Post saved.') : (window.IQZodiacLanguage?.language === 'ar' ? 'تمت إزالة المنشور من المحفوظات.' : 'Post removed from Saved.'));
+    } catch (error) {
+      console.warn('Post save could not be updated.', error);
+      showToast('Post could not be saved. Try again.');
+    } finally { saveButton.disabled = false; }
+  });
+  setSavedState(saveButton.dataset.saved === 'true');
+
   commentForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const value = escapeText(commentInput.value);
@@ -159,7 +182,7 @@ const bindPost = (post) => {
   });
 };
 
-document.querySelector('#feed-list').innerHTML = '<p class="match-empty">Loading the shared feed…</p>';
+  document.querySelector('#feed-list').innerHTML = '<p class="match-empty">Loading the shared feed…</p>';
 
 document.querySelectorAll('[data-flow]').forEach((button) => {
   button.addEventListener('click', () => showToast(`${button.dataset.flow} is coming soon.`));
@@ -282,6 +305,15 @@ if ('IntersectionObserver' in window && !reduceMotion) {
 
 
 // The feed is sourced from Supabase; the static HTML cards are never treated as real members.
+document.addEventListener('iqzodiac:languagechange', () => {
+  const isArabic = window.IQZodiacLanguage?.language === 'ar';
+  document.querySelectorAll('.save-action').forEach((button) => {
+    const label = button.querySelector('.save-label');
+    if (!label) return;
+    label.textContent = button.dataset.saved === 'true' ? (isArabic ? 'تم الحفظ' : 'Saved') : (isArabic ? 'حفظ' : 'Save');
+    button.setAttribute('aria-label', label.textContent);
+  });
+});
 (async () => {
   try {
     const client = await database();
@@ -298,6 +330,12 @@ if ('IntersectionObserver' in window && !reduceMotion) {
     }
     const { data: feed, error } = await client.rpc('get_home_feed', { p_limit: 30 });
     if (error) throw error;
+    const feedPostIds = (feed || []).map((item) => item.post_id).filter(Boolean);
+    let savedPostIds = new Set();
+    if (feedPostIds.length && window.IQZodiacSavedItems) {
+      try { savedPostIds = await window.IQZodiacSavedItems.getSavedIds(client, authenticatedUserId, 'post', feedPostIds); }
+      catch (savedError) { console.warn('Saved post states could not be loaded.', savedError); }
+    }
     const feedList = document.querySelector('#feed-list');
     feedList.replaceChildren();
     if (!Array.isArray(feed) || !feed.length) {
@@ -305,15 +343,16 @@ if ('IntersectionObserver' in window && !reduceMotion) {
     } else {
       for (const item of feed) {
         const post = document.createElement('article');
-        post.className = 'post-card'; post.dataset.postId = item.post_id; post.dataset.author = String(item.handle || '').replace(/^@/, ''); post.dataset.authorId = item.author_id;
+        post.className = 'post-card'; post.id = `post-${item.post_id}`; post.dataset.postId = item.post_id; post.dataset.author = String(item.handle || '').replace(/^@/, ''); post.dataset.authorId = item.author_id;
         const liked = Boolean(item.liked_by_me);
+        const saved = savedPostIds.has(item.post_id);
         let mediaUrl = '';
         if (item.media_path) {
           const { data: signed } = await client.storage.from('iqzodiac-media').createSignedUrl(item.media_path, 3600);
           mediaUrl = signed?.signedUrl || '';
         }
         const bodyMarkup = item.body ? `<p class="post-body">${escapeHTML(item.body)}</p>` : '';
-        post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">${escapeHTML(String(item.display_name || 'OM').slice(0, 1))}</div><div class="post-author"><strong>${escapeHTML(item.display_name || 'Orbit Member')}</strong><span>${escapeHTML(item.handle || '@member')} · ${escapeHTML(formatDateTime(item.created_at))}</span></div></header>${bodyMarkup}${createPostMedia(item, mediaUrl)}<div class="post-meta"><span class="like-count">${formatCount(Number(item.like_count || 0))} likes</span><span class="comment-count">${formatCount(Number(item.comment_count || 0))} comments</span></div><div class="post-actions"><button class="post-action like-button ${liked ? 'is-liked' : ''}" type="button" data-like="${liked}"><span class="action-icon">${liked ? '♥' : '♡'}</span><span>${liked ? 'Liked' : 'Like'}</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment" /><button type="submit" aria-label="Post comment">↗</button></form>`;
+        post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">${escapeHTML(String(item.display_name || 'OM').slice(0, 1))}</div><div class="post-author"><strong>${escapeHTML(item.display_name || 'Orbit Member')}</strong><span>${escapeHTML(item.handle || '@member')} · ${escapeHTML(formatDateTime(item.created_at))}</span></div></header>${bodyMarkup}${createPostMedia(item, mediaUrl)}<div class="post-meta"><span class="like-count">${formatCount(Number(item.like_count || 0))} likes</span><span class="comment-count">${formatCount(Number(item.comment_count || 0))} comments</span></div><div class="post-actions"><button class="post-action like-button ${liked ? 'is-liked' : ''}" type="button" data-like="${liked}"><span class="action-icon">${liked ? '♥' : '♡'}</span><span>${liked ? 'Liked' : 'Like'}</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action save-action ${saved ? 'is-saved' : ''}" type="button" data-saved="${saved}" aria-pressed="${saved}"><span class="bookmark-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.75 3.75h10.5c.83 0 1.5.67 1.5 1.5v15l-6.75-4.5-6.75 4.5v-15c0-.83.67-1.5 1.5-1.5Z" /></svg></span><span class="save-label">${saved ? 'Saved' : 'Save'}</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment" /><button type="submit" aria-label="Post comment">↗</button></form>`;
         feedList.append(post); bindPost(post);
       }
     }
@@ -329,6 +368,11 @@ if ('IntersectionObserver' in window && !reduceMotion) {
         comments = (basicComments || []).map((comment) => ({ ...comment, handle: comment.author_id === authenticatedUserId ? currentPublicIdentity.handle : '@member' }));
       }
       document.querySelectorAll('#feed-list .post-card').forEach((post) => renderComments(post, comments.filter((comment) => comment.post_id === post.dataset.postId)));
+    }
+    const requestedPostId = window.location.hash.match(/^#post-([0-9a-f-]{36})$/i)?.[1];
+    if (requestedPostId) {
+      const requestedPost = document.getElementById(`post-${requestedPostId}`);
+      if (requestedPost) requestAnimationFrame(() => requestedPost.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }));
     }
     const today = new Date().toLocaleDateString('en-CA');
     const { data: mood } = await client.from('daily_moods').select('mood').eq('mood_date', today).maybeSingle();

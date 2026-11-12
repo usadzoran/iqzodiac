@@ -1043,3 +1043,78 @@ html.has-scroll-reveal .home-page [data-scroll-reveal].is-revealed { opacity: 1;
 .reel-profile-link-card .section-intro { margin-bottom: 0; }
 .reel-profile-link-card h2 { margin: 0; color: var(--ink); font-size: 22px; letter-spacing: -0.045em; }
 @media (max-width: 600px) { .reel-profile-link-card { align-items: stretch; flex-direction: column; gap: 8px; } }
+
+
+/* Profile sections: compact tabs, lazy feed panels, and private Saved items */
+.profile-page .profile-tabs { display:flex; gap:clamp(16px,4vw,38px); overflow-x:auto; overscroll-behavior-inline:contain; scroll-snap-type:x proximity; scrollbar-width:none; border-bottom:1px solid var(--line); margin:24px 0 0; padding:0 2px; touch-action:pan-x; }
+.profile-page .profile-tabs::-webkit-scrollbar { display:none; }
+.profile-page .profile-tab { position:relative; flex:0 0 auto; min-height:50px; padding:0 5px; border:0; border-bottom:2px solid transparent; background:transparent; color:var(--dim); cursor:pointer; font:600 11px "DM Mono",monospace; letter-spacing:.08em; text-transform:uppercase; scroll-snap-align:start; transition:color 180ms ease,border-color 180ms ease; }
+.profile-page .profile-tab:hover,.profile-page .profile-tab:focus-visible { color:var(--muted); outline:none; }
+.profile-page .profile-tab:focus-visible { box-shadow:0 0 0 2px rgba(131,229,232,.2); }
+.profile-page .profile-tab.is-active { border-bottom-color:var(--cyan); color:var(--ink); }
+.profile-page .profile-feed-toolbar { display:flex; justify-content:flex-end; min-height:52px; padding:12px 0 6px; }
+.profile-page .profile-feed-options { position:relative; z-index:5; }
+.profile-page .profile-feed-options-trigger { display:inline-flex; min-height:38px; align-items:center; gap:9px; padding:8px 13px; border:1px solid var(--line); border-radius:999px; background:rgba(15,21,40,.78); color:var(--muted); cursor:pointer; font:10px "DM Mono",monospace; letter-spacing:.06em; text-transform:uppercase; }
+.profile-page .profile-feed-options-trigger:hover,.profile-page .profile-feed-options-trigger:focus-visible { border-color:rgba(131,229,232,.42); color:var(--ink); outline:none; }
+.profile-page .profile-feed-options-trigger > span:first-child { color:var(--cyan); font-size:16px; line-height:1; }
+.profile-page .profile-feed-options-menu { position:absolute; top:calc(100% + 8px); inset-inline-end:0; display:grid; min-width:190px; gap:4px; padding:7px; border:1px solid var(--line); border-radius:13px; background:var(--night); box-shadow:0 18px 45px rgba(0,0,0,.35); }
+.profile-page .profile-feed-options-menu[hidden] { display:none; }
+.profile-page .profile-feed-option { min-height:39px; padding:8px 11px; border:1px solid transparent; border-radius:8px; background:transparent; color:var(--muted); cursor:pointer; font:11px "Manrope",sans-serif; text-align:start; }
+.profile-page .profile-feed-option:hover,.profile-page .profile-feed-option:focus-visible,.profile-page .profile-feed-option.is-selected { border-color:rgba(131,229,232,.18); background:rgba(131,229,232,.08); color:var(--ink); outline:none; }
+.profile-page .profile-tab-panel[hidden] { display:none !important; }
+.profile-page .profile-tab-panel { min-height:160px; }
+.profile-page .profile-feed-list { display:grid; width:min(100%,900px); gap:14px; margin:8px auto 0; }
+.profile-page .profile-item-card { min-width:0; overflow:hidden; padding:clamp(15px,3vw,22px); border:1px solid var(--line); border-radius:16px; background:linear-gradient(145deg,rgba(24,31,57,.78),rgba(12,17,32,.74)); box-shadow:0 14px 38px rgba(0,0,0,.12); }
+.profile-page .profile-item-header { display:flex; align-items:center; justify-content:space-between; gap:12px; color:var(--muted); }
+.profile-page .profile-item-author { display:flex; min-width:0; align-items:center; gap:10px; }
+.profile-page .profile-item-author > div { display:grid; min-width:0; gap:3px; }
+.profile-page .profile-item-author strong,.profile-page .profile-item-header > strong { overflow-wrap:anywhere; color:var(--ink); font-size:12px; font-weight:700; }
+.profile-page .profile-item-author small { color:var(--dim); font-size:10px; }
+.profile-page .profile-item-avatar { display:grid; flex:none; width:34px; height:34px; place-items:center; border:1px solid rgba(131,229,232,.24); border-radius:50%; background:rgba(131,229,232,.1); color:var(--cyan); font:11px "DM Mono",monospace; }
+.profile-page .profile-item-date { flex:none; color:var(--dim); font:9px "DM Mono",monospace; }
+.profile-page .profile-item-body { margin:14px 0 0; color:var(--ink); font-size:13px; line-height:1.7; overflow-wrap:anywhere; white-space:pre-wrap; }
+.profile-page .profile-comment-parent { margin:13px 0 0; padding:10px 13px; border-inline-start:2px solid rgba(185,166,255,.48); border-radius:0 9px 9px 0; background:rgba(185,166,255,.055); color:var(--muted); font-size:11px; line-height:1.6; }
+.profile-page .profile-comment-label { display:block; margin-top:14px; color:var(--lilac); font:9px "DM Mono",monospace; letter-spacing:.08em; text-transform:uppercase; }
+.profile-page .profile-item-media-wrap { overflow:hidden; margin-top:14px; border:1px solid var(--line); border-radius:12px; background:rgba(0,0,0,.18); }
+.profile-page .profile-item-media { display:block; width:100%; max-height:min(68vh,680px); object-fit:contain; background:#080c16; }
+.profile-page video.profile-item-media { aspect-ratio:16/10; }
+.profile-page .profile-item-media-unavailable { color:var(--dim); font-size:11px; }
+.profile-page .profile-item-meta { display:flex; flex-wrap:wrap; gap:8px 18px; margin-top:13px; color:var(--dim); font:9px "DM Mono",monospace; }
+.profile-page .profile-item-actions { display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin-top:14px; padding-top:12px; border-top:1px solid rgba(218,225,255,.09); }
+.profile-page .profile-item-action,.profile-page .profile-item-link { display:inline-flex; min-height:38px; align-items:center; justify-content:center; gap:7px; padding:8px 12px; border:1px solid var(--line); border-radius:999px; background:rgba(255,255,255,.025); color:var(--muted); cursor:pointer; font:10px "DM Mono",monospace; text-decoration:none; transition:background 180ms ease,color 180ms ease,border-color 180ms ease; }
+.profile-page .profile-item-action:hover,.profile-page .profile-item-action:focus-visible,.profile-page .profile-item-link:hover,.profile-page .profile-item-link:focus-visible { border-color:rgba(131,229,232,.38); background:rgba(131,229,232,.07); color:var(--ink); outline:none; }
+.profile-page .profile-item-action:disabled { cursor:wait; opacity:.6; }
+.profile-page .profile-save-toggle svg { width:15px; height:17px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+.profile-page .profile-save-toggle.is-saved { border-color:rgba(131,229,232,.35); color:var(--cyan); }
+.profile-page .profile-save-toggle.is-saved svg { fill:currentColor; }
+.profile-page .profile-feed-status { min-height:0; margin:10px auto; color:var(--dim); font-size:11px; text-align:center; }
+.profile-page .profile-feed-status:empty { display:none; }
+.profile-page .profile-feed-status[data-state="error"] { color:#ffb4b4; }
+.profile-page .profile-feed-empty { grid-column:1/-1; margin:0; padding:32px 18px; border:1px dashed var(--line); border-radius:14px; color:var(--muted); font-size:12px; text-align:center; }
+.profile-page .profile-load-more { display:flex; min-height:42px; margin:17px auto 0; }
+.profile-page .profile-load-more[hidden] { display:none; }
+.home-page .post-action .bookmark-icon { display:inline-flex; width:16px; height:17px; flex:none; }
+.home-page .post-action .bookmark-icon svg { width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+.home-page .post-action.is-saved { color:var(--cyan); }
+.home-page .post-action.is-saved .bookmark-icon svg { fill:currentColor; }
+@media (max-width:560px) {
+  .profile-page .profile-tabs { gap:clamp(14px,5vw,25px); margin-top:18px; }
+  .profile-page .profile-tab { min-height:48px; font-size:10px; }
+  .profile-page .profile-feed-toolbar { min-height:48px; }
+  .profile-page .profile-item-header { align-items:flex-start; }
+  .profile-page .profile-item-date { max-width:42%; text-align:end; }
+  .profile-page .profile-item-actions { gap:7px; }
+  .profile-page .profile-item-action,.profile-page .profile-item-link { min-height:42px; padding-inline:10px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .profile-page .profile-tab,.profile-page .profile-item-action,.profile-page .profile-item-link { transition:none; }
+}
+
+@media (max-width:430px) {
+  .home-page .post-actions { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .home-page .post-action { gap:4px; }
+}
+@media (max-width:350px) {
+  .home-page .post-actions { gap:4px; }
+  .home-page .post-action { gap:3px; padding-inline:2px; }
+}

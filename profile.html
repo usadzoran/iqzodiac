@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <link rel="stylesheet" href="./styles.css?v=notifications-top-20261106" />
+    <link rel="stylesheet" href="./styles.css?v=profile-tabs-20261112" />
   </head>
   <body class="profile-page has-site-nav">
     <div class="aurora aurora-one" aria-hidden="true"></div>
@@ -43,6 +43,44 @@
         <p>Choose what feels right to share. You can change these settings anytime.</p>
       </section>
 
+      <nav class="profile-tabs" role="tablist" aria-label="Profile sections">
+        <button id="profile-tab-posts" class="profile-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="profile-panel-posts" data-profile-tab="posts" data-profile-copy="posts">Posts</button>
+        <button id="profile-tab-comments" class="profile-tab" type="button" role="tab" aria-selected="false" aria-controls="profile-panel-comments" tabindex="-1" data-profile-tab="comments" data-profile-copy="comments">Comments</button>
+        <button id="profile-tab-saved" class="profile-tab" type="button" role="tab" aria-selected="false" aria-controls="profile-panel-saved" tabindex="-1" data-profile-tab="saved" data-profile-copy="saved">Saved</button>
+        <button id="profile-tab-about" class="profile-tab" type="button" role="tab" aria-selected="false" aria-controls="profile-panel-about" tabindex="-1" data-profile-tab="about" data-profile-copy="about">About</button>
+      </nav>
+
+      <div class="profile-feed-toolbar">
+        <div class="profile-feed-options" id="profile-feed-options">
+          <button id="profile-feed-options-trigger" class="profile-feed-options-trigger" type="button" aria-expanded="false" aria-controls="profile-feed-options-menu"><span aria-hidden="true">☷</span><span data-profile-copy="feedOptions">Feed Options</span></button>
+          <div id="profile-feed-options-menu" class="profile-feed-options-menu" role="group" aria-label="Feed Options" hidden>
+            <button class="profile-feed-option is-selected" type="button" data-profile-option="latest" aria-pressed="true" data-profile-copy="latest">Latest</button>
+            <button class="profile-feed-option" type="button" data-profile-option="oldest" aria-pressed="false" data-profile-copy="oldest">Oldest</button>
+            <button class="profile-feed-option" type="button" data-profile-option="most_liked" aria-pressed="false" data-profile-copy="mostLiked">Most Liked</button>
+            <button class="profile-feed-option" type="button" data-profile-option="media" aria-pressed="false" data-profile-copy="media">Media</button>
+          </div>
+        </div>
+      </div>
+
+      <section class="profile-tab-panel" id="profile-panel-posts" role="tabpanel" tabindex="0" aria-labelledby="profile-tab-posts" aria-busy="true">
+        <div class="profile-feed-list" id="profile-posts-list" aria-live="polite"><p class="profile-feed-status">Loading posts…</p></div>
+        <p class="profile-feed-status" id="profile-posts-status" role="status" aria-live="polite"></p>
+        <button class="button button-secondary profile-load-more" id="profile-posts-more" type="button" hidden data-profile-copy="loadMore">Load more</button>
+      </section>
+
+      <section class="profile-tab-panel" id="profile-panel-comments" role="tabpanel" tabindex="0" aria-labelledby="profile-tab-comments" aria-busy="false" hidden>
+        <div class="profile-feed-list" id="profile-comments-list" aria-live="polite"></div>
+        <p class="profile-feed-status" id="profile-comments-status" role="status" aria-live="polite"></p>
+        <button class="button button-secondary profile-load-more" id="profile-comments-more" type="button" hidden data-profile-copy="loadMore">Load more</button>
+      </section>
+
+      <section class="profile-tab-panel" id="profile-panel-saved" role="tabpanel" tabindex="0" aria-labelledby="profile-tab-saved" aria-busy="false" hidden>
+        <div class="profile-feed-list" id="profile-saved-list" aria-live="polite"></div>
+        <p class="profile-feed-status" id="profile-saved-status" role="status" aria-live="polite"></p>
+        <button class="button button-secondary profile-load-more" id="profile-saved-more" type="button" hidden data-profile-copy="loadMore">Load more</button>
+      </section>
+
+      <section class="profile-tab-panel profile-about-panel" id="profile-panel-about" role="tabpanel" tabindex="0" aria-labelledby="profile-tab-about" aria-busy="true" hidden>
       <div class="profile-grid">
         <section class="profile-card identity-card" aria-labelledby="identity-title">
           <div class="card-heading">
@@ -217,6 +255,7 @@
         <p class="save-note"><span class="status-dot" aria-hidden="true"></span> Profile, privacy, and compatibility preferences are saved securely. Photos are not uploaded yet.</p>
         <button class="button button-primary save-button" type="button" id="save-profile"><span>Save changes</span><span class="button-arrow" aria-hidden="true">↗</span></button>
       </div>
+      </section>
 
       <footer class="footer profile-footer">
         <span>© 2026 IQZodiac</span>
@@ -239,8 +278,10 @@
     <script src="./language.js?v=20261022-global"></script>
     <script src="./location-data.js"></script>
     <script src="./privacy-core.js"></script>
-    <script src="./profile.js"></script>
-    <script src="./profile-wallet.js?v=coins-gifts-profile-20261106"></script>
+    <script src="./saved-items.js?v=saved-items-20261112"></script>
+    <script src="./profile.js?v=profile-about-lazy-20261112"></script>
+    <script src="./profile-wallet.js?v=profile-wallet-lazy-20261112"></script>
+    <script src="./profile-tabs.js?v=profile-tabs-20261112"></script>
       <script src="./nav-performance.js" defer></script>
   </body>
 </html>

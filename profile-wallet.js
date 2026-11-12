@@ -74,6 +74,7 @@
   let availableCoins = null;
   let giftState = 'loading';
   let gifts = [];
+  let loadStarted = false;
 
   const byId = (id) => document.getElementById(id);
   const setText = (id, value) => {
@@ -164,7 +165,10 @@
   document.addEventListener('iqzodiac:languagechange', render);
   render();
 
-  (async () => {
+  const loadWalletAndGifts = () => {
+    if (loadStarted) return;
+    loadStarted = true;
+    void (async () => {
     try {
       if (!window.IQZodiacSupabase?.ready) throw new Error('Wallet service unavailable');
       const client = await window.IQZodiacSupabase.ready;
@@ -194,5 +198,9 @@
       giftState = 'error';
     }
     render();
-  })();
+    })();
+  };
+  document.addEventListener('iqzodiac:profiletabchange', (event) => {
+    if (event.detail?.tab === 'about') loadWalletAndGifts();
+  });
 })();

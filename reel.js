@@ -16,7 +16,6 @@
   const createDialog = byId('reel-create-dialog');
   const toast = document.querySelector('.toast');
   const toastMessage = document.querySelector('.toast-message');
-  const creatorOrbit = byId('reel-creator-orbit');
   const sharedWarning = byId('reel-shared-warning');
   const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
   const saveData = Boolean(navigator.connection?.saveData);
@@ -53,7 +52,7 @@
       choose: 'Choose a video', selected: 'Video selected', invalidType: 'Choose a supported video file.', invalidMetadata: 'The video could not be read. Try another MP4, WebM or MOV file.', tooLarge: 'Video must be 50 MB or smaller.', tooLong: 'Reels can be no longer than 6 minutes.', checking: 'Checking video duration…', ready: (duration) => `Ready to publish · ${duration}`, publishing: 'Uploading and publishing your Reel…', saved: 'Your Reel is now in your orbit.', savedRefreshFailed: 'Published successfully, but the feed could not refresh. Reload to see it.', failed: 'Your Reel could not be published. Check your connection and try again.', signInToPublish: 'Sign in again to publish a Reel.',
       empty: 'No Reels have been published yet. Be the first to share one.', unavailable: 'Reels are temporarily unavailable. Please try again.', count: (n) => `${n} ${n === 1 ? 'Reel' : 'Reels'}`, duration: (n) => `${formatNumber(Math.round(n))}s`,
       like: 'Like', liked: 'Liked', comments: 'Comments', commentCount: (n) => formatNumber(n), writeComment: 'Write a comment…', postComment: 'Post comment', commentSaved: 'Comment added.', commentFailed: 'Comment could not be saved. Try again.', commentsLoadFailed: 'Comments could not be loaded. Close and reopen to retry.', commentsLoading: 'Loading comments…', loadMore: 'Load older comments', likeFailed: 'Like could not be saved. Try again.', signInToInteract: 'Sign in to interact with Reels.', noComments: 'No comments yet. Start the conversation.', commentBy: (name) => `Comment by ${name}`, deleteComment: 'Delete comment', member: 'Member', you: 'You',
-      share: 'Share', copyLink: 'Copy link', copied: 'Link copied.', shareTitle: 'Share this Reel', shareText: 'Watch this Reel on IQZodiac', shareOptions: 'Share options', sharedUnavailable: 'That shared Reel is unavailable or may have been removed. Showing recent Reels instead.',
+      share: 'Share', saveItem: 'Save', itemSaved: 'Saved', saveFailed: 'Could not update Saved. Try again.', copyLink: 'Copy link', copied: 'Link copied.', shareTitle: 'Share this Reel', shareText: 'Watch this Reel on IQZodiac', shareOptions: 'Share options', sharedUnavailable: 'That shared Reel is unavailable or may have been removed. Showing recent Reels instead.',
       play: 'Play video', pause: 'Pause video', soundOn: 'Turn sound on', soundOff: 'Mute video', mediaError: 'This video could not be loaded. Check your connection and try again.', autoplayBlocked: 'Tap play to start this video.',
     },
     ar: {
@@ -63,7 +62,7 @@
       choose: 'اختر فيديو', selected: 'تم اختيار الفيديو', invalidType: 'اختر ملف فيديو مدعومًا.', invalidMetadata: 'تعذّرت قراءة الفيديو. جرّب ملف MP4 أو WebM أو MOV آخر.', tooLarge: 'يجب ألا يتجاوز الفيديو ٥٠ ميغابايت.', tooLong: 'يجب ألا تتجاوز مدة الـ Reel ست دقائق.', checking: 'جارٍ التحقق من مدة الفيديو…', ready: (duration) => `جاهز للنشر · ${duration}`, publishing: 'جارٍ رفع الـ Reel ونشره…', saved: 'تم نشر الـ Reel في مدارك.', savedRefreshFailed: 'تم النشر، لكن تعذّر تحديث الموجز. أعد تحميل الصفحة لرؤيته.', failed: 'تعذّر نشر الـ Reel. تحقّق من الاتصال وحاول مجددًا.', signInToPublish: 'سجّل الدخول مجددًا لنشر Reel.',
       empty: 'لا توجد Reels منشورة بعد. كن أول من يشارك واحدة.', unavailable: 'Reels غير متاحة مؤقتًا. حاول مجددًا.', count: (n) => `${formatNumber(n)} Reel`, duration: (n) => `${formatNumber(Math.round(n))} ث`,
       like: 'إعجاب', liked: 'أعجبني', comments: 'التعليقات', commentCount: (n) => formatNumber(n), writeComment: 'اكتب تعليقًا…', postComment: 'نشر التعليق', commentSaved: 'تمت إضافة التعليق.', commentFailed: 'تعذّر حفظ التعليق. حاول مجددًا.', commentsLoadFailed: 'تعذّر تحميل التعليقات. أغلق اللوحة وافتحها للمحاولة مجددًا.', commentsLoading: 'جارٍ تحميل التعليقات…', loadMore: 'تحميل تعليقات أقدم', likeFailed: 'تعذّر حفظ الإعجاب. حاول مجددًا.', signInToInteract: 'سجّل الدخول للتفاعل مع Reels.', noComments: 'لا توجد تعليقات بعد. ابدأ الحوار.', commentBy: (name) => `تعليق من ${name}`, deleteComment: 'حذف التعليق', member: 'عضو', you: 'أنت',
-      share: 'مشاركة', copyLink: 'نسخ الرابط', copied: 'تم نسخ الرابط.', shareTitle: 'مشاركة هذا الـ Reel', shareText: 'شاهد هذا الـ Reel على IQZodiac', shareOptions: 'خيارات المشاركة', sharedUnavailable: 'هذا الـ Reel غير متاح أو ربما حُذف. نعرض أحدث Reels بدلًا منه.',
+      share: 'مشاركة', saveItem: 'حفظ', itemSaved: 'تم الحفظ', saveFailed: 'تعذّر تحديث المحفوظات. حاول مجددًا.', copyLink: 'نسخ الرابط', copied: 'تم نسخ الرابط.', shareTitle: 'مشاركة هذا الـ Reel', shareText: 'شاهد هذا الـ Reel على IQZodiac', shareOptions: 'خيارات المشاركة', sharedUnavailable: 'هذا الـ Reel غير متاح أو ربما حُذف. نعرض أحدث Reels بدلًا منه.',
       play: 'تشغيل الفيديو', pause: 'إيقاف الفيديو مؤقتًا', soundOn: 'تشغيل الصوت', soundOff: 'كتم الفيديو', mediaError: 'تعذّر تحميل الفيديو. تحقّق من الاتصال وحاول مجددًا.', autoplayBlocked: 'اضغط تشغيل لبدء الفيديو.',
     },
   };
@@ -93,44 +92,42 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2800);
   };
+  const updateCaptionPreview = () => {
+    const overlay = preview.querySelector('.reel-preview-caption');
+    if (!overlay) return;
+    overlay.textContent = byId('reel-caption').value.trim();
+    overlay.hidden = !overlay.textContent;
+  };
   const updateCaptionCount = () => {
     const value = byId('reel-caption').value.length;
     byId('reel-caption-count').textContent = `${formatNumber(value)} / 280`;
+    updateCaptionPreview();
   };
   const updateStatsShortcutLabel = () => { byId('reel-stats-shortcut-label').textContent = t('stats'); };
   const applyStaticCopy = () => {
     const textMap = {
       'reel-create-open-label': 'create',
-      'reel-kicker': 'kicker',
-      'reel-intro': 'intro',
-      'reel-feed-kicker': 'feedKicker',
-      'reel-feed-title': 'feedTitle',
       'reel-create-kicker': 'createKicker',
       'reel-create-title': 'createTitle',
       'reel-create-note': 'createNote',
       'reel-file-meta': 'fileMeta',
       'publish-reel-label': 'publish',
-      'reel-footer-tagline': 'footer',
     };
     Object.entries(textMap).forEach(([id, key]) => { const node = byId(id); if (node) node.textContent = t(key); });
-    byId('reel-title').replaceChildren(document.createTextNode(`${t('title')} `));
-    const accent = document.createElement('span'); accent.textContent = t('titleAccent'); byId('reel-title').append(accent);
+    byId('reel-page-title').textContent = t('title');
     const captionLabel = byId('reel-caption-label');
     captionLabel.replaceChildren(document.createTextNode(`${t('caption')} `));
     const optional = document.createElement('span'); optional.textContent = t('optional'); captionLabel.append(optional);
     byId('reel-caption').placeholder = t('captionPlaceholder');
     document.querySelectorAll('.reel-create-trigger').forEach((button) => button.setAttribute('aria-label', t('create')));
     byId('reel-create-close').setAttribute('aria-label', t('close'));
-    byId('reel-feed').setAttribute('aria-label', t('feedTitle'));
-    byId('reel-mobile-title').textContent = t('title');
-    byId('reel-mobile-subtitle').textContent = t('mobileSubtitle');
-    const mobileBack = document.querySelector('.reel-mobile-back');
-    if (mobileBack) {
-      mobileBack.setAttribute('aria-label', t('back'));
-      mobileBack.querySelector('span').textContent = language === 'ar' ? '→' : '←';
+    feed.setAttribute('aria-label', t('title'));
+    const homeLink = document.querySelector('.reel-home-link');
+    if (homeLink) {
+      homeLink.setAttribute('aria-label', t('back'));
+      homeLink.querySelector('span').textContent = language() === 'ar' ? '→' : '←';
     }
-    document.querySelector('.reel-mobile-stats')?.setAttribute('aria-label', t('stats'));
-    creatorOrbit?.setAttribute('aria-label', t('creatorsLabel'));
+    document.querySelector('.reel-stats-shortcut')?.setAttribute('aria-label', t('stats'));
     updateStatsShortcutLabel();
     updateCaptionCount();
     if (!selectedFile) byId('reel-file-label').textContent = t('choose');
@@ -149,6 +146,12 @@
       }
       const shareButton = card.querySelector('.reel-share-button');
       if (shareButton) { shareButton.querySelector('.reel-action-label').textContent = t('share'); shareButton.setAttribute('aria-label', t('share')); }
+      const saveButton = card.querySelector('.reel-save-button');
+      if (saveButton) {
+        const saved = saveButton.dataset.saved === 'true';
+        saveButton.querySelector('.reel-action-label').textContent = t(saved ? 'itemSaved' : 'saveItem');
+        saveButton.setAttribute('aria-label', t(saved ? 'itemSaved' : 'saveItem'));
+      }
       const input = card.querySelector('.reel-comment-form input');
       if (input) { input.placeholder = t('addComment'); input.setAttribute('aria-label', t('addComment')); }
       const postButton = card.querySelector('.reel-comment-form button');
@@ -399,8 +402,12 @@
       const video = document.createElement('video');
       video.src = previewUrl; video.controls = true; video.muted = true; video.playsInline = true; video.preload = 'metadata';
       video.setAttribute('aria-label', language() === 'ar' ? 'معاينة الفيديو' : 'Video preview');
-      preview.append(video);
+      const captionOverlay = document.createElement('p');
+      captionOverlay.className = 'reel-preview-caption';
+      captionOverlay.setAttribute('aria-hidden', 'true');
+      preview.append(video, captionOverlay);
       preview.hidden = false;
+      updateCaptionPreview();
       byId('reel-file-label').textContent = t('selected');
       setStatus('ready', 'success', t('duration', duration));
     } catch (error) {
@@ -423,6 +430,16 @@
     countNode.dataset.count = String(count);
     countNode.textContent = formatNumber(count);
     row.liked_by_me = liked;
+  };
+  const updateSaveButton = (card, row, saved) => {
+    const button = card.querySelector('.reel-save-button');
+    if (!button) return;
+    button.dataset.saved = String(saved);
+    button.setAttribute('aria-pressed', String(saved));
+    button.classList.toggle('is-saved', saved);
+    button.querySelector('.reel-action-label').textContent = t(saved ? 'itemSaved' : 'saveItem');
+    button.setAttribute('aria-label', t(saved ? 'itemSaved' : 'saveItem'));
+    row.saved_by_me = saved;
   };
   const updateCommentCount = (card, row, delta = 0) => {
     row.comment_count = Math.max(0, (Number(row.comment_count) || 0) + delta);
@@ -530,12 +547,23 @@
   };
   const bindInteractions = (card, row, client) => {
     const likeButton = card.querySelector('.reel-like-button');
+    const saveButton = card.querySelector('.reel-save-button');
     const shareButton = card.querySelector('.reel-share-button');
     const commentButton = card.querySelector('.reel-comment-toggle');
     const commentsPanel = card.querySelector('.reel-comments-panel');
     const video = card.querySelector('.reel-card-video');
 
     shareButton.addEventListener('click', () => { void shareReel(card, row); });
+    saveButton.addEventListener('click', async () => {
+      if (!authenticatedUserId || !window.IQZodiacSavedItems) { showToast(t('signInToInteract')); return; }
+      const currentlySaved = saveButton.dataset.saved === 'true';
+      saveButton.disabled = true;
+      try {
+        const saved = await window.IQZodiacSavedItems.toggle(client, authenticatedUserId, 'reel', row.id, currentlySaved);
+        updateSaveButton(card, row, saved);
+      } catch (error) { console.warn('Reel save could not be updated.', error); showToast(t('saveFailed')); }
+      finally { saveButton.disabled = false; }
+    });
     commentButton.addEventListener('click', () => {
       const open = commentButton.getAttribute('aria-expanded') !== 'true';
       commentButton.setAttribute('aria-expanded', String(open));
@@ -646,22 +674,6 @@
     updatePlayerControls(video);
   };
 
-  const renderCreatorOrbit = (rows) => {
-    if (!creatorOrbit) return;
-    creatorOrbit.replaceChildren();
-    const seen = new Set();
-    rows.filter((row) => row.author_id && !seen.has(row.author_id) && seen.add(row.author_id)).slice(0, 3).forEach((row) => {
-      const name = row.display_name || row.handle || t('member');
-      const link = document.createElement('a');
-      link.className = 'reel-creator-avatar';
-      link.href = `./reel-profile.html?user=${encodeURIComponent(row.author_id)}`;
-      link.textContent = initials(name);
-      link.setAttribute('aria-label', name);
-      creatorOrbit.append(link);
-    });
-    creatorOrbit.hidden = !creatorOrbit.childElementCount;
-  };
-
   const renderReels = (rows, client, append = false) => {
     if (!append) {
       feed.querySelectorAll('.reel-card').forEach((card) => {
@@ -683,8 +695,6 @@
     feedRows.push(...rows);
     feed.dataset.state = feedRows.length ? 'ready' : 'empty';
     feed.setAttribute('aria-busy', 'false');
-    byId('reel-count').textContent = t('count', feedRows.length);
-    renderCreatorOrbit(feedRows);
     if (!feedRows.length) {
       const empty = document.createElement('p'); empty.className = 'reel-empty'; empty.textContent = t('empty'); empty.setAttribute('role', 'status'); feed.append(empty); return;
     }
@@ -695,7 +705,7 @@
       const video = document.createElement('video');
       video.className = 'reel-card-video'; video.playsInline = true; video.preload = 'none'; video.muted = true; video.loop = true;
       video.dataset.mediaPath = row.media_path;
-      video.setAttribute('aria-label', t('feedTitle'));
+      video.setAttribute('aria-label', t('title'));
       video.setAttribute('tabindex', '0');
 
       const controls = document.createElement('div'); controls.className = 'reel-player-controls';
@@ -705,7 +715,7 @@
       const error = document.createElement('p'); error.className = 'reel-media-error'; error.textContent = t('mediaError'); error.hidden = true;
 
       const actions = document.createElement('div'); actions.className = 'reel-actions';
-      actions.innerHTML = `<button type="button" class="reel-action reel-like-button" data-liked="${Boolean(row.liked_by_me)}" aria-pressed="${Boolean(row.liked_by_me)}"><span class="reel-action-icon">${row.liked_by_me ? '♥' : '♡'}</span><span class="reel-action-label reel-like-label">${escapeHTML(row.liked_by_me ? t('liked') : t('like'))}</span><b class="reel-action-count reel-like-count" data-count="${Number(row.like_count) || 0}">${formatNumber(row.like_count)}</b></button><button type="button" class="reel-action reel-comment-toggle" aria-expanded="false"><span class="reel-action-icon" aria-hidden="true">◌</span><span class="reel-action-label reel-comment-label">${escapeHTML(t('comments'))}</span><b class="reel-action-count reel-comment-count" data-count="${Number(row.comment_count) || 0}">${formatNumber(row.comment_count)}</b></button><button type="button" class="reel-action reel-share-button" aria-expanded="false" aria-label="${escapeHTML(t('share'))}"><span class="reel-action-icon" aria-hidden="true">↗</span><span class="reel-action-label">${escapeHTML(t('share'))}</span></button>`;
+      actions.innerHTML = `<button type="button" class="reel-action reel-like-button" data-liked="${Boolean(row.liked_by_me)}" aria-pressed="${Boolean(row.liked_by_me)}"><span class="reel-action-icon">${row.liked_by_me ? '♥' : '♡'}</span><span class="reel-action-label reel-like-label">${escapeHTML(row.liked_by_me ? t('liked') : t('like'))}</span><b class="reel-action-count reel-like-count" data-count="${Number(row.like_count) || 0}">${formatNumber(row.like_count)}</b></button><button type="button" class="reel-action reel-comment-toggle" aria-expanded="false"><span class="reel-action-icon" aria-hidden="true">◌</span><span class="reel-action-label reel-comment-label">${escapeHTML(t('comments'))}</span><b class="reel-action-count reel-comment-count" data-count="${Number(row.comment_count) || 0}">${formatNumber(row.comment_count)}</b></button><button type="button" class="reel-action reel-save-button ${row.saved_by_me ? 'is-saved' : ''}" data-saved="${Boolean(row.saved_by_me)}" aria-pressed="${Boolean(row.saved_by_me)}" aria-label="${escapeHTML(t(row.saved_by_me ? 'itemSaved' : 'saveItem'))}"><span class="reel-action-icon reel-bookmark-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.75 3.75h10.5c.83 0 1.5.67 1.5 1.5v15l-6.75-4.5-6.75 4.5v-15c0-.83.67-1.5 1.5-1.5Z" /></svg></span><span class="reel-action-label">${escapeHTML(t(row.saved_by_me ? 'itemSaved' : 'saveItem'))}</span></button><button type="button" class="reel-action reel-share-button" aria-expanded="false" aria-label="${escapeHTML(t('share'))}"><span class="reel-action-icon" aria-hidden="true">↗</span><span class="reel-action-label">${escapeHTML(t('share'))}</span></button>`;
 
       const displayName = row.display_name || row.handle || t('member');
       const copyNode = document.createElement('div'); copyNode.className = 'reel-card-copy';
@@ -813,9 +823,13 @@
       }
       const reelIds = rows.map((row) => row.id).filter(Boolean);
       if (reelIds.length) {
-        const [metricsResult, profilesResult] = await Promise.all([
+        const savedPromise = authenticatedUserId && window.IQZodiacSavedItems
+          ? window.IQZodiacSavedItems.getSavedIds(client, authenticatedUserId, 'reel', reelIds).catch((savedError) => { console.warn('Saved Reel states could not be loaded.', savedError); return new Set(); })
+          : Promise.resolve(new Set());
+        const [metricsResult, profilesResult, savedIds] = await Promise.all([
           client.rpc('get_reel_feed_metrics', { p_reel_ids: reelIds }),
           client.rpc('get_public_profile_cards', { p_user_ids: [...new Set(rows.map((row) => row.author_id).filter(Boolean))] }),
+          savedPromise,
         ]);
         if (metricsResult.error) throw metricsResult.error;
         const metricMap = new Map((metricsResult.data || []).map((metric) => [metric.reel_id, metric]));
@@ -824,7 +838,7 @@
         rows = rows.map((row) => {
           const metric = metricMap.get(row.id);
           if (!metric) throw new Error('reel-metrics-unavailable');
-          return { ...row, ...(profileMap.get(row.author_id) || {}), like_count: Number(metric.like_count), comment_count: Number(metric.comment_count), liked_by_me: Boolean(metric.liked_by_viewer) };
+          return { ...row, ...(profileMap.get(row.author_id) || {}), like_count: Number(metric.like_count), comment_count: Number(metric.comment_count), liked_by_me: Boolean(metric.liked_by_viewer), saved_by_me: savedIds.has(row.id) };
         });
       }
       renderReels(rows, client, !reset);
