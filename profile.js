@@ -11,6 +11,7 @@ const setupProfileTabs = () => {
   const reelLinkCard = document.querySelector('.reel-profile-link-card');
   const reelCollectionsCard = document.querySelector('.reel-collections-card');
   const walletCard = document.querySelector('.profile-wallet-card');
+  const giftCatalog = document.querySelector('.profile-gift-catalog');
   const socialGrid = document.querySelector('.social-grid');
   const communityCard = document.querySelector('.community-card');
   const notificationsCard = document.querySelector('.notifications-card');
@@ -20,7 +21,7 @@ const setupProfileTabs = () => {
 
   const tabs = [
     ['overview', '◉', 'Overview'], ['gallery', '▧', 'Photos'], ['reels', '▶', 'Reels'],
-    ['community', '◎', 'Community'], ['notifications', '◌', 'Notifications'], ['privacy', '◇', 'Privacy'], ['account', '◈', 'Account'],
+    ['community', '◎', 'Community'], ['notifications', '◌', 'Notifications'], ['privacy', '◇', 'Privacy'], ['gifts', '🎁', 'Gifts'], ['account', '◈', 'Account'],
   ];
   const nav = document.createElement('nav');
   nav.id = 'profile-tab-nav'; nav.className = 'profile-tab-nav'; nav.setAttribute('aria-label', 'Profile sections'); nav.setAttribute('role', 'tablist');
@@ -37,6 +38,7 @@ const setupProfileTabs = () => {
   panel.community.append(communityCard);
   panel.notifications.append(notificationsCard);
   panel.privacy.append(document.querySelector('#private-info'), document.querySelector('#gallery-privacy-settings'));
+  panel.gifts.append(giftCatalog);
   panel.account.append(compatibilityCard, walletCard, actions);
   if (socialGrid) socialGrid.remove();
 

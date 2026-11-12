@@ -335,7 +335,7 @@ h1 {
 .profile-gift-status { margin: 12px 0 0; color: var(--dim); font: 10px/1.6 "DM Mono", monospace; }
 .profile-gift-status[data-state="ready"] { color: #8de4c4; }
 .profile-gift-status[data-state="error"] { color: var(--orange); }
-.profile-gift-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.profile-gift-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; max-height: min(58vh, 620px); margin-top: 14px; padding: 2px 8px 8px 2px; overflow-y: auto; overscroll-behavior: contain; scrollbar-color: rgba(131,229,232,.42) rgba(255,255,255,.04); scrollbar-width: thin; }
 .profile-gift-grid:empty { display: none; }
 .profile-gift-item { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; padding: 13px; border: 1px solid rgba(218,225,255,0.12); border-radius: 3px; background: rgba(5,8,17,0.22); }
 .profile-gift-art { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid rgba(242,167,124,0.28); border-radius: 50%; background: rgba(242,167,124,0.08); color: var(--orange); font-size: 20px; }
