@@ -293,7 +293,18 @@ const renderPendingFiles = () => {
 };
 const updateGalleryUploadState = () => { galleryConfirm.disabled = pendingGalleryFiles.length === 0; galleryUploadStatus.textContent = pendingGalleryFiles.length ? `${pendingGalleryFiles.length} media item${pendingGalleryFiles.length === 1 ? '' : 's'} ready to upload.` : ''; if (pendingGalleryFiles.length) galleryUploadStatus.dataset.state = ''; };
 const addPendingFiles = (files) => { const valid = []; try { Array.from(files).forEach((file) => { galleryFileInfo(file); if (!pendingGalleryFiles.some((existing) => existing.name === file.name && existing.size === file.size)) valid.push(file); }); pendingGalleryFiles.push(...valid); renderPendingFiles(); updateGalleryUploadState(); } catch (error) { galleryUploadStatus.textContent = error.message; galleryUploadStatus.dataset.state = 'error'; } };
-const openGalleryDialog = () => { pendingGalleryFiles = []; galleryUploadStatus.textContent = ''; gallerySectionInput.value = activeGallerySection; gallerySaleFields.hidden = activeGallerySection !== 'sale'; renderPendingFiles(); updateGalleryUploadState(); if (galleryDialog.showModal) galleryDialog.showModal(); else galleryDialog.setAttribute('open', ''); };
+const openGalleryDialog = () => {
+  pendingGalleryFiles = []; galleryUploadStatus.textContent = ''; gallerySectionInput.value = activeGallerySection; gallerySaleFields.hidden = activeGallerySection !== 'sale'; renderPendingFiles(); updateGalleryUploadState();
+  try {
+    if (!galleryDialog.open && typeof galleryDialog.showModal === 'function') galleryDialog.showModal();
+    else galleryDialog.setAttribute('open', '');
+  } catch (error) {
+    // Older mobile browsers can expose showModal() but still reject it; keep the picker usable.
+    console.warn('Native gallery dialog could not open; using the compatibility fallback.', error);
+    galleryDialog.setAttribute('open', '');
+  }
+  if (!galleryDialog.open) galleryDialog.setAttribute('open', '');
+};
 addMediaButton.addEventListener('click', openGalleryDialog);
 document.querySelectorAll('[data-gallery-tab]').forEach((button) => button.addEventListener('click', () => { activeGallerySection = button.dataset.galleryTab; document.querySelectorAll('[data-gallery-tab]').forEach((tab) => { const active = tab.dataset.galleryTab === activeGallerySection; tab.classList.toggle('is-active', active); tab.setAttribute('aria-selected', String(active)); }); renderGallery(); }));
 gallerySectionInput.addEventListener('change', () => { gallerySaleFields.hidden = gallerySectionInput.value !== 'sale'; });
