@@ -156,22 +156,22 @@
             </div>
             <span class="media-count" id="media-count">0 items</span>
           </div>
-          <p class="section-intro">Manage the photos you share, keep private, or prepare for a future secure sale.</p>
+          <p class="section-intro">Manage the photos and videos you share, keep private, or prepare for a future secure sale.</p>
           <div class="gallery-toolbar"><div class="gallery-tabs" role="tablist" aria-label="Gallery sections">
             <button type="button" class="gallery-tab is-active" data-gallery-tab="public" role="tab" aria-selected="true">◎ <span>Public</span><strong id="gallery-count-public">0</strong></button>
             <button type="button" class="gallery-tab" data-gallery-tab="private" role="tab" aria-selected="false">◉ <span>Private</span><strong id="gallery-count-private">0</strong></button>
             <button type="button" class="gallery-tab" data-gallery-tab="sale" role="tab" aria-selected="false">◇ <span>For Sale</span><strong id="gallery-count-sale">0</strong></button>
-          </div><button class="button button-primary gallery-add-button" id="add-media" type="button">＋ Add photos</button></div>
+          </div><button class="button button-primary gallery-add-button" id="add-media" type="button">＋ Add photos &amp; videos</button></div>
           <div class="gallery-panel-note" id="gallery-panel-note">Public photos can be viewed according to your profile privacy settings.</div>
-          <div class="media-grid" id="media-grid" aria-label="Your media gallery"><p id="media-empty" class="sidebar-note">No photos in this section yet.</p></div>
-          <input id="media-input" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden />
+          <div class="media-grid" id="media-grid" aria-label="Your media gallery"><p id="media-empty" class="sidebar-note">No media in this section yet.</p></div>
+          <input id="media-input" type="file" accept="image/*,video/*" multiple hidden />
           <dialog class="gallery-upload-dialog" id="gallery-upload-dialog" aria-labelledby="gallery-upload-title"><form method="dialog" class="gallery-upload-form" id="gallery-upload-form">
-            <div class="card-heading"><div><p class="card-kicker">GALLERY UPLOAD</p><h3 id="gallery-upload-title">Add photos</h3></div><button class="dialog-close" value="cancel" type="submit" aria-label="Close">×</button></div>
-            <label class="gallery-dropzone" id="gallery-dropzone" for="media-input"><span class="add-icon">＋</span><strong>Choose photos</strong><small>JPEG, PNG or WebP · up to 50 MB each</small><em>or drag and drop here</em></label>
+            <div class="card-heading"><div><p class="card-kicker">GALLERY UPLOAD</p><h3 id="gallery-upload-title">Add photos &amp; videos</h3></div><button class="dialog-close" value="cancel" type="submit" aria-label="Close">×</button></div>
+            <label class="gallery-dropzone" id="gallery-dropzone" for="media-input"><span class="add-icon">＋</span><strong>Choose photos or videos</strong><small>JPEG, PNG, WebP, AVIF, HEIC, MP4, MOV or WebM · up to 50 MB each</small><em>or drag and drop here</em></label>
             <div class="gallery-upload-previews" id="gallery-upload-previews"></div>
             <label class="field-label" for="gallery-upload-section">Save to</label><select id="gallery-upload-section"><option value="public">Public Photos</option><option value="private">Private Photos</option><option value="sale">Photos for Sale</option></select>
-            <div class="gallery-sale-fields" id="gallery-sale-fields" hidden><label class="field-label" for="gallery-sale-price">Price</label><div class="gallery-price-row"><input id="gallery-sale-price" type="number" min="0.01" step="0.01" placeholder="0.00" /><select id="gallery-sale-currency"><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option></select></div><label class="field-label" for="gallery-sale-description">Description (optional)</label><textarea id="gallery-sale-description" maxlength="500" rows="3" placeholder="Describe this photo"></textarea><p class="field-help">Originals stay private until a future verified payment flow marks a purchase as paid.</p></div>
-            <p class="gallery-upload-status" id="gallery-upload-status" role="status" aria-live="polite"></p><div class="gallery-upload-actions"><button class="button button-secondary" value="cancel" type="submit">Cancel</button><button class="button button-primary" id="gallery-confirm-upload" value="default" type="button" disabled>Upload photos</button></div>
+            <div class="gallery-sale-fields" id="gallery-sale-fields" hidden><label class="field-label" for="gallery-sale-price">Price</label><div class="gallery-price-row"><input id="gallery-sale-price" type="number" min="0.01" step="0.01" placeholder="0.00" /><select id="gallery-sale-currency"><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option></select></div><label class="field-label" for="gallery-sale-description">Description (optional)</label><textarea id="gallery-sale-description" maxlength="500" rows="3" placeholder="Describe this media"></textarea><p class="field-help">Originals stay private until a future verified payment flow marks a purchase as paid.</p></div>
+            <p class="gallery-upload-status" id="gallery-upload-status" role="status" aria-live="polite"></p><div class="gallery-upload-actions"><button class="button button-secondary" value="cancel" type="submit">Cancel</button><button class="button button-primary" id="gallery-confirm-upload" value="default" type="button" disabled>Upload media</button></div>
           </form></dialog>
 
           <div class="privacy-row gallery-privacy-row" id="gallery-privacy-settings">

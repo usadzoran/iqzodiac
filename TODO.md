@@ -35,6 +35,13 @@
 - [x] Preserve pinned state in the database for both post comments and Reel comments; only the owner of the matching post or Reel can change it.
 - [x] Ensure replies saved in the comments table remain visible after reloading even when their author has no profile row.
 
+## Gallery and reply fixes
+- [x] Upload multiple supported photos and videos from the Profile Gallery, store each item's correct media type, and show a photo preview or playable video after upload and reload.
+- [x] Show each pending file's media type and size, update counts and upload status, and list only media belonging to the signed-in profile owner.
+- [x] Keep replies attached to a valid parent comment on the same Post or Reel, and keep reply controls consistent with the database's supported depth.
+- [x] Save, reload, and display text and image/video/audio attachments for replies on Posts and Reels, with correct media permissions and reply notifications.
+- [x] Allow reply authors to edit or delete their own replies without corrupting parent threads or comment counts.
+
 ## AI assistant placeholder
 - [x] Show a small robot icon and an “AI assistant — coming soon” placeholder above the login and account creation actions.
 - [x] Keep the placeholder visual-only with no assistant connection or interaction yet.

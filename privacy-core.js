@@ -139,7 +139,11 @@
       try {
         const client = await database();
         if (!client) return [];
-        const { data, error } = await client.from('profile_media').select('id,storage_path,preview_storage_path,media_type,mime_type,size_bytes,is_public,gallery_section,description,sale_price,currency_code,sale_active,created_at').order('created_at', { ascending: false }).limit(100);
+        const { data: authData, error: authError } = await client.auth.getUser();
+        if (authError) throw authError;
+        const user = authData?.user;
+        if (!user) return [];
+        const { data, error } = await client.from('profile_media').select('id,storage_path,preview_storage_path,media_type,mime_type,size_bytes,is_public,gallery_section,description,sale_price,currency_code,sale_active,created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(100);
         if (error) throw error;
         const items = await Promise.all((data || []).map(async (item) => { const signed = await client.storage.from('iqzodiac-media').createSignedUrl(item.storage_path, 3600); return { ...item, url: signed.data?.signedUrl || '' }; }));
         return items.filter((item) => item.url);
@@ -151,9 +155,13 @@
       const { data: authData } = await client.auth.getUser();
       const user = authData?.user;
       if (!user || !file) throw new Error('A signed-in account is required.');
-      const allowed = mediaType === 'avatar' ? file.type.startsWith('image/') : (file.type.startsWith('image/') || file.type.startsWith('video/'));
+      const mimeType = String(options.mimeType || file.type || '').toLowerCase();
+      const allowed = mediaType === 'avatar'
+        ? mimeType.startsWith('image/')
+        : mediaType === 'photo' ? mimeType.startsWith('image/')
+          : mediaType === 'video' ? mimeType.startsWith('video/') : false;
       const maxSize = mediaType === 'avatar' ? 5 * 1024 * 1024 : 50 * 1024 * 1024;
-      if (!allowed || file.size > maxSize) throw new Error(mediaType === 'avatar' ? 'Choose an image under 5 MB.' : 'Choose an image or video under 50 MB.');
+      if (!allowed || !file.size || file.size > maxSize) throw new Error(mediaType === 'avatar' ? 'Choose an image under 5 MB.' : 'Choose a supported image or video under 50 MB.');
       const extension = (file.name.split('.').pop() || (file.type.split('/')[1] || 'bin')).toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8) || 'bin';
       const path = `${user.id}/${mediaType}/${crypto.randomUUID()}.${extension}`;
       if (mediaType === 'avatar') {
@@ -163,9 +171,9 @@
       const section = ['public', 'private', 'sale'].includes(options.section) ? options.section : (mediaType === 'avatar' ? 'private' : 'private');
       const salePrice = section === 'sale' ? Number(options.salePrice) : null;
       if (section === 'sale' && (!Number.isFinite(salePrice) || salePrice <= 0)) throw new Error('Enter a valid sale price before uploading.');
-      const upload = await client.storage.from('iqzodiac-media').upload(path, file, { contentType: file.type, upsert: false, cacheControl: '3600' });
+      const upload = await client.storage.from('iqzodiac-media').upload(path, file, { contentType: mimeType, upsert: false, cacheControl: '3600' });
       if (upload.error) throw upload.error;
-      const row = await client.from('profile_media').insert({ user_id: user.id, storage_path: path, media_type: mediaType, mime_type: file.type, size_bytes: file.size, is_public: section === 'public', gallery_section: section, description: String(options.description || '').trim().slice(0, 500), sale_price: salePrice, currency_code: String(options.currency || 'USD').toUpperCase(), sale_active: section === 'sale' }).select('id,storage_path,preview_storage_path,media_type,mime_type,size_bytes,is_public,gallery_section,description,sale_price,currency_code,sale_active,created_at').single();
+      const row = await client.from('profile_media').insert({ user_id: user.id, storage_path: path, media_type: mediaType, mime_type: mimeType, size_bytes: file.size, is_public: section === 'public', gallery_section: section, description: String(options.description || '').trim().slice(0, 500), sale_price: salePrice, currency_code: String(options.currency || 'USD').toUpperCase(), sale_active: section === 'sale' }).select('id,storage_path,preview_storage_path,media_type,mime_type,size_bytes,is_public,gallery_section,description,sale_price,currency_code,sale_active,created_at').single();
       if (row.error) { await client.storage.from('iqzodiac-media').remove([path]); throw row.error; }
       const signed = await client.storage.from('iqzodiac-media').createSignedUrl(path, 3600);
       return { ...row.data, url: signed.data?.signedUrl || '' };

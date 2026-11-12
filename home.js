@@ -65,7 +65,7 @@ const editFeedComment = async (post, comment, button) => {
   const edited = window.prompt(feedText('Edit your comment:', 'عدّل تعليقك:'), comment.body || '');
   if (edited === null) return;
   const body = edited.trim().slice(0, 180);
-  if (!body) { showToast(feedText('Comment cannot be empty.', 'لا يمكن أن يكون التعليق فارغًا.')); return; }
+  if (!body && !comment.media_path) { showToast(feedText('Comment cannot be empty.', 'لا يمكن أن يكون التعليق فارغًا.')); return; }
   button.disabled = true;
   const client = await database();
   const { error } = client ? await client.from('comments').update({ body }).eq('id', comment.comment_id || comment.id).eq('author_id', authenticatedUserId) : { error: new Error('not-authenticated') };
@@ -159,10 +159,11 @@ const createCommentElement = (comment, post, childrenByParent = {}, submitReply 
   const attachment = commentAttachmentNode(comment); if (attachment) content.append(attachment);
   const replyButton = document.createElement('button'); replyButton.type = 'button'; replyButton.className = 'comment-reply-button'; replyButton.textContent = feedText('Reply', 'رد');
   const replyForm = document.createElement('form'); replyForm.className = 'comment-form comment-reply-form'; replyForm.hidden = true;
-  replyForm.innerHTML = `<input type="text" maxlength="180" placeholder="${feedText('Write a reply...', 'اكتب ردًا...')}" aria-label="${feedText('Write a reply', 'اكتب ردًا')}" /><div class="mention-suggestions" role="listbox" hidden></div><input class="comment-media-input" type="file" accept="image/*,video/*" hidden /><button class="comment-media-button" type="button" aria-label="${feedText('Attach image or video', 'إرفاق صورة أو فيديو')}">＋</button><button class="comment-record-button" type="button" aria-label="${feedText('Record voice reply', 'تسجيل رد صوتي')}">●</button><button type="submit" aria-label="${feedText('Post reply', 'نشر الرد')}">↗</button><div class="comment-media-preview" hidden></div>`;
+  replyForm.innerHTML = `<input type="text" maxlength="180" placeholder="${feedText('Write a reply...', 'اكتب ردًا...')}" aria-label="${feedText('Write a reply', 'اكتب ردًا')}" /><div class="mention-suggestions" role="listbox" hidden></div><input class="comment-media-input" type="file" accept="image/*,video/*,audio/*" hidden /><button class="comment-media-button" type="button" aria-label="${feedText('Attach image, video or audio', 'إرفاق صورة أو فيديو أو صوت')}">＋</button><button class="comment-record-button" type="button" aria-label="${feedText('Record voice reply', 'تسجيل رد صوتي')}">●</button><button type="submit" aria-label="${feedText('Post reply', 'نشر الرد')}">↗</button><div class="comment-media-preview" hidden></div>`;
   const input = replyForm.querySelector('input[type="text"]'); const mentionMenu = replyForm.querySelector('.mention-suggestions'); setupMentionAutocomplete(input, mentionMenu); const mediaInput = replyForm.querySelector('.comment-media-input'); const preview = replyForm.querySelector('.comment-media-preview'); const mediaButton = replyForm.querySelector('.comment-media-button'); const recordButton = replyForm.querySelector('.comment-record-button');
+  const replySubmitButton = replyForm.querySelector('button[type="submit"]');
   replyForm._replyMedia = null;
-  const showReplyMedia = (file) => { replyForm._replyMedia = file; const node = file.type.startsWith('video/') ? document.createElement('video') : file.type.startsWith('audio/') ? document.createElement('audio') : document.createElement('img'); node.src = URL.createObjectURL(file); node.controls = file.type.startsWith('video/') || file.type.startsWith('audio/'); node.className = 'comment-preview-media'; preview.replaceChildren(node); preview.hidden = false; };
+  const showReplyMedia = (file) => { if (replyForm._mediaPreviewUrl) URL.revokeObjectURL(replyForm._mediaPreviewUrl); replyForm._replyMedia = file; const node = file.type.startsWith('video/') ? document.createElement('video') : file.type.startsWith('audio/') ? document.createElement('audio') : document.createElement('img'); replyForm._mediaPreviewUrl = URL.createObjectURL(file); node.src = replyForm._mediaPreviewUrl; node.controls = file.type.startsWith('video/') || file.type.startsWith('audio/'); node.className = 'comment-preview-media'; preview.replaceChildren(node); preview.hidden = false; };
   mediaButton.addEventListener('click', () => mediaInput.click());
   mediaInput.addEventListener('change', () => { const [file] = mediaInput.files || []; if (file) showReplyMedia(file); });
   recordButton.addEventListener('click', async () => {
@@ -176,8 +177,20 @@ const createCommentElement = (comment, post, childrenByParent = {}, submitReply 
     } catch { showToast(feedText('Microphone access was denied.', 'تم رفض الوصول إلى الميكروفون.')); }
   });
   replyButton.addEventListener('click', () => { replyForm.hidden = !replyForm.hidden; if (!replyForm.hidden) input.focus(); });
-  replyForm.addEventListener('submit', async (event) => { event.preventDefault(); const value = escapeText(input.value); if ((!value && !replyForm._replyMedia) || !submitReply) return; if (await submitReply(comment.comment_id || comment.id, value, replyForm._replyMedia)) { input.value = ''; mediaInput.value = ''; replyForm._replyMedia = null; preview.replaceChildren(); preview.hidden = true; replyForm.hidden = true; } });
-  content.append(replyButton, replyForm);
+  replyForm.addEventListener('submit', async (event) => {
+    event.preventDefault(); const value = input.value.trim().slice(0, 180);
+    if ((!value && !replyForm._replyMedia) || !submitReply) return;
+    replySubmitButton.disabled = true;
+    try {
+      if (await submitReply(comment.comment_id || comment.id, value, replyForm._replyMedia)) {
+        input.value = ''; mediaInput.value = ''; replyForm._replyMedia = null;
+        if (replyForm._mediaPreviewUrl) URL.revokeObjectURL(replyForm._mediaPreviewUrl);
+        replyForm._mediaPreviewUrl = ''; preview.replaceChildren(); preview.hidden = true; replyForm.hidden = true;
+      }
+    } catch (error) { console.warn('Post reply could not be submitted.', error); showToast(feedText('Reply could not be saved.', 'تعذّر حفظ الرد.')); }
+    finally { replySubmitButton.disabled = false; }
+  });
+  if (!comment.parent_comment_id) content.append(replyButton, replyForm);
   const isCommentAuthor = String(comment.author_id || '').toLowerCase() === String(authenticatedUserId || '').toLowerCase();
   const canPin = !comment.parent_comment_id && String(post.dataset.authorId || '').toLowerCase() === String(authenticatedUserId || '').toLowerCase();
   if (isCommentAuthor || canPin) {
@@ -214,9 +227,13 @@ const renderComments = (post, rows) => {
     let media = null;
     try { if (mediaFile) media = await uploadCommentMedia(client, mediaFile); } catch (error) { showToast(error.message === 'media_too_large' ? feedText('The selected file is too large.', 'الملف المحدد كبير جدًا.') : feedText('Media could not be uploaded.', 'تعذّر رفع الوسائط.')); return false; }
     const payload = { post_id: post.dataset.postId, author_id: authenticatedUserId, parent_comment_id: parentCommentId, body, ...(media || {}) };
-    const { data, error } = await client.from('comments').insert(payload).select('id,post_id,author_id,parent_comment_id,body,created_at,media_type,media_path,media_mime,media_size_bytes').single();
-    if (error) { if (media?.media_path) await client.storage.from(commentMediaBucket).remove([media.media_path]); showToast(feedText('Reply could not be saved.', 'تعذّر حفظ الرد.')); return false; }
-    if (data.media_path) { const { data: signed } = await client.storage.from(commentMediaBucket).createSignedUrl(data.media_path, 3600); data.media_url = signed?.signedUrl || ''; }
+    const cleanupUploadedMedia = async () => { if (media?.media_path) { try { await client.storage.from(commentMediaBucket).remove([media.media_path]); } catch {} } };
+    let result;
+    try { result = await client.from('comments').insert(payload).select('id,post_id,author_id,parent_comment_id,body,created_at,media_type,media_path,media_mime,media_size_bytes').single(); }
+    catch (error) { await cleanupUploadedMedia(); console.warn('Post reply insert failed.', error); showToast(feedText('Reply could not be saved.', 'تعذّر حفظ الرد.')); return false; }
+    const { data, error } = result;
+    if (error) { await cleanupUploadedMedia(); showToast(feedText('Reply could not be saved.', 'تعذّر حفظ الرد.')); return false; }
+    if (data.media_path) { try { const { data: signed } = await client.storage.from(commentMediaBucket).createSignedUrl(data.media_path, 3600); data.media_url = signed?.signedUrl || ''; } catch { data.media_url = ''; } }
     const reply = { ...data, display_name: currentPublicIdentity.displayName, handle: currentPublicIdentity.handle, comment_id: data.id }; post._commentRows = [...(post._commentRows || []), reply];
     const target = list.querySelector(`[data-comment-id="${CSS.escape(parentCommentId)}"]`)?.closest('.comment-thread')?.querySelector('.comment-replies'); if (target) target.append(createCommentElement(reply, post, {}, submitReply));
     const count = post.querySelector('.comment-count'); count.textContent = `${formatCount(Number(count.textContent.replace(/[^0-9]/g, '')) + 1)} comments`; showToast(feedText('Reply added.', 'تمت إضافة الرد.')); return true;

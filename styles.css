@@ -423,8 +423,10 @@ h1 {
 .gallery-dropzone small, .gallery-dropzone em { margin-top: 6px; color: var(--dim); font: 9px "DM Mono", monospace; font-style: normal; }
 .gallery-upload-previews { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; max-height: 180px; margin-bottom: 16px; overflow-y: auto; }
 .gallery-pending-file { position: relative; overflow: hidden; border: 1px solid rgba(218,225,255,.15); border-radius: 4px; background: rgba(5,8,17,.3); }
-.gallery-pending-file img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.gallery-pending-file img, .gallery-pending-file video { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; background: #080c18; }
 .gallery-pending-file span { display: block; overflow: hidden; padding: 5px; color: var(--dim); font: 8px "DM Mono", monospace; text-overflow: ellipsis; white-space: nowrap; }
+.gallery-pending-file .gallery-file-meta { padding-top: 0; color: var(--cyan); }
+.uploaded-media .uploaded-preview { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; background: #080c18; }
 .gallery-pending-file button { position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border: 0; border-radius: 50%; background: rgba(5,8,17,.82); color: var(--ink); cursor: pointer; }
 .gallery-price-row { display: grid; grid-template-columns: 1fr 100px; gap: 8px; }
 .gallery-sale-fields textarea { width: 100%; resize: vertical; }
