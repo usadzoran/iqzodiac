@@ -222,26 +222,59 @@ saveProfileButton.addEventListener('click', async () => {
   }
 });
 
-const renderMedia = (items) => {
+const mediaGrid = document.querySelector('#media-grid');
+const mediaCount = document.querySelector('#media-count');
+const addMediaButton = document.querySelector('#add-media');
+const mediaInput = document.querySelector('#media-input');
+const galleryDialog = document.querySelector('#gallery-upload-dialog');
+const galleryDropzone = document.querySelector('#gallery-dropzone');
+const galleryPreviews = document.querySelector('#gallery-upload-previews');
+const gallerySectionInput = document.querySelector('#gallery-upload-section');
+const gallerySaleFields = document.querySelector('#gallery-sale-fields');
+const gallerySalePrice = document.querySelector('#gallery-sale-price');
+const gallerySaleCurrency = document.querySelector('#gallery-sale-currency');
+const gallerySaleDescription = document.querySelector('#gallery-sale-description');
+const galleryConfirm = document.querySelector('#gallery-confirm-upload');
+const galleryUploadStatus = document.querySelector('#gallery-upload-status');
+let galleryItems = [];
+let pendingGalleryFiles = [];
+let activeGallerySection = 'public';
+const galleryLabels = { public: 'Public Photos', private: 'Private Photos', sale: 'Photos for Sale' };
+const supportedGalleryTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const validateGalleryFile = (file) => {
+  if (!supportedGalleryTypes.has(file.type)) throw new Error(`${file.name}: only JPEG, PNG and WebP images are supported.`);
+  if (file.size > 50 * 1024 * 1024) throw new Error(`${file.name}: the maximum size is 50 MB.`);
+};
+const updateGalleryCounts = () => ['public', 'private', 'sale'].forEach((section) => { const node = document.querySelector(`#gallery-count-${section}`); if (node) node.textContent = String(galleryItems.filter((item) => item.gallery_section === section).length); });
+const renderGallery = () => {
   mediaGrid.querySelectorAll('.uploaded-media').forEach((tile) => tile.remove());
-  const empty = document.querySelector('#media-empty');
-  empty.hidden = items.length > 0;
-  mediaCount.textContent = `${items.length} ${items.length === 1 ? 'item' : 'items'}`;
+  const items = galleryItems.filter((item) => item.gallery_section === activeGallerySection);
+  document.querySelector('#media-empty').hidden = items.length > 0;
+  document.querySelector('#media-empty').textContent = activeGallerySection === 'sale' ? 'No photos are listed for sale yet.' : `No ${activeGallerySection} photos yet.`;
+  mediaCount.textContent = `${items.length} ${items.length === 1 ? 'photo' : 'photos'}`;
   items.forEach((item) => {
-    const isVideo = item.media_type === 'video';
     const tile = document.createElement('article'); tile.className = 'media-tile uploaded-media';
-    const preview = isVideo ? document.createElement('video') : document.createElement('img');
-    preview.className = 'uploaded-preview'; preview.src = item.url; preview.alt = `${isVideo ? 'Video' : 'Photo'} from your private gallery`;
-    if (isVideo) { preview.muted = true; preview.loop = true; preview.autoplay = true; preview.playsInline = true; }
-    const type = document.createElement('span'); type.className = 'media-type'; type.textContent = isVideo ? 'Video' : (item.media_type === 'avatar' ? 'Avatar' : 'Photo');
-    const caption = document.createElement('span'); caption.className = 'media-caption'; caption.textContent = item.media_type === 'avatar' ? 'Profile photo' : 'Private gallery item';
-    const remove = document.createElement('button'); remove.className = 'media-remove'; remove.type = 'button'; remove.textContent = '×'; remove.setAttribute('aria-label', 'Remove media');
-    remove.addEventListener('click', async (event) => { event.stopPropagation(); remove.disabled = true; try { await adapter.deleteMedia(item); await loadMedia(); showToast('Media removed from your private gallery.'); } catch (error) { remove.disabled = false; showToast(error?.message || 'Media could not be removed.'); } });
-    tile.append(preview, type, caption, remove); mediaGrid.insertBefore(tile, addMediaButton);
+    const preview = document.createElement('img'); preview.className = 'uploaded-preview'; preview.src = item.url; preview.alt = `${galleryLabels[item.gallery_section]} photo`;
+    const type = document.createElement('span'); type.className = 'media-type'; type.textContent = item.gallery_section === 'sale' ? `${item.sale_price || '—'} ${item.currency_code || 'USD'}` : galleryLabels[item.gallery_section];
+    const caption = document.createElement('span'); caption.className = 'media-caption'; caption.textContent = item.description || 'Photo';
+    const actions = document.createElement('div'); actions.className = 'media-actions';
+    const move = document.createElement('button'); move.type = 'button'; move.className = 'media-action'; move.textContent = 'Move'; move.addEventListener('click', async () => { const next = window.prompt('Move to: public, private, or sale', item.gallery_section); if (!['public','private','sale'].includes(next) || next === item.gallery_section) return; try { await adapter.updateMedia(item, { gallery_section: next }); await loadMedia(); showToast(`Photo moved to ${galleryLabels[next]}.`); } catch (error) { showToast(error.message || 'Photo could not be moved.'); } });
+    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'media-action media-remove'; remove.textContent = 'Delete'; remove.addEventListener('click', async () => { if (!window.confirm('Delete this photo permanently?')) return; remove.disabled = true; try { await adapter.deleteMedia(item); await loadMedia(); showToast('Photo deleted.'); } catch (error) { remove.disabled = false; showToast(error.message || 'Photo could not be deleted.'); } });
+    actions.append(move, remove); tile.append(preview, type, caption, actions); mediaGrid.append(tile);
   });
 };
-const loadMedia = async () => { if (!adapter) return; const items = await adapter.listMyMedia(); const avatar = items.find((item) => item.media_type === 'avatar'); if (avatar?.url) { const preview = document.querySelector('#avatar-preview'); preview.style.backgroundImage = `url(${avatar.url})`; preview.classList.add('has-photo'); preview.querySelector('.avatar-initials').hidden = true; } renderMedia(items.filter((item) => item.media_type !== 'avatar')); };
-addMediaButton.addEventListener('click', () => mediaInput.click());
-mediaInput.addEventListener('change', async (event) => { const files = Array.from(event.target.files || []); if (!files.length || !adapter) return; try { for (const file of files) await adapter.uploadMedia(file, file.type.startsWith('video/') ? 'video' : 'photo'); await loadMedia(); showToast(`${files.length} ${files.length === 1 ? 'file' : 'files'} saved to your private gallery.`); } catch (error) { showToast(error?.message || 'Media could not be uploaded.'); } finally { mediaInput.value = ''; } });
+const loadMedia = async () => { if (!adapter) return; const items = await adapter.listMyMedia(); galleryItems = items.filter((item) => item.media_type !== 'avatar').map((item) => ({ ...item, gallery_section: item.gallery_section || (item.is_public ? 'public' : 'private') })); updateGalleryCounts(); renderGallery(); const avatar = items.find((item) => item.media_type === 'avatar'); if (avatar?.url) { const preview = document.querySelector('#avatar-preview'); preview.style.backgroundImage = `url(${avatar.url})`; preview.classList.add('has-photo'); preview.querySelector('.avatar-initials').hidden = true; } };
+const renderPendingFiles = () => { galleryPreviews.replaceChildren(); pendingGalleryFiles.forEach((file, index) => { const card = document.createElement('div'); card.className = 'gallery-pending-file'; const image = document.createElement('img'); image.src = URL.createObjectURL(file); image.alt = file.name; const name = document.createElement('span'); name.textContent = file.name; const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = '×'; remove.setAttribute('aria-label', `Remove ${file.name}`); remove.addEventListener('click', () => { pendingGalleryFiles.splice(index, 1); renderPendingFiles(); updateGalleryUploadState(); }); card.append(image, name, remove); galleryPreviews.append(card); }); };
+const updateGalleryUploadState = () => { galleryConfirm.disabled = pendingGalleryFiles.length === 0; galleryUploadStatus.textContent = pendingGalleryFiles.length ? `${pendingGalleryFiles.length} photo${pendingGalleryFiles.length === 1 ? '' : 's'} ready to upload.` : ''; };
+const addPendingFiles = (files) => { const valid = []; try { Array.from(files).forEach((file) => { validateGalleryFile(file); if (!pendingGalleryFiles.some((existing) => existing.name === file.name && existing.size === file.size)) valid.push(file); }); pendingGalleryFiles.push(...valid); renderPendingFiles(); updateGalleryUploadState(); } catch (error) { galleryUploadStatus.textContent = error.message; galleryUploadStatus.dataset.state = 'error'; } };
+const openGalleryDialog = () => { pendingGalleryFiles = []; galleryUploadStatus.textContent = ''; gallerySectionInput.value = activeGallerySection; gallerySaleFields.hidden = activeGallerySection !== 'sale'; renderPendingFiles(); updateGalleryUploadState(); if (galleryDialog.showModal) galleryDialog.showModal(); else galleryDialog.setAttribute('open', ''); };
+addMediaButton.addEventListener('click', openGalleryDialog);
+document.querySelectorAll('[data-gallery-tab]').forEach((button) => button.addEventListener('click', () => { activeGallerySection = button.dataset.galleryTab; document.querySelectorAll('[data-gallery-tab]').forEach((tab) => { const active = tab.dataset.galleryTab === activeGallerySection; tab.classList.toggle('is-active', active); tab.setAttribute('aria-selected', String(active)); }); renderGallery(); }));
+gallerySectionInput.addEventListener('change', () => { gallerySaleFields.hidden = gallerySectionInput.value !== 'sale'; });
+mediaInput.addEventListener('change', (event) => { addPendingFiles(event.target.files || []); event.target.value = ''; });
+['dragenter','dragover'].forEach((eventName) => galleryDropzone.addEventListener(eventName, (event) => { event.preventDefault(); galleryDropzone.classList.add('is-dragging'); }));
+['dragleave','drop'].forEach((eventName) => galleryDropzone.addEventListener(eventName, (event) => { event.preventDefault(); galleryDropzone.classList.remove('is-dragging'); if (eventName === 'drop') addPendingFiles(event.dataTransfer.files || []); }));
+galleryConfirm.addEventListener('click', async () => { if (!pendingGalleryFiles.length || galleryConfirm.disabled) return; galleryConfirm.disabled = true; const queue = [...pendingGalleryFiles]; const total = queue.length; galleryUploadStatus.textContent = `Uploading photos… 0%`; galleryUploadStatus.dataset.state = 'saving'; const options = { section: gallerySectionInput.value, salePrice: gallerySalePrice.value, currency: gallerySaleCurrency.value, description: gallerySaleDescription.value }; let completed = 0; try { for (const file of queue) { await adapter.uploadMedia(file, 'photo', options); completed += 1; pendingGalleryFiles = pendingGalleryFiles.filter((candidate) => candidate !== file); const percent = Math.round((completed / total) * 100); galleryUploadStatus.textContent = `Uploading photos… ${percent}% (${completed}/${total})`; renderPendingFiles(); } galleryUploadStatus.textContent = `${completed} photo${completed === 1 ? '' : 's'} uploaded successfully.`; galleryUploadStatus.dataset.state = 'success'; await loadMedia(); setTimeout(() => galleryDialog.close(), 450); showToast(`${completed} photo${completed === 1 ? '' : 's'} uploaded successfully.`); } catch (error) { galleryConfirm.disabled = false; galleryUploadStatus.textContent = `${completed ? `${completed} uploaded. ` : ''}${error.message || 'Upload failed. Press Upload photos to retry.'}`; galleryUploadStatus.dataset.state = 'error'; } });
+(async () => { await loadMedia(); })();
 document.querySelector('#avatar-input').addEventListener('change', async (event) => { const [file] = event.target.files; if (!file || !adapter) return; try { const item = await adapter.uploadMedia(file, 'avatar'); const avatar = document.querySelector('#avatar-preview'); avatar.style.backgroundImage = `url(${item.url})`; avatar.classList.add('has-photo'); avatar.querySelector('.avatar-initials').hidden = true; showToast('Profile photo saved securely.'); } catch (error) { showToast(error?.message || 'Profile photo could not be uploaded.'); } finally { event.target.value = ''; } });
 (async () => { await loadMedia(); })();

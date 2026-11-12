@@ -132,20 +132,20 @@
       const current = await this.getCurrentProfile();
       const next = { ...current, privacy: { ...current.privacy, photosPublic: patch.photosPublic === true } };
       write(keys.profile, next);
-      try { const { client, user } = await sessionUser(); if (client && user) { await client.from('profiles').update({ privacy: next.privacy, updated_at: new Date().toISOString() }).eq('user_id', user.id); await client.from('profile_media').update({ is_public: next.privacy.photosPublic, updated_at: new Date().toISOString() }).eq('user_id', user.id); } } catch (error) { console.warn('Privacy sync failed.', error); }
+      try { const { client, user } = await sessionUser(); if (client && user) await client.from('profiles').update({ privacy: next.privacy, updated_at: new Date().toISOString() }).eq('user_id', user.id); } catch (error) { console.warn('Privacy sync failed.', error); }
       return next;
     },
     async listMyMedia() {
       try {
         const client = await database();
         if (!client) return [];
-        const { data, error } = await client.from('profile_media').select('id,storage_path,media_type,mime_type,size_bytes,is_public,created_at').order('created_at', { ascending: false }).limit(100);
+        const { data, error } = await client.from('profile_media').select('id,storage_path,preview_storage_path,media_type,mime_type,size_bytes,is_public,gallery_section,description,sale_price,currency_code,sale_active,created_at').order('created_at', { ascending: false }).limit(100);
         if (error) throw error;
         const items = await Promise.all((data || []).map(async (item) => { const signed = await client.storage.from('iqzodiac-media').createSignedUrl(item.storage_path, 3600); return { ...item, url: signed.data?.signedUrl || '' }; }));
         return items.filter((item) => item.url);
       } catch (error) { console.warn('Profile media could not be loaded.', error); return []; }
     },
-    async uploadMedia(file, mediaType = 'photo') {
+    async uploadMedia(file, mediaType = 'photo', options = {}) {
       const client = await database();
       if (!client) throw new Error('A signed-in account is required.');
       const { data: authData } = await client.auth.getUser();
@@ -160,12 +160,24 @@
         const { data: old } = await client.from('profile_media').select('id,storage_path').eq('user_id', user.id).eq('media_type', 'avatar').limit(10);
         if (old?.length) { await client.storage.from('iqzodiac-media').remove(old.map((item) => item.storage_path)); await client.from('profile_media').delete().in('id', old.map((item) => item.id)); }
       }
+      const section = ['public', 'private', 'sale'].includes(options.section) ? options.section : (mediaType === 'avatar' ? 'private' : 'private');
+      const salePrice = section === 'sale' ? Number(options.salePrice) : null;
+      if (section === 'sale' && (!Number.isFinite(salePrice) || salePrice <= 0)) throw new Error('Enter a valid sale price before uploading.');
       const upload = await client.storage.from('iqzodiac-media').upload(path, file, { contentType: file.type, upsert: false, cacheControl: '3600' });
       if (upload.error) throw upload.error;
-      const row = await client.from('profile_media').insert({ user_id: user.id, storage_path: path, media_type: mediaType, mime_type: file.type, size_bytes: file.size, is_public: mediaType !== 'avatar' && (await this.getCurrentProfile()).privacy.photosPublic }).select('id,storage_path,media_type,mime_type,size_bytes,is_public,created_at').single();
+      const row = await client.from('profile_media').insert({ user_id: user.id, storage_path: path, media_type: mediaType, mime_type: file.type, size_bytes: file.size, is_public: section === 'public', gallery_section: section, description: String(options.description || '').trim().slice(0, 500), sale_price: salePrice, currency_code: String(options.currency || 'USD').toUpperCase(), sale_active: section === 'sale' }).select('id,storage_path,preview_storage_path,media_type,mime_type,size_bytes,is_public,gallery_section,description,sale_price,currency_code,sale_active,created_at').single();
       if (row.error) { await client.storage.from('iqzodiac-media').remove([path]); throw row.error; }
       const signed = await client.storage.from('iqzodiac-media').createSignedUrl(path, 3600);
       return { ...row.data, url: signed.data?.signedUrl || '' };
+    },
+    async updateMedia(media, patch = {}) {
+      const client = await database();
+      if (!client || !media?.id) throw new Error('A signed-in account is required.');
+      const section = ['public', 'private', 'sale'].includes(patch.gallery_section) ? patch.gallery_section : media.gallery_section;
+      const values = { gallery_section: section, is_public: section === 'public', updated_at: new Date().toISOString() };
+      if (section === 'sale') { values.sale_price = Number(patch.sale_price ?? media.sale_price); values.currency_code = String(patch.currency_code || media.currency_code || 'USD').toUpperCase(); values.sale_active = patch.sale_active !== false; values.description = String(patch.description ?? media.description ?? '').trim().slice(0, 500); } else { values.sale_active = false; }
+      const { data, error } = await client.from('profile_media').update(values).eq('id', media.id).select('id,storage_path,preview_storage_path,media_type,mime_type,size_bytes,is_public,gallery_section,description,sale_price,currency_code,sale_active,created_at').single();
+      if (error) throw error; return data;
     },
     async deleteMedia(media) {
       const client = await database();
