@@ -221,18 +221,23 @@
       return next;
     },
     async listMyMedia() {
-      try {
-        const client = await database();
-        if (!client) return [];
-        const { data: authData, error: authError } = await client.auth.getUser();
-        if (authError) throw authError;
-        const user = authData?.user;
-        if (!user) return [];
-        const { data, error } = await client.from('profile_media').select('id,storage_path,preview_storage_path,media_type,mime_type,size_bytes,is_public,gallery_section,description,sale_price,currency_code,sale_active,created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(100);
-        if (error) throw error;
-        const items = await Promise.all((data || []).map(async (item) => { const signed = await client.storage.from('iqzodiac-media').createSignedUrl(item.storage_path, 3600); return { ...item, url: signed.data?.signedUrl || '' }; }));
-        return items.filter((item) => item.url);
-      } catch (error) { console.warn('Profile media could not be loaded.', error); return []; }
+      const client = await database();
+      if (!client) return [];
+      const { data: authData, error: authError } = await client.auth.getUser();
+      if (authError) throw authError;
+      const user = authData?.user;
+      if (!user) return [];
+      const { data, error } = await client.from('profile_media').select('id,storage_path,preview_storage_path,media_type,mime_type,size_bytes,is_public,gallery_section,description,sale_price,currency_code,sale_active,created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(100);
+      if (error) throw error;
+      const rows = data || [];
+      const urlsByPath = new Map();
+      for (let offset = 0; offset < rows.length; offset += 50) {
+        const batch = rows.slice(offset, offset + 50);
+        const { data: signedRows, error: signedError } = await client.storage.from('iqzodiac-media').createSignedUrls(batch.map((item) => item.storage_path), 3600);
+        if (signedError) throw signedError;
+        (signedRows || []).forEach((signed) => { if (signed.signedUrl) urlsByPath.set(signed.path, signed.signedUrl); });
+      }
+      return rows.map((item) => ({ ...item, url: urlsByPath.get(item.storage_path) || '' })).filter((item) => item.url);
     },
     async uploadMedia(file, mediaType = 'photo', options = {}) {
       const client = await database();

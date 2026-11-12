@@ -99,6 +99,10 @@ const updatePrivacyPreview = () => { galleryPrivacyStatus.textContent = galleryV
 galleryVisibility.addEventListener('change', async () => { saveChoice('gallery-visible', galleryVisibility.checked); updatePrivacyPreview(); const dataAdapter = window.IQZodiacData?.adapter; if (dataAdapter) await dataAdapter.updatePrivacyPreferences({ photosPublic: galleryVisibility.checked }); });
 updatePrivacyPreview();
 const followersCount = document.querySelector('#followers-count'); const likesCount = document.querySelector('#likes-count'); const followButton = document.querySelector('#follow-button'); const followLabel = document.querySelector('#follow-label'); const likeProfile = document.querySelector('#like-profile'); const likeLabel = document.querySelector('#like-label'); const heartIcon = document.querySelector('.heart-icon'); const notificationList = document.querySelector('#notification-list'); const notificationBadge = document.querySelector('#notification-badge'); const notificationTrigger = document.querySelector('#notification-trigger'); const notificationPopover = document.querySelector('#notification-popover'); const notificationPopoverList = document.querySelector('#notification-popover-list'); let notificationItems = [...document.querySelectorAll('.notification-item')]; const notificationCount = document.querySelector('#notification-count');
+const readNumber = (key, fallback = 0) => {
+  const value = Number(window.localStorage.getItem(`iqzodiac:${key}`));
+  return Number.isFinite(value) && value >= 0 ? value : fallback;
+};
 let isFollowing = false; let hasLiked = false; let followers = readNumber('followers-count', 0); let likes = readNumber('likes-count', 0);
 const formatCount = (value) => new Intl.NumberFormat('en-US').format(value);
 const updateSocialPreview = () => { followersCount.textContent = formatCount(followers); likesCount.textContent = formatCount(likes); followLabel.textContent = isFollowing ? 'Following' : 'Follow back'; followButton.classList.toggle('is-following', isFollowing); likeProfile.setAttribute('aria-pressed', String(hasLiked)); likeProfile.classList.toggle('is-liked', hasLiked); heartIcon.textContent = hasLiked ? '♥' : '♡'; likeLabel.textContent = hasLiked ? 'Liked' : 'Like profile'; };
@@ -277,7 +281,23 @@ const renderGallery = () => {
     actions.append(move, remove); tile.append(preview, type, caption, actions); mediaGrid.append(tile);
   });
 };
-const loadMedia = async () => { if (!adapter) return; const items = await adapter.listMyMedia(); galleryItems = items.filter((item) => item.media_type !== 'avatar').map((item) => ({ ...item, gallery_section: item.gallery_section || (item.is_public ? 'public' : 'private') })); updateGalleryCounts(); renderGallery(); const avatar = items.find((item) => item.media_type === 'avatar'); if (avatar?.url) { const preview = document.querySelector('#avatar-preview'); preview.style.backgroundImage = `url(${avatar.url})`; preview.classList.add('has-photo'); preview.querySelector('.avatar-initials').hidden = true; } };
+const loadMedia = async () => {
+  const emptyState = document.querySelector('#media-empty');
+  try {
+    if (!adapter) throw new Error('Profile media storage is not available. Please reload the page.');
+    const items = await adapter.listMyMedia();
+    galleryItems = items.filter((item) => item.media_type !== 'avatar').map((item) => ({ ...item, gallery_section: item.gallery_section || (item.is_public ? 'public' : 'private') }));
+    updateGalleryCounts(); renderGallery();
+    const avatar = items.find((item) => item.media_type === 'avatar');
+    if (avatar?.url) { const preview = document.querySelector('#avatar-preview'); preview.style.backgroundImage = `url(${avatar.url})`; preview.classList.add('has-photo'); preview.querySelector('.avatar-initials').hidden = true; }
+  } catch (error) {
+    console.error('Gallery failed to load.', error);
+    galleryItems = []; updateGalleryCounts(); renderGallery();
+    emptyState.hidden = false;
+    emptyState.textContent = 'Gallery could not be loaded. Check your connection and try again.';
+    showToast(error?.message || 'Gallery could not be loaded.');
+  }
+};
 const renderPendingFiles = () => {
   galleryPreviews.querySelectorAll('[data-preview-url]').forEach((node) => URL.revokeObjectURL(node.dataset.previewUrl));
   galleryPreviews.replaceChildren();
@@ -341,4 +361,3 @@ galleryConfirm.addEventListener('click', async () => {
 });
 (async () => { await loadMedia(); })();
 document.querySelector('#avatar-input').addEventListener('change', async (event) => { const [file] = event.target.files; if (!file || !adapter) return; try { const item = await adapter.uploadMedia(file, 'avatar'); const avatar = document.querySelector('#avatar-preview'); avatar.style.backgroundImage = `url(${item.url})`; avatar.classList.add('has-photo'); avatar.querySelector('.avatar-initials').hidden = true; showToast('Profile photo saved securely.'); } catch (error) { showToast(error?.message || 'Profile photo could not be uploaded.'); } finally { event.target.value = ''; } });
-(async () => { await loadMedia(); })();
