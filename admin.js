@@ -9,7 +9,7 @@
   const date = (value) => value ? new Intl.DateTimeFormat('en', { dateStyle:'medium', timeStyle:'short' }).format(new Date(value)) : '—';
   const setHTML = (id, html) => { const node = document.querySelector(`#${id}`); if (node) node.innerHTML = html; };
   const showToast = (message) => { toast.textContent = message; toast.hidden = false; window.clearTimeout(showToast.timer); showToast.timer = window.setTimeout(() => { toast.hidden = true; }, 3000); };
-  const showError = (message, showLoginLink = false) => { loading.hidden = true; content.hidden = true; errorBox.hidden = false; errorBox.innerHTML = `${escapeHTML(message)}${showLoginLink ? ' <a class="admin-button admin-button-primary" href="./login.html">Open login page</a>' : ''}`; };
+  const showError = (message, showLoginLink = false) => { loading.hidden = true; content.hidden = true; errorBox.hidden = false; errorBox.innerHTML = `${escapeHTML(message)}${showLoginLink ? ' <a class="admin-button admin-button-primary" href="./iqz-admin-login.html?next=%2Fiqzodiac%2Fiqz-control-7f3a91c2.html">Open admin login</a>' : ''}`; };
   const status = (id, message) => setHTML(id, `<p class="admin-status">${escapeHTML(message)}</p>`);
   let client;
 
