@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <link rel="stylesheet" href="./styles.css?v=profile-notification-deeplinks-20261108" />
+    <link rel="stylesheet" href="./styles.css?v=profile-tabs-20261112" />
   </head>
   <body class="profile-page has-site-nav">
     <div class="aurora aurora-one" aria-hidden="true"></div>
@@ -41,6 +41,29 @@
         <div class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> Your private space</div>
         <h1 id="profile-title">Your <span>Profile</span></h1>
         <p>Choose what feels right to share. You can change these settings anytime.</p>
+      </section>
+
+      <section class="profile-activity-shell" aria-labelledby="profile-activity-title">
+        <h2 id="profile-activity-title" class="sr-only">Profile activity</h2>
+        <nav class="profile-tabs" role="tablist" aria-label="Profile sections">
+          <button class="profile-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="profile-tab-posts" data-profile-tab="posts">Posts</button>
+          <button class="profile-tab" type="button" role="tab" aria-selected="false" aria-controls="profile-tab-comments" data-profile-tab="comments">Comments</button>
+          <button class="profile-tab" type="button" role="tab" aria-selected="false" aria-controls="profile-tab-saved" data-profile-tab="saved">Saved</button>
+          <button class="profile-tab" type="button" role="tab" aria-selected="false" aria-controls="profile-tab-about" data-profile-tab="about">About</button>
+        </nav>
+        <div class="profile-feed-options-row">
+          <button class="profile-feed-options" id="profile-feed-options" type="button" aria-expanded="false" aria-controls="profile-feed-menu"><span aria-hidden="true">⚙</span> Feed Options</button>
+          <div class="profile-feed-menu" id="profile-feed-menu" hidden role="menu">
+            <button type="button" role="menuitem" data-profile-sort="latest">Latest</button>
+            <button type="button" role="menuitem" data-profile-sort="oldest">Oldest</button>
+            <button type="button" role="menuitem" data-profile-sort="liked">Most Liked</button>
+            <button type="button" role="menuitem" data-profile-sort="media">Media</button>
+          </div>
+        </div>
+        <section class="profile-tab-panel is-active" id="profile-tab-posts" role="tabpanel" data-profile-panel="posts"><div class="profile-activity-list" id="profile-posts-list"><p class="profile-tab-status">Loading posts…</p></div></section>
+        <section class="profile-tab-panel" id="profile-tab-comments" role="tabpanel" data-profile-panel="comments" hidden><div class="profile-activity-list" id="profile-comments-list"></div></section>
+        <section class="profile-tab-panel" id="profile-tab-saved" role="tabpanel" data-profile-panel="saved" hidden><div class="profile-saved-groups"><div><div class="profile-saved-heading"><h3>Saved posts</h3><span id="profile-saved-posts-count">0</span></div><div class="profile-activity-list" id="profile-saved-posts-list"></div></div><div><div class="profile-saved-heading"><h3>Saved Reels</h3><span id="profile-saved-reels-count">0</span></div><div class="profile-saved-reels-grid" id="profile-saved-reels-list"></div></div></div></section>
+        <section class="profile-tab-panel" id="profile-tab-about" role="tabpanel" data-profile-panel="about" hidden><p class="profile-tab-status">Your profile details, privacy controls, gallery, compatibility preferences, wallet, and account activity are organized below.</p></section>
       </section>
 
       <nav class="profile-private-shortcuts" aria-labelledby="profile-shortcuts-title">
@@ -272,7 +295,7 @@
     <script src="./language.js?v=20261022-global"></script>
     <script src="./location-data.js"></script>
     <script src="./privacy-core.js"></script>
-    <script src="./profile.js?v=notification-deeplinks-20261108"></script><script src="./reel-collections.js?v=reel-saves-download-20261110"></script>
+    <script src="./profile.js?v=profile-tabs-20261112"></script><script src="./reel-collections.js?v=reel-saves-download-20261110"></script>
     <script src="./profile-wallet.js?v=coins-gifts-profile-20261106"></script>
       <script src="./nav-performance.js" defer></script>
   </body>

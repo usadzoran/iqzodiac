@@ -21,6 +21,7 @@ const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => 
 const formatDateTime = (value) => value ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '';
 const database = () => window.IQZodiacSupabase?.ready;
 let authenticatedUserId = null;
+let savedPostIds = new Set();
 let savedProfile = {};
 try { savedProfile = JSON.parse(window.localStorage.getItem('iqzodiac-current-profile') || '{}'); } catch { savedProfile = {}; }
 const hasPseudonymousProfile = savedProfile.privacyProfileVersion === 2;
@@ -302,6 +303,7 @@ const bindPost = (post) => {
   const likeButton = post.querySelector('.like-button');
   const commentButton = post.querySelector('.comment-focus');
   const shareButton = post.querySelector('.share-action');
+  const saveButton = post.querySelector('.save-post-action');
   const likeCount = post.querySelector('.like-count');
   const commentCount = post.querySelector('.comment-count');
   const commentForm = post.querySelector('.comment-form');
@@ -331,6 +333,23 @@ const bindPost = (post) => {
   commentButton.addEventListener('click', () => {
     commentInput.focus();
     commentInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  saveButton?.addEventListener('click', async () => {
+    const client = await database();
+    if (!client || !authenticatedUserId) { showToast('Sign in to save posts.'); return; }
+    const saved = saveButton.dataset.saved === 'true';
+    saveButton.disabled = true;
+    const result = saved
+      ? await client.from('post_saves').delete().eq('post_id', post.dataset.postId).eq('user_id', authenticatedUserId)
+      : await client.from('post_saves').insert({ post_id: post.dataset.postId, user_id: authenticatedUserId });
+    if (result.error) { saveButton.disabled = false; showToast('The saved state could not be changed.'); return; }
+    saveButton.dataset.saved = String(!saved);
+    saveButton.querySelector('span:last-child').textContent = saved ? 'Save' : 'Saved';
+    saveButton.querySelector('.action-icon').textContent = saved ? '🔖' : '✓';
+    saveButton.setAttribute('aria-pressed', String(!saved));
+    saveButton.disabled = false;
+    showToast(saved ? 'Removed from saved.' : 'Post saved.');
   });
 
   shareButton.addEventListener('click', async () => {
@@ -485,6 +504,8 @@ if ('IntersectionObserver' in window && !reduceMotion) {
     if (!sessionData.session?.user?.id) return;
     authenticatedUserId = sessionData.session.user.id;
     const { data: accountProfile } = await client.from('profiles').select('display_name,handle').eq('user_id', authenticatedUserId).maybeSingle();
+    const { data: savedRows } = await client.from('post_saves').select('post_id').eq('user_id', authenticatedUserId).limit(500);
+    savedPostIds = new Set((savedRows || []).map((row) => row.post_id));
     if (accountProfile) {
       currentPublicIdentity.displayName = String(accountProfile.display_name || currentPublicIdentity.displayName).slice(0, 32);
       currentPublicIdentity.handle = /^@[a-z0-9._-]{1,24}$/i.test(accountProfile.handle || '') ? accountProfile.handle : currentPublicIdentity.handle;
@@ -545,7 +566,7 @@ if ('IntersectionObserver' in window && !reduceMotion) {
         const deletePostLabel = feedText('Delete post', 'حذف المنشور');
         const moreActionsLabel = feedText('Post options', 'خيارات المنشور');
         const ownerActions = item.author_id === authenticatedUserId ? `<details class="post-owner-menu"><summary class="post-owner-menu-trigger" aria-label="${escapeHTML(moreActionsLabel)}" title="${escapeHTML(moreActionsLabel)}"><span aria-hidden="true">⋮</span></summary><div class="post-owner-menu-panel"><button class="post-edit-button" type="button">${escapeHTML(editPostLabel)}</button><button class="post-delete-button" type="button">${escapeHTML(deletePostLabel)}</button></div></details>` : '';
-        post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">${escapeHTML(String(item.display_name || 'OM').slice(0, 1))}</div><div class="post-author"><strong>${escapeHTML(item.display_name || 'Orbit Member')}</strong><span>${escapeHTML(item.handle || '@member')} · ${escapeHTML(formatDateTime(item.created_at))}</span></div>${ownerActions}</header>${bodyMarkup}${createPostMedia(item, mediaUrl)}<div class="post-meta"><span class="like-count">${formatCount(Number(item.like_count || 0))} likes</span><span class="comment-count">${formatCount(Number(item.comment_count || 0))} comments</span></div><div class="post-actions"><button class="post-action like-button ${liked ? 'is-liked' : ''}" type="button" data-like="${liked}"><span class="action-icon">${liked ? '♥' : '♡'}</span><span>${liked ? 'Liked' : 'Like'}</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment" /><button type="submit" aria-label="Post comment">↗</button></form>`;
+        post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">${escapeHTML(String(item.display_name || 'OM').slice(0, 1))}</div><div class="post-author"><strong>${escapeHTML(item.display_name || 'Orbit Member')}</strong><span>${escapeHTML(item.handle || '@member')} · ${escapeHTML(formatDateTime(item.created_at))}</span></div>${ownerActions}</header>${bodyMarkup}${createPostMedia(item, mediaUrl)}<div class="post-meta"><span class="like-count">${formatCount(Number(item.like_count || 0))} likes</span><span class="comment-count">${formatCount(Number(item.comment_count || 0))} comments</span></div><div class="post-actions"><button class="post-action like-button ${liked ? 'is-liked' : ''}" type="button" data-like="${liked}"><span class="action-icon">${liked ? '♥' : '♡'}</span><span>${liked ? 'Liked' : 'Like'}</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action save-post-action ${savedPostIds.has(item.post_id) ? 'is-saved' : ''}" data-saved="${savedPostIds.has(item.post_id)}" aria-pressed="${savedPostIds.has(item.post_id)}" type="button"><span class="action-icon">${savedPostIds.has(item.post_id) ? '✓' : '🔖'}</span><span>${savedPostIds.has(item.post_id) ? 'Saved' : 'Save'}</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment" /><button type="submit" aria-label="Post comment">↗</button></form>`;
         feedList.append(post); bindPost(post);
       }
     }

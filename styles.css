@@ -1313,3 +1313,50 @@ table { display: block; max-width: 100%; overflow-x: auto; border-collapse: coll
 .reel-collection-empty { grid-column:1/-1; margin:0; padding:22px; border:1px dashed rgba(131,229,232,.2); color:var(--muted); font-size:10px; text-align:center; }
 @media(max-width:760px) { .reel-collection-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
 @media(max-width:430px) { .reel-collections-card { padding:15px 12px; } .reel-collection-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; } }
+
+
+/* Profile activity navigation */
+.profile-activity-shell { margin: 30px 0 22px; padding: 0 clamp(14px, 2.5vw, 28px); border: 1px solid rgba(218,225,255,.12); border-radius: 4px; background: rgba(12,17,32,.48); }
+.profile-tabs { display: flex; gap: clamp(18px, 4vw, 46px); overflow-x: auto; overscroll-behavior-inline: contain; -webkit-overflow-scrolling: touch; border-bottom: 1px solid rgba(218,225,255,.12); scrollbar-width: none; }
+.profile-tabs::-webkit-scrollbar { display: none; }
+.profile-tab { flex: 0 0 auto; padding: 17px 2px 14px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--dim); cursor: pointer; font: 10px "DM Mono", monospace; letter-spacing: .08em; text-transform: uppercase; transition: color .2s ease, border-color .2s ease; }
+.profile-tab:hover, .profile-tab:focus-visible { color: var(--ink); outline: none; }
+.profile-tab.is-active { border-bottom-color: var(--ink); color: var(--ink); }
+.profile-feed-options-row { position: relative; display: flex; justify-content: flex-end; padding: 14px 0 0; }
+.profile-feed-options { padding: 8px 11px; border: 1px solid rgba(218,225,255,.16); border-radius: 3px; background: rgba(255,255,255,.03); color: var(--muted); cursor: pointer; font: 9px "DM Mono", monospace; letter-spacing: .04em; text-transform: uppercase; }
+.profile-feed-options:hover, .profile-feed-options[aria-expanded="true"] { border-color: rgba(131,229,232,.45); color: var(--cyan); }
+.profile-feed-menu { position: absolute; z-index: 4; top: 48px; right: 0; display: grid; min-width: 145px; padding: 5px; border: 1px solid rgba(131,229,232,.2); border-radius: 4px; background: var(--panel, #11182b); box-shadow: 0 16px 35px rgba(0,0,0,.3); }
+.profile-feed-menu[hidden] { display: none; }
+.profile-feed-menu button { padding: 9px 10px; border: 0; background: transparent; color: var(--muted); cursor: pointer; font: 9px "DM Mono", monospace; text-align: left; }
+.profile-feed-menu button:hover { background: rgba(131,229,232,.09); color: var(--ink); }
+.profile-tab-panel { padding: 17px 0 22px; animation: profile-tab-in .22s ease both; }
+.profile-tab-panel[hidden] { display: none; }
+@keyframes profile-tab-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.profile-tab-status { margin: 0; padding: 22px 8px; color: var(--dim); font: 10px "DM Mono", monospace; text-align: center; }
+.profile-activity-list { display: grid; gap: 10px; }
+.profile-activity-card { padding: 15px; border: 1px solid rgba(218,225,255,.11); border-radius: 4px; background: rgba(255,255,255,.025); }
+.profile-activity-card-head { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.profile-activity-card-head > div:nth-child(2) { min-width: 0; flex: 1; }
+.profile-activity-card-head strong, .profile-activity-card-head small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profile-activity-card-head strong { color: var(--ink); font-size: 12px; }
+.profile-activity-card-head small, .profile-comment-card small, .profile-comment-card span, .profile-activity-meta { color: var(--dim); font: 9px "DM Mono", monospace; }
+.profile-activity-avatar { display: grid; width: 30px; height: 30px; flex: 0 0 auto; place-items: center; border: 1px solid rgba(131,229,232,.3); border-radius: 50%; color: var(--cyan); font-size: 11px; font-weight: 700; }
+.profile-activity-body { margin: 13px 0 0; color: var(--muted); font-size: 12px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+.profile-activity-media { display: block; width: min(100%, 520px); max-height: 330px; margin-top: 12px; border-radius: 4px; object-fit: cover; }
+.profile-activity-meta { display: block; margin-top: 10px; }
+.profile-remove-save { flex: 0 0 auto; padding: 6px 8px; border: 1px solid rgba(255,170,110,.35); border-radius: 3px; background: transparent; color: var(--orange); cursor: pointer; font: 8px "DM Mono", monospace; text-transform: uppercase; }
+.profile-comment-card p { margin: 8px 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.profile-comment-card span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profile-saved-groups { display: grid; gap: 22px; }
+.profile-saved-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 9px; }
+.profile-saved-heading h3 { margin: 0; color: var(--ink); font-size: 14px; }
+.profile-saved-heading span { color: var(--dim); font: 9px "DM Mono", monospace; }
+.profile-saved-reels-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }
+.profile-saved-reel { min-width: 0; overflow: hidden; border: 1px solid rgba(218,225,255,.12); border-radius: 4px; background: rgba(5,8,17,.3); }
+.profile-saved-reel > a { display: block; aspect-ratio: 9 / 13; background: #11182a; }
+.profile-saved-reel video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.profile-saved-reel > div { display: flex; align-items: center; justify-content: space-between; gap: 5px; padding: 7px; }
+.profile-saved-reel > div span { min-width: 0; overflow: hidden; color: var(--muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.profile-saved-reel button { flex: 0 0 auto; padding: 0; border: 0; background: transparent; color: var(--orange); cursor: pointer; font: 8px "DM Mono", monospace; }
+.profile-page > .profile-private-shortcuts[hidden], .profile-page > .profile-grid[hidden], .profile-page > .compatibility-card[hidden], .profile-page > .reel-profile-link-card[hidden], .profile-page > .reel-collections-card[hidden], .profile-page > .profile-wallet-card[hidden], .profile-page > .social-grid[hidden], .profile-page > .profile-actions[hidden] { display: none; }
+@media (max-width: 600px) { .profile-activity-shell { margin-inline: -2px; padding-inline: 11px; } .profile-tab { padding-top: 14px; font-size: 9px; } .profile-saved-reels-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .profile-remove-save { font-size: 7px; } }
