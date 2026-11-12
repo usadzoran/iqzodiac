@@ -7,13 +7,14 @@
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=admin-control-20261110" /><link rel="stylesheet" href="./admin.css?v=admin-control-20261110" />
+  <link rel="stylesheet" href="./styles.css?v=admin-control-20261112" /><link rel="stylesheet" href="./admin.css?v=admin-control-20261112" />
 </head>
 <body class="admin-page">
   <div class="aurora aurora-one" aria-hidden="true"></div><div class="aurora aurora-two" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
   <main class="admin-shell">
     <header class="admin-header"><div><p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> PRIVATE CONTROL ROOM</p><h1>IQZodiac <span>admin.</span></h1><p class="admin-header-note">Moderation, members, marketplace, Reels, VIP operations, and audit history.</p></div><a class="back-link" href="./home.html">Return to site ↗</a></header>
     <section id="admin-loading" class="admin-card"><p class="loading-pulse">Verifying access…</p></section>
+    <section id="admin-passcode-gate" class="admin-card admin-passcode-gate" hidden><div class="admin-section-heading"><div><h2>Additional verification</h2><p>Your account is an administrator. Enter the private control-room password to continue.</p></div></div><form id="admin-passcode-form" class="admin-toolbar"><input id="admin-passcode" class="admin-input" type="password" autocomplete="current-password" minlength="8" required placeholder="Private admin password" /><button class="admin-button admin-button-primary" type="submit">Unlock control room</button></form><p id="admin-passcode-status" class="admin-status" aria-live="polite"></p></section>
     <section id="admin-error" class="admin-error" hidden></section>
     <section id="admin-content" hidden>
       <nav class="admin-nav" aria-label="Admin sections">
@@ -28,6 +29,6 @@
     </section>
   </main>
   <div id="admin-toast" class="admin-toast" role="status" aria-live="polite" hidden></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-client.js"></script><script src="./admin.js?v=admin-control-20261110"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-client.js"></script><script src="./admin.js?v=admin-control-20261112"></script>
 </body>
 </html>
