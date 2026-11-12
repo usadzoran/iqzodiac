@@ -24,9 +24,9 @@
   const marketplaceListingId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(rawMarketplaceListingId) ? rawMarketplaceListingId : '';
   const marketplaceContextNode = document.querySelector('#marketplace-chat-context');
   const targetMessageId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(routeParams.get('message') || '') ? routeParams.get('message') : '';
-  let client; let user; let contacts = []; let activeId = rawMarketplaceListingId ? null : routeParams.get('match'); let activeConversation = null; let activeConversationHint = null; let marketplaceContext = null; let pendingMarketplaceListingId = marketplaceListingId; let timerInterval; let elapsedSeconds = 0; let currentExpiryDuration = 'off'; let expiryChangeInFlight = false;
-  let realtimeChannel = null; let renderTimer = null; let expiryRenderTimer = null; let renderRevision = 0; let longPressTimer = null; let suppressNextClick = false; let selectionMode = false; let selectedMessageIds = new Set(); let visibleMessageIds = [];
-  let pendingAttachments = []; const refreshedAttachmentPaths = new Set(); const signedUrlExpiries = new Map(); let mediaRecorder = null; let recordingStream = null; let recordedChunks = []; let recordingConversationId = null; let sendingMessages = false; let vapidPublicKey = ''; let serviceWorkerRegistration = null;
+  let client; let user; let contacts = []; let activeId = rawMarketplaceListingId ? null : routeParams.get('match'); let activeConversation = null; let activeConversationHint = null; let marketplaceContext = null; let pendingMarketplaceListingId = marketplaceListingId; let timerInterval; let elapsedSeconds = 0; let currentExpiryDuration = 'off'; let expiryChangeInFlight = false; let expiryRequestId = 0; let targetMessageFocused = false;
+  let realtimeChannel = null; let renderTimer = null; let expiryRenderTimer = null; let renderRevision = 0; let cachedConversationId = null; let cachedMessageNodes = new Map(); let longPressTimer = null; let suppressNextClick = false; let selectionMode = false; let selectedMessageIds = new Set(); let visibleMessageIds = [];
+  let pendingAttachments = []; const refreshedAttachmentPaths = new Set(); const signedUrlExpiries = new Map(); const signedUrlCache = new Map(); let mediaRecorder = null; let recordingStream = null; let recordedChunks = []; let recordingConversationId = null; let sendingMessages = false; let vapidPublicKey = ''; let serviceWorkerRegistration = null;
   const expiryValues = ['off', '1h', '24h', '7d'];
   const allowedAttachmentMimes = new Set(['image/jpeg','image/png','image/webp','image/gif','audio/mpeg','audio/mp4','audio/ogg','audio/wav','audio/webm','audio/aac','audio/flac','audio/x-m4a','application/octet-stream','application/pdf','text/plain','text/csv','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation']);
   const mimeByExtension = { jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',mp3:'audio/mpeg',m4a:'audio/mp4',mp4:'audio/mp4',ogg:'audio/ogg',oga:'audio/ogg',wav:'audio/wav',webm:'audio/webm',aac:'audio/aac',flac:'audio/flac',pdf:'application/pdf',txt:'text/plain',csv:'text/csv',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xls:'application/vnd.ms-excel',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',ppt:'application/vnd.ms-powerpoint',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation' };
@@ -136,7 +136,7 @@
     });
   };
   const appendMessage = async (message, signedUrl) => {
-    if (message.message_kind === 'system') { const notice = document.createElement('div'); notice.className = 'message-system-notice'; notice.textContent = systemEventText(message); return notice; }
+    if (message.message_kind === 'system') { const notice = document.createElement('div'); notice.className = 'message-system-notice'; notice.dataset.messageId = message.id; notice.textContent = systemEventText(message); return notice; }
     const bubble = document.createElement('article');
     bubble.className = `message-bubble${message.sender_id === user.id ? ' is-mine' : ''}`;
     bubble.id = `message-${message.id}`; bubble.dataset.messageId = message.id;
@@ -273,8 +273,25 @@
       if (revision !== renderRevision || activeConversation !== renderingConversation || activeId !== renderingMember) return;
       if (targetMessage && !hiddenIds.has(targetMessage.id) && (!targetMessage.expires_at || new Date(targetMessage.expires_at).getTime() > Date.now())) messages = [...messages, targetMessage].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     }
-    const attachmentMessages = messages.filter((message) => message.attachment_path);
+    const visibleAttachmentPaths = new Set(messages.map((message) => message.attachment_path).filter(Boolean));
+    signedUrlCache.forEach((_, path) => {
+      if (!visibleAttachmentPaths.has(path)) { signedUrlCache.delete(path); signedUrlExpiries.delete(path); }
+    });
+    const sameConversation = cachedConversationId === renderingConversation;
+    const previousNodes = sameConversation ? cachedMessageNodes : new Map();
+    const now = Date.now();
+    const attachmentMessages = messages.filter((message) => message.attachment_path && (
+      !signedUrlCache.has(message.attachment_path)
+      || (signedUrlExpiries.get(message.attachment_path) || 0) <= now + 15000
+      || refreshedAttachmentPaths.has(message.attachment_path)
+    ));
+    const refreshedPaths = new Set(attachmentMessages.map((message) => message.attachment_path));
     const signedUrls = new Map();
+    messages.forEach((message) => {
+      if (!message.attachment_path || refreshedPaths.has(message.attachment_path)) return;
+      const cachedUrl = signedUrlCache.get(message.attachment_path);
+      if (cachedUrl && (signedUrlExpiries.get(message.attachment_path) || 0) > now + 15000) signedUrls.set(message.attachment_path, cachedUrl);
+    });
     if (attachmentMessages.length) {
       const ttl = attachmentMessages.reduce((shortest, message) => message.expires_at ? Math.min(shortest, Math.max(1, Math.ceil((new Date(message.expires_at).getTime() - Date.now()) / 1000))) : shortest, 300);
       const groups = [
@@ -283,7 +300,15 @@
       ].filter((group) => group.rows.length);
       const signedResults = await Promise.all(groups.map((group) => client.storage.from(attachmentBucket).createSignedUrls(group.rows.map((message) => message.attachment_path), ttl, group.download ? { download: true } : undefined)));
       if (revision !== renderRevision || activeConversation !== renderingConversation || activeId !== renderingMember) return;
-      signedResults.forEach(({ data: signedRows, error: signedError }) => { if (!signedError) (signedRows || []).forEach((row) => { if (row.signedUrl) { signedUrls.set(row.path, row.signedUrl); signedUrlExpiries.set(row.path, Date.now() + ttl * 1000); } }); });
+      signedResults.forEach(({ data: signedRows, error: signedError }) => {
+        if (signedError) return;
+        (signedRows || []).forEach((row) => {
+          if (!row.signedUrl) return;
+          signedUrls.set(row.path, row.signedUrl);
+          signedUrlCache.set(row.path, row.signedUrl);
+          signedUrlExpiries.set(row.path, Date.now() + ttl * 1000);
+        });
+      });
     }
     visibleMessageIds = messages.filter((message) => message.message_kind === 'user');
     if (selectedMessageIds.size) {
@@ -295,14 +320,49 @@
     if (Number.isFinite(nextExpiry)) expiryRenderTimer = window.setTimeout(scheduleRenderMessages, Math.max(0, nextExpiry - Date.now() + 25));
     currentExpiryDuration = expiryValues.includes(settings?.expiry_duration) ? settings.expiry_duration : 'off';
     expirySelect.value = currentExpiryDuration;
-    const fragment = document.createDocumentFragment(); const divider = document.createElement('div'); divider.className = 'message-day-divider'; divider.textContent = t('PRIVATE CONVERSATION', 'محادثة خاصة'); fragment.append(divider);
-    const renderedBubbles = await Promise.all(messages.map((message) => appendMessage(message, signedUrls.get(message.attachment_path))));
+    expirySelect.disabled = expiryChangeInFlight;
+    const oldScrollTop = messageList.scrollTop;
+    const wasNearBottom = messageList.scrollHeight - messageList.scrollTop - messageList.clientHeight < 100;
+    const nodeById = new Map();
+    const needsRender = [];
+    messages.forEach((message) => {
+      const existing = previousNodes.get(message.id);
+      const mustRefresh = Boolean(message.attachment_path && (
+        refreshedPaths.has(message.attachment_path)
+        || refreshedAttachmentPaths.has(message.attachment_path)
+        || existing?.querySelector('.attachment-unavailable')
+      ));
+      if (existing && !mustRefresh) nodeById.set(message.id, existing);
+      else needsRender.push(message);
+    });
+    const renderedNodes = await Promise.all(needsRender.map((message) => appendMessage(message, signedUrls.get(message.attachment_path))));
     if (revision !== renderRevision || activeConversation !== renderingConversation || activeId !== renderingMember) return;
-    fragment.append(...renderedBubbles);
-    messageList.replaceChildren(fragment); messageList.classList.toggle('is-selecting', selectionMode); updateSelectionToolbar();
-    messageList.scrollTop = messageList.scrollHeight;
-    if (targetMessageId) { const target = document.getElementById(`message-${targetMessageId}`); if (target) { target.classList.add('notification-target-highlight'); target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }
-    renderContacts(document.querySelector('#contact-search').value); await renderRevealState();
+    needsRender.forEach((message, index) => nodeById.set(message.id, renderedNodes[index]));
+
+    let divider = sameConversation ? messageList.querySelector('.message-day-divider') : null;
+    if (!divider) { divider = document.createElement('div'); divider.className = 'message-day-divider'; }
+    divider.textContent = t('PRIVATE CONVERSATION', 'محادثة خاصة');
+    const orderedNodes = [divider, ...messages.map((message) => nodeById.get(message.id))];
+    const desiredNodes = new Set(orderedNodes);
+    [...messageList.children].forEach((node) => { if (!desiredNodes.has(node)) node.remove(); });
+    let cursor = messageList.firstElementChild;
+    orderedNodes.forEach((node) => {
+      if (cursor === node) cursor = cursor.nextElementSibling;
+      else messageList.insertBefore(node, cursor);
+    });
+    while (cursor) { const next = cursor.nextElementSibling; cursor.remove(); cursor = next; }
+
+    cachedConversationId = renderingConversation;
+    cachedMessageNodes = nodeById;
+    messageList.classList.toggle('is-selecting', selectionMode); updateSelectionToolbar();
+    const hasNewMessages = messages.some((message) => !previousNodes.has(message.id));
+    if (!sameConversation || (wasNearBottom && hasNewMessages)) messageList.scrollTop = messageList.scrollHeight;
+    else messageList.scrollTop = Math.min(oldScrollTop, Math.max(0, messageList.scrollHeight - messageList.clientHeight));
+    if (targetMessageId && !targetMessageFocused) {
+      const target = document.getElementById(`message-${targetMessageId}`);
+      if (target) { target.classList.add('notification-target-highlight'); target.scrollIntoView({ behavior: 'auto', block: 'center' }); targetMessageFocused = true; }
+    }
+    if (!sameConversation) await renderRevealState();
   };
   const scheduleRenderMessages = () => { window.clearTimeout(renderTimer); renderTimer = window.setTimeout(() => { void renderMessages(); }, 120); };
   const subscribeConversation = async () => {
@@ -327,6 +387,8 @@
   };
   const loadConversation = async () => {
     const revision = ++renderRevision;
+    expiryRequestId += 1; expiryChangeInFlight = false; expirySelect.disabled = true; expirySelect.removeAttribute('aria-busy');
+    document.querySelector('.disappearing-setting')?.classList.remove('is-saving');
     const requestedMemberId = activeId;
     selectedMessageIds.clear(); selectionMode = false; updateSelectionToolbar();
     window.clearTimeout(expiryRenderTimer);
@@ -428,21 +490,23 @@
     const conversationId = activeConversation;
     const duration = expirySelect.value;
     if (!conversationId || expiryChangeInFlight) { expirySelect.value = currentExpiryDuration; return; }
+    const requestId = ++expiryRequestId;
     expiryChangeInFlight = true;
     expirySelect.disabled = true;
     expirySelect.setAttribute('aria-busy', 'true');
     document.querySelector('.disappearing-setting')?.classList.add('is-saving');
     let timeoutId;
     let settled = false;
-    const rpcPromise = client.rpc('iqzodiac_set_message_expiry', { p_conversation_id: conversationId, p_duration: duration });
+    let rpcPromise;
     try {
+      rpcPromise = Promise.resolve(client.rpc('iqzodiac_set_message_expiry', { p_conversation_id: conversationId, p_duration: duration }));
       const result = await Promise.race([
         rpcPromise,
         new Promise((_, reject) => { timeoutId = window.setTimeout(() => reject(new Error('expiry-setting-timeout')), 10000); }),
       ]);
       settled = true;
       if (result.error) throw result.error;
-      if (activeConversation !== conversationId) return;
+      if (requestId !== expiryRequestId || activeConversation !== conversationId) return;
       currentExpiryDuration = duration;
       expirySelect.value = duration;
       toast(t('Disappearing-message setting updated.', 'تم تحديث إعداد الرسائل ذاتية الاختفاء.'));
@@ -452,23 +516,25 @@
       scheduleRenderMessages();
     } catch (error) {
       console.warn('Disappearing-message setting could not be saved.', error);
-      if (activeConversation === conversationId) {
+      if (requestId === expiryRequestId && activeConversation === conversationId) {
         expirySelect.value = currentExpiryDuration;
         const timedOut = error?.message === 'expiry-setting-timeout';
         toast(t(timedOut ? 'The server took too long to save this setting. Please try again.' : 'The disappearing-message setting could not be saved.', timedOut ? 'استغرق الخادم وقتًا طويلًا لحفظ الإعداد. حاول مرة أخرى.' : 'تعذر حفظ إعداد الرسائل ذاتية الاختفاء.'));
       }
       // A timed-out request may still complete on the server. Refresh later
       // without blocking the UI, so the control cannot remain visually stale.
-      if (error?.message === 'expiry-setting-timeout') scheduleRenderMessages();
+      if (requestId === expiryRequestId && error?.message === 'expiry-setting-timeout') scheduleRenderMessages();
     } finally {
       window.clearTimeout(timeoutId);
-      expiryChangeInFlight = false;
-      expirySelect.disabled = false;
-      expirySelect.removeAttribute('aria-busy');
-      document.querySelector('.disappearing-setting')?.classList.remove('is-saving');
+      if (requestId === expiryRequestId) {
+        expiryChangeInFlight = false;
+        expirySelect.disabled = !activeConversation;
+        expirySelect.removeAttribute('aria-busy');
+        document.querySelector('.disappearing-setting')?.classList.remove('is-saving');
+      }
       // Avoid an unhandled rejection if the timeout won the race and the
       // Supabase promise rejects after the control has already recovered.
-      if (!settled) void rpcPromise.catch(() => {});
+      if (!settled) void rpcPromise?.catch(() => {});
     }
   });
   document.querySelector('#select-all-messages').addEventListener('click', () => { selectionMode = true; selectedMessageIds = new Set(visibleMessageIds.map((message) => message.id)); messageList.classList.add('is-selecting'); updateSelectionToolbar(); renderMessageBubbles(); });
@@ -500,7 +566,7 @@
   document.querySelector('#close-call').addEventListener('click', stopCall); document.querySelector('#end-call').addEventListener('click', stopCall); callModal.addEventListener('click', (event) => { if (event.target === callModal) stopCall(); });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && selectionMode) setSelectionMode(false); });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && activeConversation) scheduleRenderMessages(); });
-  document.addEventListener('iqzodiac:languagechange', () => { localizeControls(); if (activeConversation) void renderMessages(); });
+  document.addEventListener('iqzodiac:languagechange', () => { localizeControls(); cachedConversationId = null; cachedMessageNodes.clear(); if (activeConversation) void renderMessages(); });
   localizeControls();
   if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') { recordAudioButton.disabled = true; recordAudioButton.title = t('Audio recording is not supported by this browser.', 'تسجيل الصوت غير مدعوم في هذا المتصفح.'); }
   (async () => {
