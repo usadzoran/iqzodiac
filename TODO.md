@@ -30,6 +30,11 @@
 - [x] Let other users like, comment on, and share feed posts through interactive controls.
 - [x] Show a responsive feed with suggested people and trending topics.
 
+## Pinned and persistent comments
+- [x] Let the author of a post or Reel pin one top-level comment so it appears first in that content's comment list, and allow the author to unpin or replace it.
+- [x] Preserve pinned state in the database for both post comments and Reel comments; only the owner of the matching post or Reel can change it.
+- [x] Ensure replies saved in the comments table remain visible after reloading even when their author has no profile row.
+
 ## AI assistant placeholder
 - [x] Show a small robot icon and an “AI assistant — coming soon” placeholder above the login and account creation actions.
 - [x] Keep the placeholder visual-only with no assistant connection or interaction yet.

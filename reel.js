@@ -84,6 +84,12 @@
     const value = copy[language()][key];
     return typeof value === 'function' ? value(...args) : value;
   };
+  const pinnedCommentText = (kind) => {
+    const labels = language() === 'ar'
+      ? { badge: 'تعليق مثبّت', pin: 'تثبيت التعليق', unpin: 'إلغاء تثبيت التعليق', failed: 'تعذّر تحديث التعليق المثبّت.', pinned: 'تم تثبيت التعليق.', unpinned: 'تم إلغاء تثبيت التعليق.' }
+      : { badge: 'Pinned comment', pin: 'Pin comment', unpin: 'Unpin comment', failed: 'Pinned comment could not be updated.', pinned: 'Comment pinned.', unpinned: 'Comment unpinned.' };
+    return labels[kind];
+  };
 
   const setStatus = (message, state = '') => {
     status.textContent = message || '';
@@ -687,6 +693,7 @@
     const author = document.createElement('strong'); author.textContent = displayName;
     const text = document.createElement('p'); text.textContent = comment.body;
     const date = document.createElement('small'); date.textContent = formatDate(comment.created_at); attachReelCommentMedia(body, comment);
+    if (comment.is_pinned) { const badge = document.createElement('span'); badge.className = 'reel-comment-pinned'; badge.textContent = pinnedCommentText('badge'); body.append(badge); }
     const controls = document.createElement('div'); controls.className = 'reel-comment-controls';
     const repliesList = document.createElement('ul'); repliesList.className = 'reel-comment-replies'; repliesList.setAttribute('aria-label', t('replies'));
     replies.forEach((reply) => repliesList.append(createCommentItem(reply, profileMap.get(reply.author_id), [], profileMap)));
@@ -727,6 +734,23 @@
         actions.append(send, cancel); editor.append(input, actions); body.insertBefore(editor, controls); input.focus();
       });
       controls.append(replyButton);
+    }
+
+    const reelForPin = reelById.get(comment.reel_id);
+    if (!comment.parent_comment_id && reelForPin?.author_id === authenticatedUserId) {
+      const pinButton = document.createElement('button'); pinButton.type = 'button'; pinButton.className = 'reel-comment-action'; pinButton.textContent = pinnedCommentText(comment.is_pinned ? 'unpin' : 'pin');
+      pinButton.addEventListener('click', async () => {
+        pinButton.disabled = true;
+        try {
+          const { data, error } = await client.rpc('set_reel_pinned_comment', { p_reel_id: comment.reel_id, p_comment_id: comment.is_pinned ? null : comment.id });
+          if (error || data !== true) throw error || new Error('comment_pin_failed');
+          await loadComments(reelForPin);
+          showToast(pinnedCommentText(comment.is_pinned ? 'unpinned' : 'pinned'));
+        } catch (error) {
+          console.warn('Reel comment pin could not be updated.', error); pinButton.disabled = false; showToast(pinnedCommentText('failed'));
+        }
+      });
+      controls.append(pinButton);
     }
 
     if (comment.author_id === authenticatedUserId) {
@@ -781,7 +805,7 @@
     loading.className = 'reel-comments-empty';
     loading.textContent = t('loading');
     commentsList.append(loading);
-    const commentColumns = 'id,reel_id,author_id,body,created_at,parent_comment_id,media_type,media_path,media_mime,media_size_bytes';
+    const commentColumns = 'id,reel_id,author_id,body,created_at,parent_comment_id,media_type,media_path,media_mime,media_size_bytes,is_pinned';
     const { data, error } = await client.from('reel_comments').select(commentColumns).eq('reel_id', row.id).order('created_at', { ascending: false }).limit(50);
     if (error) {
       commentsList.replaceChildren();
@@ -795,6 +819,16 @@
     if (focusCommentId && !comments.some((comment) => comment.id === focusCommentId)) {
       const { data: targetComment } = await client.from('reel_comments').select(commentColumns).eq('id', focusCommentId).eq('reel_id', row.id).maybeSingle();
       if (targetComment) comments.push(targetComment);
+    }
+    const { data: pinnedComment } = await client.from('reel_comments').select(commentColumns).eq('reel_id', row.id).eq('is_pinned', true).maybeSingle();
+    if (pinnedComment && !comments.some((comment) => comment.id === pinnedComment.id)) comments.push(pinnedComment);
+    const replyParentIds = [...new Set(comments.filter((comment) => !comment.parent_comment_id).map((comment) => comment.id))];
+    const loadedCommentIds = new Set(comments.map((comment) => comment.id));
+    for (let offset = 0; replyParentIds.length; offset += 1000) {
+      const { data: replies, error: repliesError } = await client.from('reel_comments').select(commentColumns).eq('reel_id', row.id).in('parent_comment_id', replyParentIds).order('created_at', { ascending: true }).range(offset, offset + 999);
+      if (repliesError) { console.warn('Reel replies could not be loaded.', repliesError); break; }
+      (replies || []).forEach((reply) => { if (!loadedCommentIds.has(reply.id)) { comments.push(reply); loadedCommentIds.add(reply.id); } });
+      if (!replies || replies.length < 1000) break;
     }
     const commentIds = new Set(comments.map((comment) => comment.id));
     const missingParentIds = [...new Set(comments.map((comment) => comment.parent_comment_id).filter((id) => id && !commentIds.has(id)))];
@@ -819,6 +853,7 @@
         repliesByParent.get(comment.parent_comment_id).push(comment);
       } else topLevelComments.push(comment);
     });
+    topLevelComments.sort((a, b) => Number(Boolean(b.is_pinned)) - Number(Boolean(a.is_pinned)) || new Date(b.created_at) - new Date(a.created_at));
     commentsList.replaceChildren(...topLevelComments.map((comment) => createCommentItem(comment, profileMap.get(comment.author_id), repliesByParent.get(comment.id) || [], profileMap)));
     if (focusCommentId) {
       const target = commentsList.querySelector(`[data-comment-id="${CSS.escape(focusCommentId)}"]`);

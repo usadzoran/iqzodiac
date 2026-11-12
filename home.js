@@ -151,6 +151,7 @@ const createCommentElement = (comment, post, childrenByParent = {}, submitReply 
   if (element.dataset.commentId) element.id = `comment-${element.dataset.commentId}`;
   const avatar = document.createElement('span'); avatar.className = 'comment-avatar home-avatar-small'; avatar.textContent = String(comment.display_name || comment.handle || 'OM').replace(/^@/, '').slice(0, 2).toUpperCase();
   const content = document.createElement('div'); content.className = 'comment-content';
+  if (comment.is_pinned) { const badge = document.createElement('span'); badge.className = 'comment-pinned-badge'; badge.textContent = feedText('Pinned comment', 'تعليق مثبّت'); content.append(badge); }
   const copy = document.createElement('p'); const author = document.createElement('strong'); author.textContent = comment.handle || comment.display_name || '@member'; copy.append(author);
   if (comment.body) { const body = document.createElement('span'); body.append(document.createTextNode(' ')); appendCommentBody(body, comment.body); body.dir = isArabicComment ? 'rtl' : 'ltr'; copy.append(body); }
   const time = document.createElement('small'); time.className = 'comment-time'; time.textContent = formatDateTime(comment.created_at); copy.append(time);
@@ -177,13 +178,31 @@ const createCommentElement = (comment, post, childrenByParent = {}, submitReply 
   replyButton.addEventListener('click', () => { replyForm.hidden = !replyForm.hidden; if (!replyForm.hidden) input.focus(); });
   replyForm.addEventListener('submit', async (event) => { event.preventDefault(); const value = escapeText(input.value); if ((!value && !replyForm._replyMedia) || !submitReply) return; if (await submitReply(comment.comment_id || comment.id, value, replyForm._replyMedia)) { input.value = ''; mediaInput.value = ''; replyForm._replyMedia = null; preview.replaceChildren(); preview.hidden = true; replyForm.hidden = true; } });
   content.append(replyButton, replyForm);
-  if (String(comment.author_id || '').toLowerCase() === String(authenticatedUserId || '').toLowerCase()) {
+  const isCommentAuthor = String(comment.author_id || '').toLowerCase() === String(authenticatedUserId || '').toLowerCase();
+  const canPin = !comment.parent_comment_id && String(post.dataset.authorId || '').toLowerCase() === String(authenticatedUserId || '').toLowerCase();
+  if (isCommentAuthor || canPin) {
     const actions = document.createElement('div'); actions.className = 'comment-owner-actions';
     const menuButton = document.createElement('button'); menuButton.type = 'button'; menuButton.className = 'comment-more-button'; menuButton.textContent = '⋯'; menuButton.setAttribute('aria-label', feedText('Comment options', 'خيارات التعليق')); menuButton.setAttribute('aria-haspopup', 'true'); menuButton.setAttribute('aria-expanded', 'false');
     const menu = document.createElement('div'); menu.className = 'comment-actions-menu'; menu.hidden = true;
-    const editButton = document.createElement('button'); editButton.type = 'button'; editButton.className = 'comment-edit-button'; editButton.textContent = feedText('Edit', 'تعديل'); editButton.addEventListener('click', () => { menu.hidden = true; menuButton.setAttribute('aria-expanded', 'false'); void editFeedComment(post, comment, editButton); });
-    const deleteButton = document.createElement('button'); deleteButton.type = 'button'; deleteButton.className = 'comment-delete-button'; deleteButton.textContent = feedText('Delete', 'مسح'); deleteButton.addEventListener('click', () => { menu.hidden = true; menuButton.setAttribute('aria-expanded', 'false'); void deleteFeedComment(post, comment, wrapper, deleteButton); });
-    menu.append(editButton, deleteButton); menuButton.addEventListener('click', () => { menu.hidden = !menu.hidden; menuButton.setAttribute('aria-expanded', String(!menu.hidden)); }); menuButton.addEventListener('keydown', (event) => { if (event.key === 'Escape') { menu.hidden = true; menuButton.setAttribute('aria-expanded', 'false'); menuButton.focus(); } }); actions.append(menuButton, menu);
+    if (canPin) {
+      const pinButton = document.createElement('button'); pinButton.type = 'button'; pinButton.className = 'comment-pin-button'; pinButton.textContent = comment.is_pinned ? feedText('Unpin comment', 'إلغاء تثبيت التعليق') : feedText('Pin comment', 'تثبيت التعليق');
+      pinButton.addEventListener('click', async () => {
+        menu.hidden = true; menuButton.setAttribute('aria-expanded', 'false'); pinButton.disabled = true;
+        const client = await database(); const commentId = comment.comment_id || comment.id; const shouldPin = !comment.is_pinned;
+        const { data, error } = client ? await client.rpc('set_post_pinned_comment', { p_post_id: post.dataset.postId, p_comment_id: shouldPin ? commentId : null }) : { data: null, error: new Error('database_unavailable') };
+        if (error || data !== true) { pinButton.disabled = false; showToast(feedText('Pinned comment could not be updated.', 'تعذّر تحديث التعليق المثبّت.')); return; }
+        const pinnedId = shouldPin ? commentId : null;
+        const updatedRows = (post._commentRows || []).map((row) => ({ ...row, is_pinned: pinnedId !== null && (row.comment_id || row.id) === pinnedId }));
+        renderComments(post, updatedRows); showToast(shouldPin ? feedText('Comment pinned.', 'تم تثبيت التعليق.') : feedText('Comment unpinned.', 'تم إلغاء تثبيت التعليق.'));
+      });
+      menu.append(pinButton);
+    }
+    if (isCommentAuthor) {
+      const editButton = document.createElement('button'); editButton.type = 'button'; editButton.className = 'comment-edit-button'; editButton.textContent = feedText('Edit', 'تعديل'); editButton.addEventListener('click', () => { menu.hidden = true; menuButton.setAttribute('aria-expanded', 'false'); void editFeedComment(post, comment, editButton); });
+      const deleteButton = document.createElement('button'); deleteButton.type = 'button'; deleteButton.className = 'comment-delete-button'; deleteButton.textContent = feedText('Delete', 'مسح'); deleteButton.addEventListener('click', () => { menu.hidden = true; menuButton.setAttribute('aria-expanded', 'false'); void deleteFeedComment(post, comment, wrapper, deleteButton); });
+      menu.append(editButton, deleteButton);
+    }
+    menuButton.addEventListener('click', () => { menu.hidden = !menu.hidden; menuButton.setAttribute('aria-expanded', String(!menu.hidden)); }); menuButton.addEventListener('keydown', (event) => { if (event.key === 'Escape') { menu.hidden = true; menuButton.setAttribute('aria-expanded', 'false'); menuButton.focus(); } }); actions.append(menuButton, menu);
     if (isArabicComment) element.append(avatar, content, actions); else element.append(actions, avatar, content);
   } else element.append(avatar, content);
   const children = document.createElement('div'); children.className = 'comment-replies'; (childrenByParent[comment.comment_id || comment.id] || []).forEach((child) => children.append(createCommentElement(child, post, childrenByParent, submitReply))); wrapper.append(element, children); return wrapper;
@@ -202,7 +221,8 @@ const renderComments = (post, rows) => {
     const target = list.querySelector(`[data-comment-id="${CSS.escape(parentCommentId)}"]`)?.closest('.comment-thread')?.querySelector('.comment-replies'); if (target) target.append(createCommentElement(reply, post, {}, submitReply));
     const count = post.querySelector('.comment-count'); count.textContent = `${formatCount(Number(count.textContent.replace(/[^0-9]/g, '')) + 1)} comments`; showToast(feedText('Reply added.', 'تمت إضافة الرد.')); return true;
   };
-  (byParent.root || []).forEach((comment) => list.append(createCommentElement(comment, post, byParent, submitReply)));
+  const rootComments = (byParent.root || []).slice().sort((a, b) => Number(Boolean(b.is_pinned)) - Number(Boolean(a.is_pinned)) || new Date(a.created_at) - new Date(b.created_at));
+  rootComments.forEach((comment) => list.append(createCommentElement(comment, post, byParent, submitReply)));
 };
 const focusNotificationTarget = () => {
   if (!notificationPostId) return;
@@ -577,7 +597,7 @@ if ('IntersectionObserver' in window && !reduceMotion) {
       if (!commentsError) {
         comments = enrichedComments || [];
       } else {
-        const { data: basicComments, error: basicCommentsError } = await client.from('comments').select('id,post_id,author_id,parent_comment_id,body,created_at,media_type,media_path,media_mime,media_size_bytes').in('post_id', postIds).order('created_at', { ascending: true });
+        const { data: basicComments, error: basicCommentsError } = await client.from('comments').select('id,post_id,author_id,parent_comment_id,body,created_at,media_type,media_path,media_mime,media_size_bytes,is_pinned').in('post_id', postIds).order('created_at', { ascending: true });
         if (basicCommentsError) throw basicCommentsError;
         comments = (basicComments || []).map((comment) => ({ ...comment, handle: comment.author_id === authenticatedUserId ? currentPublicIdentity.handle : '@member' }));
       }

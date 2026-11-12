@@ -621,6 +621,7 @@ h1 {
 .comment { display: flex; align-items: flex-start; gap: 8px; color: var(--muted); font-size: 10px; line-height: 1.5; }
 .comment-thread { display: grid; gap: 5px; }
 .comment-content { min-width: 0; }
+.comment-pinned-badge { display: inline-flex; margin: 0 0 4px; padding: 2px 6px; border: 1px solid rgba(131,229,232,0.28); border-radius: 999px; background: rgba(131,229,232,0.08); color: var(--cyan); font: 8px "DM Mono", monospace; text-transform: uppercase; }
 .comment-reply-button { margin: 3px 0 0; padding: 0; border: 0; background: transparent; color: var(--cyan); cursor: pointer; font: 8px "DM Mono", monospace; text-transform: uppercase; }
 .comment-reply-button:hover { color: var(--ink); }
 .comment-owner-actions { position: relative; z-index: 2; flex: 0 0 auto; }
@@ -629,7 +630,10 @@ h1 {
 .comment-actions-menu { position: absolute; top: 26px; left: 0; display: grid; min-width: 112px; gap: 2px; padding: 5px; border: 1px solid rgba(131,229,232,0.2); border-radius: 6px; background: var(--panel, #11182b); box-shadow: 0 8px 24px rgba(0,0,0,0.28); }
 .comment-rtl .comment-actions-menu { right: 0; left: auto; }
 .comment-actions-menu[hidden] { display: none; }
-.comment-edit-button, .comment-delete-button { padding: 7px 9px; border: 0; border-radius: 4px; background: transparent; cursor: pointer; font: 10px Manrope, sans-serif; text-align: start; }
+.comment-edit-button, .comment-delete-button, .comment-pin-button { padding: 7px 9px; border: 0; border-radius: 4px; background: transparent; cursor: pointer; font: 10px Manrope, sans-serif; text-align: start; }
+.comment-pin-button { color: var(--cyan); }
+.comment-pin-button:hover, .comment-pin-button:focus-visible { background: rgba(131,229,232,0.1); color: var(--ink); outline: none; }
+.comment-pin-button:disabled { opacity: .55; cursor: wait; }
 .comment-edit-button { color: var(--cyan); }
 .comment-edit-button:hover, .comment-edit-button:focus-visible { background: rgba(131,229,232,0.1); color: var(--ink); outline: none; }
 .comment-delete-button { color: #ffb3b3; }
