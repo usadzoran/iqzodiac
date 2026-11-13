@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="stylesheet" href="./styles.css?v=profile-tabs-20261112" />
+    <link rel="stylesheet" href="./profile-body3d.css?v=body3d-foundation-20261113" />
   </head>
   <body class="profile-page has-site-nav">
     <div class="aurora aurora-one" aria-hidden="true"></div>
@@ -179,6 +180,35 @@
             <label class="toggle"><input type="checkbox" id="gallery-visibility" /><span class="toggle-track" aria-hidden="true"><span></span></span><span class="sr-only">Make my gallery visible to others</span></label>
           </div>
         </section>
+        <section class="profile-card body3d-card" id="profile-body3d" aria-labelledby="body3d-title">
+          <div class="card-heading">
+            <div><p class="card-kicker">03 / MY 3D BODY</p><h2 id="body3d-title">My 3D Body</h2></div>
+            <span class="body3d-privacy-badge" id="body3d-privacy-badge">HIDDEN</span>
+          </div>
+          <p class="section-intro">Prepare a private, multi-angle photo set for a future reconstruction service. Your photos stay private; model reconstruction is not yet connected.</p>
+          <div class="body3d-engine-note" role="status"><span aria-hidden="true">◉</span><div><strong>Reconstruction engine not connected</strong><small>Your securely saved photo set will wait here. No model is fabricated and no processing is claimed.</small></div></div>
+          <div class="body3d-controls">
+            <label class="field-label" for="body3d-retention">Original photo retention</label>
+            <select id="body3d-retention"><option value="delete_after_processing">Delete originals after a future successful reconstruction</option><option value="keep_until_deleted">Keep originals until I delete them</option></select>
+            <p class="field-help">The retention choice is saved with the photo set. It will only be applied after a real reconstruction service is connected.</p>
+          </div>
+          <div class="body3d-progress-row"><span id="body3d-progress-label">0 / 8 views selected</span><span class="body3d-progress-track"><span id="body3d-progress-bar"></span></span></div>
+          <div class="body3d-angle-grid" id="body3d-angle-grid" aria-label="Eight required body photo views">
+            <article class="body3d-angle-card" data-angle="front"><div class="body3d-silhouette" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M23 26q9-5 18 0l5 25-5 2 2 27 8 34h-9L32 87 22 114h-9l8-34 2-27-5-2zM23 31 9 54l6 4 13-17m13-10 14 23-6 4-13-17"/></svg></div><div><strong>Front view</strong><small>0° · face fully hidden</small></div><button type="button" class="body3d-capture" data-capture-angle="front">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
+            <article class="body3d-angle-card" data-angle="back"><div class="body3d-silhouette body3d-back" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M23 26q9-5 18 0l5 25-5 2 2 27 8 34h-9L32 87 22 114h-9l8-34 2-27-5-2zM23 31 9 54l6 4 13-17m13-10 14 23-6 4-13-17"/><path d="M32 30v54" class="body3d-spine"/></svg></div><div><strong>Back view</strong><small>180° · same stance</small></div><button type="button" class="body3d-capture" data-capture-angle="back">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
+            <article class="body3d-angle-card" data-angle="left"><div class="body3d-silhouette body3d-side body3d-left" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M27 26q9-5 18 0l2 27-7 3 4 23 9 35h-10L33 87 25 114H15l8-35-1-28-5-3 4-20zM28 32 18 57l8 3"/></svg></div><div><strong>Left side</strong><small>90° · profile view</small></div><button type="button" class="body3d-capture" data-capture-angle="left">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
+            <article class="body3d-angle-card" data-angle="right"><div class="body3d-silhouette body3d-side body3d-right" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M27 26q9-5 18 0l2 27-7 3 4 23 9 35h-10L33 87 25 114H15l8-35-1-28-5-3 4-20zM28 32 18 57l8 3"/></svg></div><div><strong>Right side</strong><small>270° · profile view</small></div><button type="button" class="body3d-capture" data-capture-angle="right">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
+            <article class="body3d-angle-card" data-angle="front_left_45"><div class="body3d-silhouette body3d-turn-left" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M23 26q9-5 18 0l5 25-5 2 2 27 8 34h-9L32 87 22 114h-9l8-34 2-27-5-2zM23 31 9 54l6 4 13-17m13-10 14 23-6 4-13-17"/></svg></div><div><strong>Front left 45°</strong><small>Turn 45° left</small></div><button type="button" class="body3d-capture" data-capture-angle="front_left_45">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
+            <article class="body3d-angle-card" data-angle="front_right_45"><div class="body3d-silhouette body3d-turn-right" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M23 26q9-5 18 0l5 25-5 2 2 27 8 34h-9L32 87 22 114h-9l8-34 2-27-5-2zM23 31 9 54l6 4 13-17m13-10 14 23-6 4-13-17"/></svg></div><div><strong>Front right 45°</strong><small>Turn 45° right</small></div><button type="button" class="body3d-capture" data-capture-angle="front_right_45">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
+            <article class="body3d-angle-card" data-angle="back_left_45"><div class="body3d-silhouette body3d-back body3d-turn-left" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M23 26q9-5 18 0l5 25-5 2 2 27 8 34h-9L32 87 22 114h-9l8-34 2-27-5-2zM23 31 9 54l6 4 13-17m13-10 14 23-6 4-13-17"/></svg></div><div><strong>Back left 45°</strong><small>Turn 45° left</small></div><button type="button" class="body3d-capture" data-capture-angle="back_left_45">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
+            <article class="body3d-angle-card" data-angle="back_right_45"><div class="body3d-silhouette body3d-back body3d-turn-right" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M23 26q9-5 18 0l5 25-5 2 2 27 8 34h-9L32 87 22 114h-9l8-34 2-27-5-2zM23 31 9 54l6 4 13-17m13-10 14 23-6 4-13-17"/><path d="M32 30v54" class="body3d-spine"/></svg></div><div><strong>Back right 45°</strong><small>Turn 45° right</small></div><button type="button" class="body3d-capture" data-capture-angle="back_right_45">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
++          </div>
++          <div class="body3d-checklist"><strong>Before saving, confirm all of these yourself:</strong><label><input type="checkbox" id="body3d-check-full"> Full body visible, with no objects covering it.</label><label><input type="checkbox" id="body3d-check-pose"> Same upright pose, arm spacing, camera distance and lighting.</label><label><input type="checkbox" id="body3d-check-face"> No face or identifying facial detail is visible in any image.</label></div>
++          <p class="body3d-quality-note" id="body3d-quality-note" role="status" aria-live="polite">Image checks can estimate size, exposure and sharpness; body completeness, obstruction and pose are your manual checks.</p>
++          <div class="body3d-actions"><button class="button button-primary" id="body3d-save-set" type="button" disabled>Save photo set privately</button><button class="button button-secondary" id="body3d-delete-all" type="button" hidden>Delete all body data</button></div>
++          <p class="body3d-record-status" id="body3d-record-status" role="status" aria-live="polite">Loading your private body data…</p>
++          <div id="body3d-owner-models" class="body3d-owner-models"></div>
++        </section>
       </div>
 
       <section class="profile-card compatibility-card" aria-labelledby="compatibility-title">
@@ -294,6 +324,13 @@
       </footer>
     </main>
 
+    <dialog class="body3d-instruction-dialog" id="body3d-instructions" aria-labelledby="body3d-guide-title">
+      <div class="body3d-guide"><p class="card-kicker">PRIVATE BODY PHOTO SET · 8 VIEWS</p><h2 id="body3d-guide-title">How to take your photos</h2>
+        <p>Follow these steps for a consistent set. Check every image yourself before upload; the app does not perform full-body or face recognition.</p>
+        <ol class="body3d-guide-list"><li>Wear suitable, fitted sports clothing that shows body shape without being loose.</li><li>Choose even, well-lit surroundings and a simple, uncluttered background.</li><li>Stand upright with your arms slightly away from your body; keep the same pose, distance and light in all eight views.</li><li>Keep your entire body from head to feet in frame; avoid anything covering it.</li><li>Do not use filters or edits that change body shape.</li><li>Keep your face and identifying facial details completely out of every photo. Review each preview before upload.</li></ol>
+        <div class="body3d-guide-actions"><button type="button" data-body3d-choice="camera">Take photo</button><button type="button" data-body3d-choice="file">Choose from device</button><button type="button" class="body3d-guide-cancel" data-body3d-choice="cancel">Cancel</button></div>
+      </div>
+    </dialog>
     <nav class="site-nav" aria-label="Main navigation">
   <a href="./home.html"><span class="nav-glyph" aria-hidden="true">⌂</span><span data-menu-key="home">Home</span></a>
   <a href="./match.html"><span class="nav-glyph" aria-hidden="true">♡</span><span data-menu-key="match">Match</span></a>
@@ -303,11 +340,11 @@
 </nav>
     <div class="toast" role="status" aria-live="polite" aria-atomic="true"><span class="toast-icon" aria-hidden="true">✦</span><span class="toast-message"></span></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-client.js"></script><script src="./auth-guard.js"></script><script src="./auth-ui.js"></script><script src="./notification-routing.js?v=20261108-deeplinks"></script>
-    <script src="./i18n-data.js?v=20261108-profile-shortcuts"></script>
+    <script src="./i18n-data.js?v=body3d-i18n-20261113"></script>
     <script src="./language.js?v=20261022-global"></script>
     <script src="./location-data.js"></script>
     <script src="./privacy-core.js?v=gallery-verified-20261112"></script>
-    <script src="./profile.js?v=gallery-readnumber-fix-20261112"></script><script src="./reel-collections.js?v=reel-saves-download-20261110"></script>
+    <script src="./profile.js?v=body3d-tab-20261113"></script><script src="./profile-body3d-data.js?v=body3d-foundation-20261113"></script><script src="./body3d-viewer.js?v=body3d-foundation-20261113"></script><script src="./profile-body3d.js?v=body3d-foundation-20261113"></script><script src="./reel-collections.js?v=reel-saves-download-20261110"></script>
     <script src="./profile-wallet.js?v=coins-gifts-profile-20261106"></script>
       <script src="./nav-performance.js" defer></script>
   </body>

@@ -43,6 +43,14 @@
       ]);
       if (error) throw error;
       setProfile(profile);
+      try {
+        const publicBodyModel = await window.IQZodiacBody3DData?.getVisibleModel(userId);
+        if (publicBodyModel) {
+          const bodySection = document.getElementById('public-body3d');
+          bodySection.hidden = false;
+          await window.IQZodiacBody3DViewer?.mount(document.getElementById('public-body3d-viewer'), publicBodyModel.id, { owner: false });
+        }
+      } catch (bodyError) { console.warn('Public 3D body model is unavailable.', bodyError); }
       const ids = (reels || []).map((row) => row.id);
       let likeRows = [];
       if (ids.length) { const result = await client.from('reel_likes').select('reel_id').in('reel_id', ids).limit(1000); likeRows = result.data || []; }

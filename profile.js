@@ -7,6 +7,7 @@ const setupProfileTabs = () => {
   const profileGrid = document.querySelector('.profile-grid');
   const identityCard = document.querySelector('.identity-card');
   const galleryCard = document.querySelector('.gallery-card');
+  const body3dCard = document.querySelector('.body3d-card');
   const compatibilityCard = document.querySelector('.compatibility-card');
   const reelLinkCard = document.querySelector('.reel-profile-link-card');
   const reelCollectionsCard = document.querySelector('.reel-collections-card');
@@ -33,7 +34,7 @@ const setupProfileTabs = () => {
   const panel = Object.fromEntries(tabs.map(([id]) => [id, panelFor(id)]));
 
   panel.overview.append(shortcuts, profileGrid);
-  panel.gallery.append(galleryCard);
+  panel.gallery.append(galleryCard, body3dCard);
   panel.reels.append(reelLinkCard, reelCollectionsCard);
   panel.community.append(communityCard);
   panel.notifications.append(notificationsCard);
