@@ -1100,6 +1100,10 @@ body.reel-wide-view .reel-feed {
 .reel-card.is-wide-view .reel-card-video { object-fit:contain; }
 .reel-card.is-controls-hidden .reel-actions, .reel-card.is-controls-hidden .reel-card-copy { opacity:0; pointer-events:none; }
 .reel-card .reel-actions, .reel-card .reel-card-copy { transition:opacity .18s ease; }
+.reel-wide-pause-button{display:none}
+.reel-card.is-wide-view .reel-wide-pause-button{position:absolute;z-index:100001;inset-block-end:max(28px,calc(env(safe-area-inset-bottom,0px) + 20px));inset-inline-start:50%;display:grid;place-items:center;width:58px;height:58px;transform:translateX(-50%);border:1px solid rgba(255,255,255,.72);border-radius:50%;background:rgba(10,14,21,.58);backdrop-filter:blur(10px);color:#fff;font:700 22px/1 "Manrope",sans-serif;cursor:pointer;touch-action:manipulation}
+.reel-card.is-wide-view .reel-wide-pause-button:hover,.reel-card.is-wide-view .reel-wide-pause-button:focus-visible{background:rgba(10,14,21,.86);outline:2px solid #a6ffdf;outline-offset:3px}
+.reel-card.is-wide-view .reel-wide-pause-button[data-state="paused"]{color:#a6ffdf}
 .reel-save-button.is-saved .reel-action-icon { color:#a6ffdf; }
 .reel-wide-button[data-active="true"] .reel-action-icon { color:#a6ffdf; }
 @media (prefers-reduced-motion: reduce) { .reel-card .reel-actions, .reel-card .reel-card-copy { transition:none; } }

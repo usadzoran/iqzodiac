@@ -591,6 +591,8 @@
 
   const clearWideView = () => {
     const card = wideViewCard;
+    const video = wideViewVideo;
+    if (video) video.dataset.wideViewUserPaused = 'false';
     wideViewCard = null;
     wideViewVideo = null;
     document.body.classList.remove('reel-wide-view');
@@ -612,7 +614,7 @@
 
   const resumeWideViewVideo = () => {
     const video = wideViewVideo;
-    if (!video || !wideViewCard || video.dataset.wideViewResume !== 'true') return;
+    if (!video || !wideViewCard || video.dataset.wideViewResume !== 'true' || video.dataset.wideViewUserPaused === 'true') return;
     const resume = () => {
       if (wideViewCard && video.isConnected && video.paused && !video.ended) video.play().catch(() => {});
     };
@@ -629,7 +631,10 @@
     document.body.classList.add('reel-wide-view');
     updateWideViewButton(card);
     const playbackPosition = wideViewVideo?.currentTime || 0;
-    if (wideViewVideo) wideViewVideo.dataset.wideViewResume = 'true';
+    if (wideViewVideo) {
+      wideViewVideo.dataset.wideViewResume = 'true';
+      wideViewVideo.dataset.wideViewUserPaused = 'false';
+    }
     if (wideViewVideo?.paused) wideViewVideo.play().catch(() => {});
     const requestFullscreen = card.requestFullscreen || card.webkitRequestFullscreen;
     if (requestFullscreen) {
@@ -954,8 +959,47 @@
     const video = card.querySelector('.reel-card-video');
     video.addEventListener('click', (event) => {
       event.stopPropagation();
+      if (card === wideViewCard) {
+        if (video.paused) {
+          video.dataset.wideViewUserPaused = 'false';
+          video.play().catch(() => {});
+        } else {
+          video.dataset.wideViewUserPaused = 'true';
+          video.pause();
+        }
+        return;
+      }
       card.classList.toggle('is-controls-hidden');
     });
+    const pauseButton = document.createElement('button');
+    pauseButton.className = 'reel-wide-pause-button';
+    pauseButton.type = 'button';
+    pauseButton.dataset.state = 'playing';
+    pauseButton.setAttribute('aria-label', t('Pause Reel'));
+    pauseButton.textContent = 'Ⅱ';
+    pauseButton.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (video.paused) {
+        video.dataset.wideViewUserPaused = 'false';
+        video.play().catch(() => {});
+      } else {
+        video.dataset.wideViewUserPaused = 'true';
+        video.pause();
+      }
+    });
+    const syncPauseButton = () => {
+      const paused = video.paused;
+      pauseButton.dataset.state = paused ? 'paused' : 'playing';
+      pauseButton.textContent = paused ? '▶' : 'Ⅱ';
+      const label = t(paused ? 'Play Reel' : 'Pause Reel');
+      pauseButton.setAttribute('aria-label', label);
+      pauseButton.title = label;
+    };
+    video.addEventListener('play', syncPauseButton);
+    video.addEventListener('pause', syncPauseButton);
+    video.addEventListener('ended', syncPauseButton);
+    document.addEventListener('iqzodiac:languagechange', syncPauseButton);
+    syncPauseButton();
     video.addEventListener('play', () => card.classList.remove('is-paused'));
     video.addEventListener('pause', () => card.classList.add('is-paused'));
     video.addEventListener('error', () => card.classList.add('has-video-error'));
@@ -1017,7 +1061,7 @@
     actions.className = 'reel-actions';
     const deleteAction = row.author_id === authenticatedUserId ? `<button type="button" class="reel-action reel-delete-button" aria-label="${escapeHTML(t('deleteReel'))}" title="${escapeHTML(t('deleteReel'))}"><span class="reel-action-icon" aria-hidden="true">×</span><span class="reel-action-label">${escapeHTML(t('deleteReel'))}</span></button>` : '';
     actions.innerHTML = `<button type="button" class="reel-action reel-like-button" data-reel-id="${escapeHTML(row.id)}" data-liked="${Boolean(row.liked_by_me)}"><span class="reel-action-icon" aria-hidden="true">${row.liked_by_me ? '♥' : '♡'}</span><span class="reel-action-label">${escapeHTML(t(row.liked_by_me ? 'liked' : 'like'))}</span><span class="reel-action-count" data-count="${numeric(row.like_count)}">${escapeHTML(t('count', numeric(row.like_count)))}</span></button><button type="button" class="reel-action reel-save-button" data-reel-id="${escapeHTML(row.id)}" data-saved="${Boolean(row.saved_by_viewer)}"><span class="reel-action-icon" aria-hidden="true">${row.saved_by_viewer ? '🔖' : '▱'}</span><span class="reel-action-label">${escapeHTML(t(row.saved_by_viewer ? 'savedReel' : 'save'))}</span></button><button type="button" class="reel-action reel-comment-button" data-reel-id="${escapeHTML(row.id)}" aria-label="${escapeHTML(t('comments'))}"><span class="reel-action-icon" aria-hidden="true">▱</span><span class="reel-action-label">${escapeHTML(t('comments'))}</span><span class="reel-action-count" data-count="${numeric(row.comment_count)}">${escapeHTML(t('count', numeric(row.comment_count)))}</span></button><button type="button" class="reel-action reel-share-button"><span class="reel-action-icon" aria-hidden="true">↗</span><span class="reel-action-label">${escapeHTML(t('share'))}</span></button><button type="button" class="reel-action reel-download-button"><span class="reel-action-icon" aria-hidden="true">↓</span><span class="reel-action-label">${escapeHTML(t('download'))}</span></button><button type="button" class="reel-action reel-sound-button"><span class="reel-action-icon reel-sound-icon" aria-hidden="true">♫</span><span class="reel-action-label">${escapeHTML(t('unmute'))}</span></button><button type="button" class="reel-action reel-wide-button"><span class="reel-action-icon reel-wide-icon" aria-hidden="true">⛶</span><span class="reel-action-label">${escapeHTML(t('wideView'))}</span></button>${deleteAction}`;
-    card.append(video, playHint, copyNode, actions);
+    card.append(video, playHint, pauseButton, copyNode, actions);
     bindCardActions(card, row);
     if (reelObserver) reelObserver.observe(video);
     return card;
@@ -1063,8 +1107,9 @@
           if (activeVideo && activeVideo !== video) activeVideo.pause();
           activeVideo = video;
           video.muted = video.dataset.userMuted !== 'false';
-          if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) video.play().catch(() => {});
-          else video.addEventListener('canplay', () => { if (activeVideo === video) video.play().catch(() => {}); }, { once: true });
+          const mayAutoResume = card !== wideViewCard || video.dataset.wideViewUserPaused !== 'true';
+          if (mayAutoResume && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) video.play().catch(() => {});
+          else if (mayAutoResume) video.addEventListener('canplay', () => { if (activeVideo === video && (card !== wideViewCard || video.dataset.wideViewUserPaused !== 'true')) video.play().catch(() => {}); }, { once: true });
           updateSoundButton(card);
           const reelId = card?.dataset.reelId;
           if (reelId && !viewedReelIds.has(reelId)) {
@@ -1074,7 +1119,7 @@
         } else if (card === wideViewCard) {
           // Fullscreen can move the card outside the feed's intersection root
           // (notably on mobile browsers). Keep the selected Reel playing.
-          if (video.paused) video.play().catch(() => {});
+          if (video.paused && video.dataset.wideViewUserPaused !== 'true') video.play().catch(() => {});
         } else {
           video.pause();
           if (activeVideo === video) activeVideo = null;
@@ -1289,7 +1334,7 @@
   document.addEventListener('iqzodiac:languagechange', localizeEditor);
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) activeVideo?.pause();
-    else if (activeVideo && activeVideo.isConnected) activeVideo.play().catch(() => {});
+    else if (activeVideo && activeVideo.isConnected && !(activeVideo === wideViewVideo && activeVideo.dataset.wideViewUserPaused === 'true')) activeVideo.play().catch(() => {});
   });
 
   (async () => {

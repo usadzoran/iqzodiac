@@ -371,6 +371,8 @@ window.IQZodiacTranslations = {
     "Real name and personal details stay private": "يبقى الاسم الحقيقي والبيانات الشخصية خاصة",
     "Private match · chat ↗": "مطابقة خاصة · محادثة ↗",
     "My 3D Body": "مجسمي ثلاثي الأبعاد",
+    "Pause Reel": "إيقاف الـReel مؤقتًا",
+    "Play Reel": "تشغيل الـReel",
     "3D Body Visibility": "خصوصية المجسم ثلاثي الأبعاد",
     "VISIBLE": "ظاهر",
     "HIDDEN": "مخفي",
@@ -449,6 +451,8 @@ window.IQZodiacTranslations = {
     "MEMBER 3D BODY": "مجسم العضو ثلاثي الأبعاد"
   },
   "arToEn": {
+    "إيقاف الـReel مؤقتًا": "Pause Reel",
+    "تشغيل الـReel": "Play Reel",
     "البلد": "Country",
     "المدينة": "City",
     "اللغة المفضلة": "Preferred language",
