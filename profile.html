@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="stylesheet" href="./styles.css?v=profile-tabs-20261112" />
-    <link rel="stylesheet" href="./profile-body3d.css?v=body3d-foundation-20261113" />
+    <link rel="stylesheet" href="./profile-body3d.css?v=body3d-views-six-20261114" />
   </head>
   <body class="profile-page has-site-nav">
     <div class="aurora aurora-one" aria-hidden="true"></div>
@@ -66,40 +66,6 @@
         <section class="profile-tab-panel" id="profile-tab-saved" role="tabpanel" data-profile-panel="saved" hidden><div class="profile-saved-groups"><div><div class="profile-saved-heading"><h3>Saved posts</h3><span id="profile-saved-posts-count">0</span></div><div class="profile-activity-list" id="profile-saved-posts-list"></div></div><div><div class="profile-saved-heading"><h3>Saved Reels</h3><span id="profile-saved-reels-count">0</span></div><div class="profile-saved-reels-grid" id="profile-saved-reels-list"></div></div></div></section>
         <section class="profile-tab-panel" id="profile-tab-about" role="tabpanel" data-profile-panel="about" hidden><p class="profile-tab-status">Your profile details, privacy controls, gallery, compatibility preferences, wallet, and account activity are organized below.</p></section>
       </section>
-
-      <nav class="profile-private-shortcuts" aria-labelledby="profile-shortcuts-title">
-        <div class="profile-private-shortcuts-heading">
-          <p class="card-kicker">PROFILE QUICK ACCESS</p>
-          <h2 id="profile-shortcuts-title">Jump to a section</h2>
-        </div>
-        <div class="profile-private-shortcut-grid">
-          <a class="profile-private-shortcut" href="#personal-details">
-            <span class="profile-private-shortcut-icon" aria-hidden="true">◎</span>
-            <span class="profile-private-shortcut-copy"><strong>Personal information</strong><small>Name, location &amp; birth details</small></span>
-            <span class="profile-private-shortcut-arrow" aria-hidden="true">↗</span>
-          </a>
-          <a class="profile-private-shortcut" href="#private-info">
-            <span class="profile-private-shortcut-icon" aria-hidden="true">◈</span>
-            <span class="profile-private-shortcut-copy"><strong>Private information</strong><small>Your details stay protected</small></span>
-            <span class="profile-private-shortcut-arrow" aria-hidden="true">↗</span>
-          </a>
-          <a class="profile-private-shortcut" href="#profile-photo">
-            <span class="profile-private-shortcut-icon" aria-hidden="true">◉</span>
-            <span class="profile-private-shortcut-copy"><strong>Profile photo</strong><small>Update your avatar</small></span>
-            <span class="profile-private-shortcut-arrow" aria-hidden="true">↗</span>
-          </a>
-          <a class="profile-private-shortcut" href="#gallery-title">
-            <span class="profile-private-shortcut-icon" aria-hidden="true">▧</span>
-            <span class="profile-private-shortcut-copy"><strong>Photos &amp; videos</strong><small>Your profile media gallery</small></span>
-            <span class="profile-private-shortcut-arrow" aria-hidden="true">↗</span>
-          </a>
-          <a class="profile-private-shortcut" href="#gallery-privacy-settings">
-            <span class="profile-private-shortcut-icon" aria-hidden="true">◇</span>
-            <span class="profile-private-shortcut-copy"><strong>Gallery privacy</strong><small>Choose who can see your media</small></span>
-            <span class="profile-private-shortcut-arrow" aria-hidden="true">↗</span>
-          </a>
-        </div>
-      </nav>
 
       <div class="profile-grid">
         <section class="profile-card identity-card" aria-labelledby="identity-title">
@@ -182,33 +148,31 @@
         </section>
         <section class="profile-card body3d-card" id="profile-body3d" aria-labelledby="body3d-title">
           <div class="card-heading">
-            <div><p class="card-kicker">03 / MY 3D BODY</p><h2 id="body3d-title">My 3D Body</h2></div>
+            <div><p class="card-kicker">YOUR BODY · PRIVATE 3D</p><h2 id="body3d-title">Your 3D Body</h2></div>
             <span class="body3d-privacy-badge" id="body3d-privacy-badge">HIDDEN</span>
           </div>
-          <p class="section-intro">Prepare a private, multi-angle photo set for a future reconstruction service. Your photos stay private; model reconstruction is not yet connected.</p>
+          <p class="section-intro">Capture six private views to prepare for a future, verified 3D body reconstruction service. Your photos remain private; reconstruction is not connected yet.</p>
           <div class="body3d-engine-note" role="status"><span aria-hidden="true">◉</span><div><strong>Reconstruction engine not connected</strong><small>Your securely saved photo set will wait here. No model is fabricated and no processing is claimed.</small></div></div>
           <div class="body3d-controls">
             <label class="field-label" for="body3d-retention">Original photo retention</label>
             <select id="body3d-retention"><option value="delete_after_processing">Delete originals after a future successful reconstruction</option><option value="keep_until_deleted">Keep originals until I delete them</option></select>
             <p class="field-help">The retention choice is saved with the photo set. It will only be applied after a real reconstruction service is connected.</p>
           </div>
-          <div class="body3d-progress-row"><span id="body3d-progress-label">0 / 8 views selected</span><span class="body3d-progress-track"><span id="body3d-progress-bar"></span></span></div>
-          <div class="body3d-angle-grid" id="body3d-angle-grid" aria-label="Eight required body photo views">
-            <article class="body3d-angle-card" data-angle="front"><div class="body3d-silhouette" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M23 26q9-5 18 0l5 25-5 2 2 27 8 34h-9L32 87 22 114h-9l8-34 2-27-5-2zM23 31 9 54l6 4 13-17m13-10 14 23-6 4-13-17"/></svg></div><div><strong>Front view</strong><small>0° · face fully hidden</small></div><button type="button" class="body3d-capture" data-capture-angle="front">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
+          <div class="body3d-progress-row"><span id="body3d-progress-label">0 / 6 views selected</span><span class="body3d-progress-track"><span id="body3d-progress-bar"></span></span></div>
+          <div class="body3d-angle-grid" id="body3d-angle-grid" aria-label="Six required body photo views">
+            <article class="body3d-angle-card" data-angle="front"><div class="body3d-silhouette" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M23 26q9-5 18 0l5 25-5 2 2 27 8 34h-9L32 87 22 114h-9l8-34 2-27-5-2zM23 31 9 54l6 4 13-17m13-10 14 23-6 4-13-17"/></svg></div><div><strong>Front view</strong><small>0° · straight-on</small></div><button type="button" class="body3d-capture" data-capture-angle="front">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
             <article class="body3d-angle-card" data-angle="back"><div class="body3d-silhouette body3d-back" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M23 26q9-5 18 0l5 25-5 2 2 27 8 34h-9L32 87 22 114h-9l8-34 2-27-5-2zM23 31 9 54l6 4 13-17m13-10 14 23-6 4-13-17"/><path d="M32 30v54" class="body3d-spine"/></svg></div><div><strong>Back view</strong><small>180° · same stance</small></div><button type="button" class="body3d-capture" data-capture-angle="back">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
             <article class="body3d-angle-card" data-angle="left"><div class="body3d-silhouette body3d-side body3d-left" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M27 26q9-5 18 0l2 27-7 3 4 23 9 35h-10L33 87 25 114H15l8-35-1-28-5-3 4-20zM28 32 18 57l8 3"/></svg></div><div><strong>Left side</strong><small>90° · profile view</small></div><button type="button" class="body3d-capture" data-capture-angle="left">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
             <article class="body3d-angle-card" data-angle="right"><div class="body3d-silhouette body3d-side body3d-right" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M27 26q9-5 18 0l2 27-7 3 4 23 9 35h-10L33 87 25 114H15l8-35-1-28-5-3 4-20zM28 32 18 57l8 3"/></svg></div><div><strong>Right side</strong><small>270° · profile view</small></div><button type="button" class="body3d-capture" data-capture-angle="right">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
-            <article class="body3d-angle-card" data-angle="front_left_45"><div class="body3d-silhouette body3d-turn-left" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M23 26q9-5 18 0l5 25-5 2 2 27 8 34h-9L32 87 22 114h-9l8-34 2-27-5-2zM23 31 9 54l6 4 13-17m13-10 14 23-6 4-13-17"/></svg></div><div><strong>Front left 45°</strong><small>Turn 45° left</small></div><button type="button" class="body3d-capture" data-capture-angle="front_left_45">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
-            <article class="body3d-angle-card" data-angle="front_right_45"><div class="body3d-silhouette body3d-turn-right" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M23 26q9-5 18 0l5 25-5 2 2 27 8 34h-9L32 87 22 114h-9l8-34 2-27-5-2zM23 31 9 54l6 4 13-17m13-10 14 23-6 4-13-17"/></svg></div><div><strong>Front right 45°</strong><small>Turn 45° right</small></div><button type="button" class="body3d-capture" data-capture-angle="front_right_45">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
-            <article class="body3d-angle-card" data-angle="back_left_45"><div class="body3d-silhouette body3d-back body3d-turn-left" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M23 26q9-5 18 0l5 25-5 2 2 27 8 34h-9L32 87 22 114h-9l8-34 2-27-5-2zM23 31 9 54l6 4 13-17m13-10 14 23-6 4-13-17"/></svg></div><div><strong>Back left 45°</strong><small>Turn 45° left</small></div><button type="button" class="body3d-capture" data-capture-angle="back_left_45">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
-            <article class="body3d-angle-card" data-angle="back_right_45"><div class="body3d-silhouette body3d-back body3d-turn-right" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M23 26q9-5 18 0l5 25-5 2 2 27 8 34h-9L32 87 22 114h-9l8-34 2-27-5-2zM23 31 9 54l6 4 13-17m13-10 14 23-6 4-13-17"/><path d="M32 30v54" class="body3d-spine"/></svg></div><div><strong>Back right 45°</strong><small>Turn 45° right</small></div><button type="button" class="body3d-capture" data-capture-angle="back_right_45">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
-+          </div>
-+          <div class="body3d-checklist"><strong>Before saving, confirm all of these yourself:</strong><label><input type="checkbox" id="body3d-check-full"> Full body visible, with no objects covering it.</label><label><input type="checkbox" id="body3d-check-pose"> Same upright pose, arm spacing, camera distance and lighting.</label><label><input type="checkbox" id="body3d-check-face"> No face or identifying facial detail is visible in any image.</label></div>
-+          <p class="body3d-quality-note" id="body3d-quality-note" role="status" aria-live="polite">Image checks can estimate size, exposure and sharpness; body completeness, obstruction and pose are your manual checks.</p>
-+          <div class="body3d-actions"><button class="button button-primary" id="body3d-save-set" type="button" disabled>Save photo set privately</button><button class="button button-secondary" id="body3d-delete-all" type="button" hidden>Delete all body data</button></div>
-+          <p class="body3d-record-status" id="body3d-record-status" role="status" aria-live="polite">Loading your private body data…</p>
-+          <div id="body3d-owner-models" class="body3d-owner-models"></div>
-+        </section>
+            <article class="body3d-angle-card" data-angle="front_left_45"><div class="body3d-silhouette body3d-turn-left" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M23 26q9-5 18 0l5 25-5 2 2 27 8 34h-9L32 87 22 114h-9l8-34 2-27-5-2zM23 31 9 54l6 4 13-17m13-10 14 23-6 4-13-17"/></svg></div><div><strong>Front 45°</strong><small>Turn 45° left</small></div><button type="button" class="body3d-capture" data-capture-angle="front_left_45">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
+            <article class="body3d-angle-card" data-angle="back_left_45"><div class="body3d-silhouette body3d-back body3d-turn-left" aria-hidden="true"><svg viewBox="0 0 64 120"><circle cx="32" cy="13" r="9"/><path d="M23 26q9-5 18 0l5 25-5 2 2 27 8 34h-9L32 87 22 114h-9l8-34 2-27-5-2zM23 31 9 54l6 4 13-17m13-10 14 23-6 4-13-17"/></svg></div><div><strong>Back 45°</strong><small>Turn 45° left</small></div><button type="button" class="body3d-capture" data-capture-angle="back_left_45">Add photo</button><input class="body3d-camera-input" type="file" accept="image/*" capture="environment" hidden /><input class="body3d-file-input" type="file" accept="image/*" hidden /><div class="body3d-thumb" hidden></div></article>
+          </div>
+          <div class="body3d-checklist"><strong>Before saving, confirm all of these yourself:</strong><label><input type="checkbox" id="body3d-check-full"> Full body visible, with no objects covering it.</label><label><input type="checkbox" id="body3d-check-pose"> Same upright pose, arm spacing, camera distance and lighting.</label></div>
+          <p class="body3d-quality-note" id="body3d-quality-note" role="status" aria-live="polite">Image checks estimate size, exposure, contrast and sharpness only. Check body completeness, obstructions and pose consistency yourself; the app does not recognize bodies or faces.</p>
+          <div class="body3d-actions"><button class="button button-secondary" id="body3d-customize" type="button">Customize Your Model</button><button class="button button-primary" id="body3d-save-set" type="button" disabled>Save photo set privately</button><button class="button button-secondary" id="body3d-delete-all" type="button" hidden>Delete all body data</button></div>
+          <p class="body3d-record-status" id="body3d-record-status" role="status" aria-live="polite">Loading your private body data…</p>
+          <div id="body3d-owner-models" class="body3d-owner-models"></div>
+        </section>
       </div>
 
       <section class="profile-card compatibility-card" aria-labelledby="compatibility-title">
@@ -325,9 +289,9 @@
     </main>
 
     <dialog class="body3d-instruction-dialog" id="body3d-instructions" aria-labelledby="body3d-guide-title">
-      <div class="body3d-guide"><p class="card-kicker">PRIVATE BODY PHOTO SET · 8 VIEWS</p><h2 id="body3d-guide-title">How to take your photos</h2>
-        <p>Follow these steps for a consistent set. Check every image yourself before upload; the app does not perform full-body or face recognition.</p>
-        <ol class="body3d-guide-list"><li>Wear suitable, fitted sports clothing that shows body shape without being loose.</li><li>Choose even, well-lit surroundings and a simple, uncluttered background.</li><li>Stand upright with your arms slightly away from your body; keep the same pose, distance and light in all eight views.</li><li>Keep your entire body from head to feet in frame; avoid anything covering it.</li><li>Do not use filters or edits that change body shape.</li><li>Keep your face and identifying facial details completely out of every photo. Review each preview before upload.</li></ol>
+      <div class="body3d-guide"><p class="card-kicker">PRIVATE BODY PHOTO SET · 6 VIEWS</p><h2 id="body3d-guide-title">How to take your photos</h2>
+        <div class="body3d-illustration" role="img" aria-label="Illustration: stand upright with arms slightly away from the body, full body framed by the camera, and turn to the marked views."><svg viewBox="0 0 560 190" aria-hidden="true"><defs><linearGradient id="body3d-guide-glow" x1="0" x2="1"><stop stop-color="#49ddeb"/><stop offset="1" stop-color="#557bff"/></linearGradient></defs><rect x="10" y="14" width="540" height="162" rx="18" fill="#07101f" stroke="#2c496e"/><rect x="36" y="45" width="122" height="94" rx="12" fill="#101c31" stroke="url(#body3d-guide-glow)"/><path d="M68 72h18l8-10h24l8 10h10v48H68z" fill="none" stroke="#52dce9" stroke-width="4"/><circle cx="105" cy="95" r="17" fill="none" stroke="#52dce9" stroke-width="4"/><circle cx="105" cy="95" r="6" fill="#52dce9"/><path d="M190 62v78M168 62h44M168 140h44" stroke="#6686ac" stroke-dasharray="5 6"/><circle cx="300" cy="47" r="16" fill="#b6f5ff"/><path d="M281 70q19-9 38 0l11 45-10 4-4-27 4 46h-13l-7-35-7 35h-13l4-46-4 27-10-4z" fill="url(#body3d-guide-glow)"/><path d="M285 76l-30 29m60-29 30 29" stroke="#87f1f6" stroke-width="8" stroke-linecap="round"/><path d="M226 102c14-26 30-34 47-36m86 0c18 2 35 10 48 36" fill="none" stroke="#5278ff" stroke-width="3" stroke-dasharray="6 6"/><path d="M228 101l11-2-5 10m172-8-11-2 5 10" fill="none" stroke="#5278ff" stroke-width="3"/><text x="95" y="158" text-anchor="middle" fill="#a9bbd3" font-size="11">CAMERA · FULL BODY</text><text x="300" y="164" text-anchor="middle" fill="#a9bbd3" font-size="11">ARMS SLIGHTLY OUT · SAME DISTANCE</text></svg></div><p>Follow the illustrated stance and check every image yourself. This app estimates image exposure and sharpness only; it does not recognize bodies or faces. A future model must pass a real face-anonymization check before it can be shown.</p>
+        <ol class="body3d-guide-list"><li>Stand naturally and upright, with your arms slightly away from your sides.</li><li>Frame your complete body, from head to feet, without objects blocking it.</li><li>Use good, even lighting and a simple background; keep the camera at the same distance.</li><li>Wear fitted clothing that does not hide your body shape; avoid loose clothing.</li><li>Keep the same posture and lighting for every view.</li><li>Do not use filters or edit the photos.</li><li>Review each preview and retake any view before uploading. Photos stay private. No model is published unless a real service can verify face anonymization.</li></ol>
         <div class="body3d-guide-actions"><button type="button" data-body3d-choice="camera">Take photo</button><button type="button" data-body3d-choice="file">Choose from device</button><button type="button" class="body3d-guide-cancel" data-body3d-choice="cancel">Cancel</button></div>
       </div>
     </dialog>
@@ -340,11 +304,11 @@
 </nav>
     <div class="toast" role="status" aria-live="polite" aria-atomic="true"><span class="toast-icon" aria-hidden="true">✦</span><span class="toast-message"></span></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-client.js"></script><script src="./auth-guard.js"></script><script src="./auth-ui.js"></script><script src="./notification-routing.js?v=20261108-deeplinks"></script>
-    <script src="./i18n-data.js?v=body3d-i18n-20261113"></script>
+    <script src="./i18n-data.js?v=body3d-i18n-20261114"></script>
     <script src="./language.js?v=20261022-global"></script>
     <script src="./location-data.js"></script>
     <script src="./privacy-core.js?v=gallery-verified-20261112"></script>
-    <script src="./profile.js?v=body3d-tab-20261113"></script><script src="./profile-body3d-data.js?v=body3d-foundation-20261113"></script><script src="./body3d-viewer.js?v=body3d-foundation-20261113"></script><script src="./profile-body3d.js?v=body3d-foundation-20261113"></script><script src="./reel-collections.js?v=reel-saves-download-20261110"></script>
+    <script src="./profile.js?v=body3d-overview-20261114"></script><script src="./profile-body3d-data.js?v=body3d-views-six-20261114"></script><script src="./body3d-viewer.js?v=body3d-controls-20261114"></script><script src="./profile-body3d.js?v=body3d-views-six-20261114"></script><script src="./reel-collections.js?v=reel-saves-download-20261110"></script>
     <script src="./profile-wallet.js?v=coins-gifts-profile-20261106"></script>
       <script src="./nav-performance.js" defer></script>
   </body>

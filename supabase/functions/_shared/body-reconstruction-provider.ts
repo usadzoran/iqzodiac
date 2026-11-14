@@ -20,7 +20,7 @@ export interface BodyReconstructionProvider {
  * provider and its retention/data-processing terms.
  *
  * Expected server-side contract (to agree with the chosen vendor before use):
- * POST multipart/form-data with model_id and eight angle-named JPEG parts;
+ * POST multipart/form-data with model_id and six angle-named JPEG parts;
  * JSON response { model_glb_base64, face_anonymized: true, model_ref?: string }.
  */
 export function createBodyReconstructionProvider(env: (name: string) => string | undefined): BodyReconstructionProvider | null {
@@ -36,9 +36,9 @@ export function createBodyReconstructionProvider(env: (name: string) => string |
   return {
     async reconstruct({ modelId, images, signal }) {
       const angles = new Set(images.map((image) => image.angle));
-      const expected: BodyView["angle"][] = ["front", "back", "left", "right", "front_left_45", "front_right_45", "back_left_45", "back_right_45"];
+      const expected: BodyView["angle"][] = ["front", "back", "left", "right", "front_left_45", "back_left_45"];
       if (images.length !== expected.length || expected.some((angle) => !angles.has(angle))) {
-        throw new Error("Exactly one JPEG for each of the eight required angles is needed.");
+        throw new Error("Exactly one JPEG for each of the six required angles is needed.");
       }
       const form = new FormData();
       form.set("model_id", modelId);

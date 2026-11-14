@@ -20,11 +20,11 @@
   const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const setStatus = (message, state = '') => { recordStatus.textContent = message; recordStatus.dataset.state = state; };
   const angles = data.angles;
-  const angleNames = { front: 'Front view', back: 'Back view', left: 'Left side', right: 'Right side', front_left_45: 'Front left 45°', front_right_45: 'Front right 45°', back_left_45: 'Back left 45°', back_right_45: 'Back right 45°' };
+  const angleNames = { front: 'Front view', back: 'Back view', left: 'Left side', right: 'Right side', front_left_45: 'Front 45°', back_left_45: 'Back 45°' };
   const t = (english, arabic) => window.IQZodiacLanguage?.t(english, arabic) ?? english;
   const errorText = (error, arabic) => t(error?.message || 'An unexpected error occurred.', arabic);
-  const angleNamesArabic = { front: 'الواجهة الأمامية', back: 'الواجهة الخلفية', left: 'الجانب الأيسر', right: 'الجانب الأيمن', front_left_45: 'أمامي يسار ٤٥°', front_right_45: 'أمامي يمين ٤٥°', back_left_45: 'خلفي يسار ٤٥°', back_right_45: 'خلفي يمين ٤٥°' };
-  const checksPassed = () => ['body3d-check-full', 'body3d-check-pose', 'body3d-check-face'].every((id) => document.getElementById(id).checked);
+  const angleNamesArabic = { front: 'الواجهة الأمامية', back: 'الواجهة الخلفية', left: 'الجانب الأيسر', right: 'الجانب الأيمن', front_left_45: 'أمامي ٤٥°', back_left_45: 'خلفي ٤٥°' };
+  const checksPassed = () => ['body3d-check-full', 'body3d-check-pose'].every((id) => document.getElementById(id).checked);
 
   const refreshProgress = () => {
     const count = selected.size;
@@ -41,7 +41,7 @@
       if (current) {
         const image = document.createElement('img');
         image.src = current.url;
-        image.alt = `${angleNames[card.dataset.angle]} preview, face area intentionally excluded by the member`;
+        image.alt = `${angleNames[card.dataset.angle]} private photo preview`;
         const quality = document.createElement('span');
         quality.textContent = `${current.width} × ${current.height} · ${Math.round(current.blob.size / 1024)} KB`;
         thumb.append(image, quality);
@@ -114,7 +114,7 @@
       const previous = selected.get(angle);
       if (previous?.url) URL.revokeObjectURL(previous.url);
       selected.set(angle, { ...result, url: URL.createObjectURL(result.blob) });
-      qualityNote.textContent = 'Size, exposure, contrast and a rough sharpness estimate passed. Full-body framing, obstructions, pose consistency and face privacy still require your own visual check.';
+      qualityNote.textContent = t('Image size, exposure, contrast and rough sharpness passed. Full-body framing, obstructions and consistent pose still require your own visual check; no body or face recognition is performed.', 'اجتازت الصورة فحوص الحجم والتعريض والتباين والوضوح التقريبي. تحقق بنفسك من ظهور الجسم كاملًا، وعدم وجود عوائق، وثبات الوضعية؛ لا يجري التطبيق تعرّفًا على الجسم أو الوجه.');
       setStatus(t(`${angleNames[angle]} is ready. You can preview it or replace it before upload.`, `أصبحت صورة ${angleNamesArabic[angle]} جاهزة. يمكنك معاينتها أو استبدالها قبل الرفع.`), 'success');
       refreshProgress();
     } catch (error) {
@@ -163,7 +163,7 @@
       const titleCopy = model.status === 'ready' ? ['3D model ready', 'المجسم ثلاثي الأبعاد جاهز'] : model.status === 'failed' ? ['Reconstruction failed', 'فشلت إعادة بناء المجسم'] : model.status === 'cancelled' ? ['Photo set cancelled', 'أُلغيت مجموعة الصور'] : ['Private photo set · awaiting reconstruction service', 'مجموعة صور خاصة · بانتظار خدمة إعادة البناء'];
       const title = document.createElement('h3'); title.textContent = t(...titleCopy);
       const copy = document.createElement('p');
-      copy.textContent = model.status === 'ready' ? t('The actual reconstruction service reported this model as ready.', 'أكدت خدمة إعادة البناء الفعلية جاهزية هذا المجسم.') : t('The eight private images are stored securely. Reconstruction does not start until a real AI service is connected.', 'حُفظت الصور الخاصة الثماني بأمان. لن تبدأ إعادة البناء حتى ربط خدمة ذكاء اصطناعي فعلية.');
+      copy.textContent = model.status === 'ready' ? t('The actual reconstruction service reported this model as ready.', 'أكدت خدمة إعادة البناء الفعلية جاهزية هذا المجسم.') : t('The six private images are stored securely. Reconstruction does not start until a real AI service is connected.', 'حُفظت الصور الخاصة الست بأمان. لن تبدأ إعادة البناء حتى ربط خدمة ذكاء اصطناعي فعلية.');
       const details = document.createElement('p');
       details.textContent = model.originals_retention === 'keep_until_deleted' ? t('Original retention: Keep until deleted', 'الاحتفاظ بالصور الأصلية: حتى حذفها') : t('Original retention: Delete after processing', 'الاحتفاظ بالصور الأصلية: حذفها بعد المعالجة');
       const visibilityLabel = document.createElement('label');
@@ -228,7 +228,7 @@
         uploaded++;
         setStatus(t(`Uploading private photos: ${uploaded} / ${angles.length}.`, `جارٍ رفع الصور الخاصة: ${new Intl.NumberFormat('ar').format(uploaded)} من ${new Intl.NumberFormat('ar').format(angles.length)}.`), 'busy');
       }
-      setStatus('All eight photos are stored privately. Status: awaiting reconstruction service; no model has been generated.', 'success');
+      setStatus(t('All six photos are stored privately. Status: awaiting reconstruction service; no model has been generated.', 'حُفظت الصور الست بشكل خاص. الحالة: بانتظار خدمة إعادة البناء؛ لم يُنشأ أي مجسم.'), 'success');
       for (const current of selected.values()) URL.revokeObjectURL(current.url);
       selected.clear();
       document.querySelectorAll('.body3d-checklist input').forEach((input) => { input.checked = false; });
@@ -256,6 +256,12 @@
       await renderSavedModels();
     } catch (error) { setStatus(errorText(error, 'لم يتسنّ حذف كل بيانات الجسم. حاول مجددًا.'), 'error'); }
     finally { busy = false; refreshProgress(); }
+  });
+
+  document.getElementById('body3d-customize')?.addEventListener('click', () => {
+    grid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    grid.querySelector('[data-capture-angle]')?.focus({ preventScroll: true });
+    setStatus(t('Choose any view to retake it. The current saved set will remain unchanged until you save a new one.', 'اختر أي زاوية لإعادة تصويرها. ستبقى المجموعة المحفوظة كما هي حتى تحفظ مجموعة جديدة.'), '');
   });
 
   window.addEventListener('beforeunload', () => selected.forEach((value) => URL.revokeObjectURL(value.url)));

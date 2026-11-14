@@ -17,7 +17,6 @@ const setupProfileTabs = () => {
   const communityCard = document.querySelector('.community-card');
   const notificationsCard = document.querySelector('.notifications-card');
   const actions = document.querySelector('.profile-actions');
-  const shortcuts = document.querySelector('.profile-private-shortcuts');
   if (!heading || !shell || !profileGrid || !identityCard || shell.querySelector('#profile-tab-nav')) return;
 
   const tabs = [
@@ -33,8 +32,8 @@ const setupProfileTabs = () => {
   const panelFor = (id) => { const panel = document.createElement('section'); panel.id = `profile-panel-${id}`; panel.className = `profile-tab-panel${id === 'overview' ? ' is-active' : ''}`; panel.dataset.profilePanel = id; panel.setAttribute('role', 'tabpanel'); panel.setAttribute('aria-labelledby', `profile-tab-${id}`); panel.hidden = id !== 'overview'; panels.append(panel); return panel; };
   const panel = Object.fromEntries(tabs.map(([id]) => [id, panelFor(id)]));
 
-  panel.overview.append(shortcuts, profileGrid);
-  panel.gallery.append(galleryCard, body3dCard);
+  panel.overview.append(body3dCard, profileGrid);
+  panel.gallery.append(galleryCard);
   panel.reels.append(reelLinkCard, reelCollectionsCard);
   panel.community.append(communityCard);
   panel.notifications.append(notificationsCard);
@@ -50,7 +49,6 @@ const setupProfileTabs = () => {
     if (updateHash && window.history.replaceState) window.history.replaceState(null, '', `#${valid}`);
   };
   nav.addEventListener('click', (event) => { const button = event.target.closest('[data-profile-tab]'); if (button) activate(button.dataset.profileTab); });
-  shortcuts?.querySelectorAll('a[href^="#"]').forEach((link) => link.addEventListener('click', (event) => { const target = link.getAttribute('href'); const tab = target === '#gallery-title' || target === '#gallery-privacy-settings' ? 'gallery' : target === '#private-info' ? 'privacy' : 'overview'; event.preventDefault(); activate(tab); document.querySelector(target)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }));
   activate(window.location.hash.slice(1), false);
 };
 setupProfileTabs();

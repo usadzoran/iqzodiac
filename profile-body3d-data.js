@@ -2,7 +2,7 @@
   'use strict';
 
   const bucket = 'iqzodiac-body-private';
-  const angleKeys = ['front', 'back', 'left', 'right', 'front_left_45', 'front_right_45', 'back_left_45', 'back_right_45'];
+  const angleKeys = ['front', 'back', 'left', 'right', 'front_left_45', 'back_left_45'];
 
   async function signedInClient() {
     const client = await window.IQZodiacSupabase?.ready;
