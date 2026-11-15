@@ -372,7 +372,12 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `conversation_id=eq.${activeConversation}` }, scheduleRenderMessages)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_user_hides', filter: `user_id=eq.${user.id}` }, (payload) => { if (payload.new?.conversation_id === activeConversation) scheduleRenderMessages(); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'conversation_message_settings', filter: `conversation_id=eq.${activeConversation}` }, scheduleRenderMessages)
-      .subscribe();
+      .subscribe((state) => {
+        if (state === 'CHANNEL_ERROR' || state === 'TIMED_OUT') {
+          realtimeChannel = null;
+          window.setTimeout(() => { if (activeConversation) void subscribeConversation(); }, 2500);
+        }
+      });
   };
   const renderRevealState = async () => {
     const status = document.querySelector('#face-consent-status'); const request = document.querySelector('#request-reveal'); const partnerButton = document.querySelector('#partner-consent');

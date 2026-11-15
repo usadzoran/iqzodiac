@@ -21,19 +21,20 @@
     const copy = document.createElement('button'); copy.className = 'profile-share-option'; copy.type = 'button'; copy.textContent = 'Copy link'; copy.addEventListener('click', async () => { try { await navigator.clipboard.writeText(url); status.textContent = 'Link copied.'; } catch { window.prompt('Copy Reel link', url); } menu.remove(); }); menu.append(copy); card.append(menu);
   };
   const shareReel = async (card, row) => { const url = shareUrl(row); if (navigator.share) { try { await navigator.share({ title: 'Share this Reel', text: 'Watch this Reel on IQZodiac', url }); return; } catch (error) { if (error?.name === 'AbortError') return; } } openShareMenu(card, row); };
-  const lazyVideos = new IntersectionObserver((entries, observer) => { entries.forEach((entry) => { if (!entry.isIntersecting) return; const video = entry.target; if (video.dataset.src) { video.src = video.dataset.src; video.removeAttribute('data-src'); } observer.unobserve(video); }); }, { rootMargin: '240px 0px' });
+  let mediaClient = null;
+  const lazyVideos = new IntersectionObserver((entries, observer) => { entries.forEach(async (entry) => { if (!entry.isIntersecting) return; const video = entry.target; observer.unobserve(video); if (!video.dataset.path || !mediaClient) return; try { const { data, error } = await mediaClient.storage.from('iqzodiac-media').createSignedUrl(video.dataset.path, 900); if (error) throw error; if (data?.signedUrl) { video.src = data.signedUrl; video.removeAttribute('data-path'); } } catch { video.closest('.profile-reel-card')?.classList.add('media-unavailable'); } }); }, { rootMargin: '240px 0px' });
 
   const setProfile = (profile) => { const name = profile?.display_name || profile?.handle || 'Orbit Member'; document.getElementById('member-name').textContent = name; document.getElementById('member-handle').textContent = profile?.handle || '@orbit-member'; document.getElementById('member-avatar').textContent = initials(name); };
   const render = async (rows, client) => {
     grid.replaceChildren(); document.getElementById('reel-total').textContent = rows.length; document.getElementById('reel-likes-total').textContent = rows.reduce((sum, row) => sum + Number(row.like_count || 0), 0); status.textContent = `${rows.length} ${rows.length === 1 ? 'Reel' : 'Reels'}`;
     if (!rows.length) { grid.innerHTML = '<p class="profile-reel-empty">No published Reels yet.</p>'; return; }
-    const signedUrls = await Promise.all(rows.map(async (row) => { try { const { data } = await client.storage.from('iqzodiac-media').createSignedUrl(row.media_path, 900); return data?.signedUrl || ''; } catch { return ''; } }));
-    rows.forEach((row, index) => { const card = document.createElement('article'); card.className = 'profile-reel-card'; const video = document.createElement('video'); video.controls = true; video.playsInline = true; video.preload = 'none'; video.muted = true; video.dataset.src = signedUrls[index]; video.setAttribute('aria-label', 'Published Reel'); const copy = document.createElement('div'); copy.className = 'profile-reel-card-copy'; copy.innerHTML = `<p class="profile-reel-date">${escapeHTML(formatDate(row.created_at))} · ${Number(row.duration_seconds || 0).toFixed(0)}s · ${Number(row.like_count || 0)} likes</p>${row.caption ? `<p class="profile-reel-caption">${escapeHTML(row.caption)}</p>` : ''}`; const share = document.createElement('button'); share.className = 'profile-reel-share'; share.type = 'button'; share.textContent = '↗ Share'; share.addEventListener('click', () => { void shareReel(card, row); }); copy.append(share); card.append(video, copy); grid.append(card); lazyVideos.observe(video); });
+    rows.forEach((row) => { const card = document.createElement('article'); card.className = 'profile-reel-card'; const video = document.createElement('video'); video.controls = true; video.playsInline = true; video.preload = 'none'; video.muted = true; video.dataset.path = row.media_path; video.setAttribute('aria-label', 'Published Reel'); const copy = document.createElement('div'); copy.className = 'profile-reel-card-copy'; copy.innerHTML = `<p class="profile-reel-date">${escapeHTML(formatDate(row.created_at))} · ${Number(row.duration_seconds || 0).toFixed(0)}s · ${Number(row.like_count || 0)} likes</p>${row.caption ? `<p class="profile-reel-caption">${escapeHTML(row.caption)}</p>` : ''}`; const share = document.createElement('button'); share.className = 'profile-reel-share'; share.type = 'button'; share.textContent = '↗ Share'; share.addEventListener('click', () => { void shareReel(card, row); }); copy.append(share); card.append(video, copy); grid.append(card); lazyVideos.observe(video); });
   };
 
   (async () => {
     try {
       const client = await clientReady();
+      mediaClient = client;
       const { data: sessionData } = await client.auth.getSession();
       const userId = new URLSearchParams(window.location.search).get('user') || sessionData.session?.user?.id;
       if (!userId) throw new Error('no-user');
@@ -52,9 +53,9 @@
         }
       } catch (bodyError) { console.warn('Public 3D body model is unavailable.', bodyError); }
       const ids = (reels || []).map((row) => row.id);
-      let likeRows = [];
-      if (ids.length) { const result = await client.from('reel_likes').select('reel_id').in('reel_id', ids).limit(1000); likeRows = result.data || []; }
-      const counts = likeRows.reduce((map, row) => map.set(row.reel_id, (map.get(row.reel_id) || 0) + 1), new Map());
+      let metrics = [];
+      if (ids.length) { const result = await client.rpc('get_reel_feed_metrics', { p_reel_ids: ids }); if (result.error) throw result.error; metrics = result.data || []; }
+      const counts = new Map(metrics.map((row) => [row.reel_id, row.like_count]));
       await render((reels || []).map((row) => ({ ...row, like_count: counts.get(row.id) || 0 })), client);
     } catch (error) { console.warn('Reel profile could not be loaded.', error); status.textContent = 'Unavailable'; grid.innerHTML = '<p class="profile-reel-empty">This profile could not be loaded right now.</p>'; }
   })();

@@ -1,5 +1,13 @@
 const toast = document.querySelector('.toast');
 const toastMessage = document.querySelector('.toast-message');
+const storageKey = (key) => `iqzodiac:${key}`;
+const readChoice = (key, fallback = false) => {
+  try { const value = window.localStorage.getItem(storageKey(key)); return value === null ? fallback : value === 'true'; } catch { return fallback; }
+};
+const saveChoice = (key, value) => { try { window.localStorage.setItem(storageKey(key), String(Boolean(value))); } catch { /* Database remains authoritative. */ } };
+const readNumber = (key, fallback = 0) => {
+  try { const value = Number(window.localStorage.getItem(storageKey(key))); return Number.isFinite(value) ? value : fallback; } catch { return fallback; }
+};
 
 const setupProfileTabs = () => {
   const heading = document.querySelector('.profile-heading');
@@ -157,9 +165,10 @@ const renderNotifications = (rows) => {
   });
   updateNotificationCount(); updateNotificationBadge(); renderCompactNotifications(rows);
 };
+let notificationsChannel = null;
 const loadNotifications = async () => {
   try { const client = await window.IQZodiacSupabase.ready; const { data: userData } = await client.auth.getUser(); if (!userData?.user?.id) return; const { data, error } = await client.from('notifications').select('id,notification_type,actor_id,message_id,post_id,comment_id,reel_id,reel_comment_id,message,read_at,created_at').eq('recipient_id', userData.user.id).order('created_at', { ascending: false }).limit(30); if (error) throw error; renderNotifications(data || []);
-    client.channel(`notifications:${userData.user.id}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `recipient_id=eq.${userData.user.id}` }, (payload) => { void loadNotifications(); showToast(payload.new.message); }).subscribe();
+    if (!notificationsChannel) notificationsChannel = client.channel(`notifications:${userData.user.id}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `recipient_id=eq.${userData.user.id}` }, (payload) => { void loadNotifications(); showToast(payload.new.message); }).subscribe((state) => { if (state === 'CHANNEL_ERROR' || state === 'TIMED_OUT') notificationsChannel = null; });
   } catch { /* Notifications remain empty if the account service is unavailable. */ }
 };
 void loadNotifications();
@@ -358,5 +367,4 @@ galleryConfirm.addEventListener('click', async () => {
     galleryConfirm.disabled = false; galleryUploadStatus.textContent = `${completed ? `${completed} uploaded. ` : ''}${error.message || 'Upload failed. Press Upload media to retry.'}`; galleryUploadStatus.dataset.state = 'error';
   }
 });
-(async () => { await loadMedia(); })();
 document.querySelector('#avatar-input').addEventListener('change', async (event) => { const [file] = event.target.files; if (!file || !adapter) return; try { const item = await adapter.uploadMedia(file, 'avatar'); const avatar = document.querySelector('#avatar-preview'); avatar.style.backgroundImage = `url(${item.url})`; avatar.classList.add('has-photo'); avatar.querySelector('.avatar-initials').hidden = true; showToast('Profile photo saved securely.'); } catch (error) { showToast(error?.message || 'Profile photo could not be uploaded.'); } finally { event.target.value = ''; } });

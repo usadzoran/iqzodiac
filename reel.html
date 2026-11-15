@@ -90,6 +90,10 @@
       <ul id="reel-comments-list" class="reel-comments-list" aria-live="polite"></ul>
       <form id="reel-comment-form" class="reel-comment-form">
         <input id="reel-comment-input" type="text" maxlength="180" placeholder="Write a comment…" aria-label="Write a comment…" />
+        <input type="file" data-comment-media-input accept="image/*,video/*,audio/*" hidden />
+        <button type="button" data-comment-media-pick aria-label="Attach media">＋</button>
+        <button type="button" data-comment-media-record aria-label="Record audio">●</button>
+        <span data-comment-media-status aria-live="polite"></span>
         <button id="reel-comment-submit" type="submit" aria-label="Post comment">↗</button>
       </form>
     </section>

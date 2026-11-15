@@ -552,6 +552,8 @@ if ('IntersectionObserver' in window && !reduceMotion) {
     const { data: feed, error } = await client.rpc('get_home_feed', { p_limit: 30 });
     if (error) throw error;
     const feedRows = Array.isArray(feed) ? [...feed] : [];
+    followedPeople.clear();
+    feedRows.filter((item) => item.following && item.handle).forEach((item) => followedPeople.add(String(item.handle).replace(/^@/, '')));
     if (notificationPostId && !feedRows.some((item) => item.post_id === notificationPostId)) {
       const { data: targetPost, error: targetError } = await client.from('posts').select('id,author_id,body,media_type,media_path,created_at').eq('id', notificationPostId).maybeSingle();
       if (targetError) throw targetError;
@@ -589,15 +591,16 @@ if ('IntersectionObserver' in window && !reduceMotion) {
     if (!feedRows.length) {
       feedList.innerHTML = '<p class="match-empty">No real posts have been published yet.</p>';
     } else {
+      const mediaEntries = await Promise.all(feedRows.filter((item) => item.media_path).map(async (item) => {
+        const { data: signed } = await client.storage.from('iqzodiac-media').createSignedUrl(item.media_path, 3600);
+        return [item.post_id, signed?.signedUrl || ''];
+      }));
+      const mediaUrls = new Map(mediaEntries);
       for (const item of feedRows) {
         const post = document.createElement('article');
         post.className = 'post-card'; post.id = `post-${item.post_id}`; post.dataset.postId = item.post_id; post.dataset.author = String(item.handle || '').replace(/^@/, ''); post.dataset.authorId = item.author_id; post.dataset.mediaPath = item.media_path || '';
         const liked = Boolean(item.liked_by_me);
-        let mediaUrl = '';
-        if (item.media_path) {
-          const { data: signed } = await client.storage.from('iqzodiac-media').createSignedUrl(item.media_path, 3600);
-          mediaUrl = signed?.signedUrl || '';
-        }
+        const mediaUrl = mediaUrls.get(item.post_id) || '';
         const bodyMarkup = item.body ? `<p class="post-body">${escapeHTML(item.body)}</p>` : '';
         const editPostLabel = feedText('Edit post', 'تعديل المنشور');
         const deletePostLabel = feedText('Delete post', 'حذف المنشور');

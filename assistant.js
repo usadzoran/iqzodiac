@@ -141,7 +141,7 @@
       const element = tally().element;
       const zodiac = state.birthDate ? zodiacForDate(state.birthDate)?.[0] : null;
       const interests = state.interests.split(/[,،;؛\n]+/).map((item) => item.trim()).filter(Boolean);
-      await client.from('discovery_profiles').upsert({
+      const { error: profileError } = await client.from('discovery_profiles').upsert({
         user_id: userId, birth_date: state.birthDate || null, zodiac_sign: zodiac,
         personality_element: element, personality_summary: element ? ui().resultSummary[element] : null,
         interests, discoverable: state.stage === 'done',
@@ -149,6 +149,7 @@
         questionnaire_version: questionnaireVersion, completed_at: state.stage === 'done' ? new Date().toISOString() : null,
         updated_at: new Date().toISOString(),
       });
+      if (profileError) throw profileError;
       const answerRows = state.answers.map((answer, index) => answer && ({
         user_id: userId, questionnaire_version: questionnaireVersion, question_id: `q${index + 1}`,
         answer_choice: answer.choice || null, answer_text: answer.text || null, answered_at: new Date().toISOString(),
@@ -174,10 +175,12 @@
       const { data: sessionData } = await client.auth.getSession();
       const userId = sessionData.session?.user?.id;
       if (!userId) return;
-      const [{ data: profile }, { data: answers }] = await Promise.all([
+      const [{ data: profile, error: profileError }, { data: answers, error: answersError }] = await Promise.all([
         client.from('discovery_profiles').select('birth_date,discovery_status,interests').eq('user_id', userId).maybeSingle(),
         client.from('discovery_answers').select('question_id,answer_choice,answer_text').eq('user_id', userId).eq('questionnaire_version', questionnaireVersion).order('answered_at', { ascending: true }),
       ]);
+      if (profileError) throw profileError;
+      if (answersError) throw answersError;
       if (!profile && !answers?.length) return;
       const answerMap = new Map((answers || []).map((answer) => [answer.question_id, answer]));
       state = emptyState();
@@ -550,7 +553,10 @@
       const client = await database();
       const { data: sessionData } = await client.auth.getSession();
       const userId = sessionData.session?.user?.id;
-      if (userId) await client.from('discovery_answers').delete().eq('user_id', userId).eq('questionnaire_version', questionnaireVersion);
+      if (userId) {
+        const { error } = await client.from('discovery_answers').delete().eq('user_id', userId).eq('questionnaire_version', questionnaireVersion);
+        if (error) throw error;
+      }
     } catch (error) { console.warn('Discovery answers could not be reset.', error); state = previousState; }
     await saveState(); render();
   });

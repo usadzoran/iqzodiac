@@ -193,8 +193,11 @@
       const safeHandle = String(handle || current.handle || '@orbit-member').replace(/^@+/, '').toLowerCase().replace(/[^a-z0-9._-]/g, '').slice(0, 24) || 'orbit-member';
       const initials = safeDisplayName.split(/[\s-]+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'OM';
       const next = { ...current, name: safeDisplayName, displayName: safeDisplayName, pseudonym: safeDisplayName, handle: `@${safeHandle}`, initials, privacyProfileVersion: 2 };
+      const { client, user } = await sessionUser();
+      if (!client || !user) throw new Error('A signed-in account is required.');
+      const { error } = await client.from('profiles').update({ display_name: safeDisplayName, handle: `@${safeHandle}`, updated_at: new Date().toISOString() }).eq('user_id', user.id);
+      if (error) throw error;
       write(keys.profile, next);
-      try { const { client, user } = await sessionUser(); if (client && user) await client.from('profiles').update({ display_name: safeDisplayName, handle: `@${safeHandle}`, updated_at: new Date().toISOString() }).eq('user_id', user.id); } catch (error) { console.warn('Public identity sync failed.', error); }
       return next;
     },
     async updatePersonalDetails({ firstName, lastName, country, city, birthCountry, birthCity, residenceCountry, residenceCity, preferredLanguage } = {}) {
@@ -203,21 +206,26 @@
       const nextResidenceCountry = clean(residenceCountry || country);
       const nextResidenceCity = clean(residenceCity || city);
       const next = { ...current, firstName: clean(firstName), lastName: clean(lastName), country: nextResidenceCountry, city: nextResidenceCity, residenceCountry: nextResidenceCountry, residenceCity: nextResidenceCity, birthCountry: clean(birthCountry), birthCity: clean(birthCity), preferredLanguage: preferredLanguage === 'ar' ? 'ar' : 'en' };
-      write(keys.profile, next);
       try {
         const { client, user } = await sessionUser();
         if (client && user) {
-          await client.auth.updateUser({ data: { first_name: next.firstName, last_name: next.lastName, country: next.country, city: next.city, birth_country: next.birthCountry, birth_city: next.birthCity, residence_country: next.residenceCountry, residence_city: next.residenceCity, preferred_language: next.preferredLanguage } });
-          await client.from('profiles').update({ first_name: next.firstName, last_name: next.lastName, country: next.country, city: next.city, birth_country: next.birthCountry, birth_city: next.birthCity, residence_country: next.residenceCountry, residence_city: next.residenceCity, preferred_language: next.preferredLanguage, updated_at: new Date().toISOString() }).eq('user_id', user.id);
+          const { error: authError } = await client.auth.updateUser({ data: { first_name: next.firstName, last_name: next.lastName, country: next.country, city: next.city, birth_country: next.birthCountry, birth_city: next.birthCity, residence_country: next.residenceCountry, residence_city: next.residenceCity, preferred_language: next.preferredLanguage } });
+          if (authError) throw authError;
+          const { error: profileError } = await client.from('profiles').update({ first_name: next.firstName, last_name: next.lastName, country: next.country, city: next.city, birth_country: next.birthCountry, birth_city: next.birthCity, residence_country: next.residenceCountry, residence_city: next.residenceCity, preferred_language: next.preferredLanguage, updated_at: new Date().toISOString() }).eq('user_id', user.id);
+          if (profileError) throw profileError;
         }
-      } catch (error) { console.warn('Personal details sync failed.', error); }
+      } catch (error) { throw error; }
+      write(keys.profile, next);
       return next;
     },
     async updatePrivacyPreferences(patch = {}) {
       const current = await this.getCurrentProfile();
       const next = { ...current, privacy: { ...current.privacy, photosPublic: patch.photosPublic === true } };
+      const { client, user } = await sessionUser();
+      if (!client || !user) throw new Error('A signed-in account is required.');
+      const { error } = await client.from('profiles').update({ privacy: next.privacy, updated_at: new Date().toISOString() }).eq('user_id', user.id);
+      if (error) throw error;
       write(keys.profile, next);
-      try { const { client, user } = await sessionUser(); if (client && user) await client.from('profiles').update({ privacy: next.privacy, updated_at: new Date().toISOString() }).eq('user_id', user.id); } catch (error) { console.warn('Privacy sync failed.', error); }
       return next;
     },
     async listMyMedia() {
@@ -291,8 +299,13 @@
       return true;
     },
     async updateCompatibilityProfile(patch) {
-      const current = await this.getCurrentProfile(); const next = { ...current, ...patch, interests: Array.isArray(patch.interests) ? patch.interests : current.interests }; write(keys.profile, next);
-      try { const { client, user } = await sessionUser(); if (client && user) await client.from('discovery_profiles').upsert({ user_id: user.id, zodiac_sign: patch.zodiac || current.zodiac || null, personality_element: patch.element || current.element || null, interests: next.interests, discovery_status: 'in_progress', discoverable: false, updated_at: new Date().toISOString() }); } catch (error) { console.warn('Compatibility sync failed.', error); }
+      const current = await this.getCurrentProfile(); const next = { ...current, ...patch, interests: Array.isArray(patch.interests) ? patch.interests : current.interests };
+      const { client, user } = await sessionUser();
+      if (!client || !user) throw new Error('A signed-in account is required.');
+      const element = String(patch.element || current.element || '').toLowerCase();
+      const { error } = await client.from('discovery_profiles').upsert({ user_id: user.id, zodiac_sign: patch.zodiac || current.zodiac || null, personality_element: ['fire', 'earth', 'water', 'air'].includes(element) ? element : null, interests: next.interests, discovery_status: 'in_progress', discoverable: false, updated_at: new Date().toISOString() });
+      if (error) throw error;
+      write(keys.profile, next);
       return next;
     },
     async listCandidates(filters = {}) {

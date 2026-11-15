@@ -44,6 +44,7 @@
   let loadingMore = false;
   let feedObserver = null;
   let reelObserver = null;
+  let realtimeChannel = null;
   const reelById = new Map();
   const viewedReelIds = new Set();
   const routeParams = new URLSearchParams(window.location.search);
@@ -712,6 +713,7 @@
         const editor = document.createElement('form'); editor.className = 'reel-comment-reply-form';
         const input = document.createElement('input'); input.type = 'text'; input.maxLength = 180; input.placeholder = t('replyPlaceholder'); input.setAttribute('aria-label', t('replyPlaceholder'));
         editor.innerHTML = '<input type="file" data-comment-media-input accept="image/*,video/*,audio/*" hidden /><button type="button" data-comment-media-pick>＋</button><button type="button" data-comment-media-record>●</button><span data-comment-media-status></span>';
+        editor.prepend(input);
         setupReelCommentMediaControls(editor);
         const actions = document.createElement('div'); actions.className = 'reel-comment-editor-actions';
         const send = document.createElement('button'); send.type = 'submit'; send.textContent = t('postReply');
@@ -849,7 +851,10 @@
       commentsList.replaceChildren(empty);
       return;
     }
-    for (const comment of comments) { if (comment.media_path) { const { data: signed } = await client.storage.from(MEDIA_BUCKET).createSignedUrl(comment.media_path, 3600); comment.media_url = signed?.signedUrl || ''; } }
+    await Promise.all(comments.filter((comment) => comment.media_path).map(async (comment) => {
+      const { data: signed } = await client.storage.from(MEDIA_BUCKET).createSignedUrl(comment.media_path, 3600);
+      comment.media_url = signed?.signedUrl || '';
+    }));
     const profileMap = await getPublicProfiles(comments.map((comment) => comment.author_id));
     const repliesByParent = new Map();
     const topLevelComments = [];
@@ -1212,6 +1217,24 @@
     await loadMoreReels();
   };
 
+  const setupRealtime = () => {
+    if (!client) return;
+    realtimeChannel?.unsubscribe();
+    realtimeChannel = client.channel('reels-feed')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reels' }, () => { void resetFeed(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reel_likes' }, () => { void resetFeed(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reel_comments' }, (payload) => {
+        if (selectedCommentReel?.id === payload.new?.reel_id || selectedCommentReel?.id === payload.old?.reel_id) void loadComments(selectedCommentReel);
+        else void resetFeed();
+      })
+      .subscribe((state) => {
+        if (state === 'CHANNEL_ERROR' || state === 'TIMED_OUT') {
+          realtimeChannel = null;
+          window.setTimeout(setupRealtime, 3000);
+        }
+      });
+  };
+
   const updateUserMutePreference = (card, muted) => {
     const video = card.querySelector('.reel-card-video');
     video.dataset.userMuted = String(muted);
@@ -1320,7 +1343,7 @@
         const empty = commentsList.querySelector('.reel-comments-empty');
         empty?.remove();
         commentsList.prepend(createCommentItem(commentData, profileMap.get(authenticatedUserId)));
-        commentInput.value = ''; commentForm._mediaFile = null; commentForm.querySelector('[data-comment-media-input]').value = '';
+        commentInput.value = ''; commentForm._mediaFile = null; const mediaInput = commentForm.querySelector('[data-comment-media-input]'); if (mediaInput) mediaInput.value = '';
         const mediaStatus = commentForm.querySelector('[data-comment-media-status]'); if (mediaStatus) mediaStatus.textContent = '';
         selectedCommentReel.comment_count = numeric(selectedCommentReel.comment_count) + 1;
         const card = document.querySelector(`.reel-card[data-reel-id="${CSS.escape(selectedCommentReel.id)}"]`);
@@ -1348,6 +1371,7 @@
       setupReelCommentMediaControls(commentForm);
       bindCommentsForm();
       setupObservers();
+      setupRealtime();
       localizeEditor();
       await loadMoreReels();
       await openNotificationTarget();
