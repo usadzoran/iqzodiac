@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 const handleYouTubeSearch = require('./lib/youtube-search');
+const handleLiveKitToken = require('./lib/livekit-token');
 const handleVipLive = require('./api/vip/live');
 const { fetchDiscoverNews } = require('./lib/discover-news');
 
@@ -93,6 +94,15 @@ const server = http.createServer((request, response) => {
       if (!response.headersSent) {
         response.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
         response.end(JSON.stringify({ error: { code: 'upstream_unavailable', message: 'YouTube search is temporarily unavailable.' } }));
+      }
+    });
+    return;
+  }
+  if (requestPath === '/api/livekit/token') {
+    handleLiveKitToken(request, response).catch(() => {
+      if (!response.headersSent) {
+        response.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+        response.end(JSON.stringify({ error: { code: 'livekit_unavailable', message: 'LiveKit token service is temporarily unavailable.' } }));
       }
     });
     return;
