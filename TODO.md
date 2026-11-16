@@ -75,11 +75,11 @@
 
 ## Audio rooms
 - [x] Add a “Audio rooms / غرف صوتية” section to the fixed user menu.
-- [x] Provide the supplied NEBULA room interface with host, speakers, listeners, talk requests, room chat, and room controls.
-- [x] Keep room controls as a front-end prototype only: hand raising, microphone/sound state, chat messages, and leave-room state are local and not connected to real audio or a server.
-- [x] Show rooms as closed directory cards by default with each room name and visitor count visible.
-- [x] Add a second experimental room card, “نبض المدينة”, with its own visitor count.
-- [x] Open the selected room only after the user presses its join button, and return to the card directory when leaving.
+- [x] Keep room creation and the open-room directory backed by `audio_rooms` and its authenticated Supabase RPC/RLS policies.
+- [x] Request a short-lived LiveKit token from the server only after verifying the Supabase session and that the room is still open; never expose LiveKit secrets in the browser.
+- [x] Connect the room UI to LiveKit audio, keep the microphone off until the user enables it, and provide audio, leave, retry, and disconnected states.
+- [x] Use a responsive mobile room dialog based on the supplied screenshot, with an explicit connection status instead of an indefinite “Connecting” state.
+- [ ] Configure the deployed backend with `LIVEKIT_URL`, `LIVEKIT_API_KEY`, and `LIVEKIT_API_SECRET`; allow the site origin in `IQZODIAC_ALLOWED_ORIGINS`; set the public `apiBaseUrl`; and verify a real two-member audio session on mobile.
 
 ## Face privacy and Match
 - [x] Add a Match section to the existing navigation and route system without removing existing sections.

@@ -49,3 +49,11 @@ Chosen style: **Celestial editorial minimalism**. Probability 0.07.
 ## Backend contract for later wiring
 
 The adapter methods are `getCurrentProfile`, `listCandidates`, `recordLike`, `recordSkip`, `getMatches`, `getRevealState`, `requestReveal`, `setOwnRevealConsent`, `setPartnerRevealConsent` (demo-only), `canRevealFace`, and `getConversation`. A production implementation should replace the local adapter with authenticated endpoints, signed short-lived protected-preview URLs, server-side image redaction, and authorization checks on every original-image request. The browser must never decide reveal eligibility by itself.
+
+## Voice Rooms and LiveKit
+
+Keep `rooms.html` and the existing Supabase-backed `audio_rooms` directory and creation RPC. Add an authenticated serverless endpoint at `/api/audio-rooms/token` (also exposed by the local Node server) that validates the Supabase bearer token, checks that the requested room is still open under the caller's RLS access, and issues a short-lived LiveKit participant token scoped only to that room. Keep `LIVEKIT_URL`, `LIVEKIT_API_KEY`, and `LIVEKIT_API_SECRET` on the server; never put signing credentials in public config or browser code. The static GitHub Pages frontend uses the public `apiBaseUrl` only to address the backend.
+
+Use the LiveKit browser client for audio transport, participant presence, and remote audio tracks. Start with the microphone disabled; offer explicit microphone, room-audio, retry, and leave controls. A host closing the room updates its own Supabase row, and directory changes refresh through Supabase Realtime. Missing provider credentials, backend configuration, permission denials, and network timeouts must resolve to human-readable states rather than a permanent connecting indicator.
+
+Design direction follows the user's mobile screenshot: a focused deep-navy dialog, subtle cyan LiveKit label and border, a large quiet audio stage, compact connection status, and distinct microphone/leave actions. Keep the existing bottom navigation and room directory, with responsive sizing, safe-area spacing, and reduced-motion behavior. Real media verification remains contingent on the deployed backend URL and LiveKit credentials being configured outside source control.

@@ -1,10 +1,12 @@
 const http = require('http');
 const https = require('https');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 const handleYouTubeSearch = require('./lib/youtube-search');
 const handleVipLive = require('./api/vip/live');
+const handleAudioRoomToken = require('./api/audio-rooms/token');
 const { fetchDiscoverNews } = require('./lib/discover-news');
 
 const root = __dirname;
@@ -101,6 +103,15 @@ const server = http.createServer((request, response) => {
     });
     return;
   }
+  if (requestPath === '/api/audio-rooms/token') {
+    handleAudioRoomToken(request, response).catch(() => {
+      if (!response.headersSent) {
+        response.writeHead(503, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+        response.end(JSON.stringify({ error: { code: 'audio_room_service_unavailable' } }));
+      }
+    });
+    return;
+  }
   if (requestPath === '/api/daily-feed') {
     buildDailyFeed(request.url).then((payload) => {
       response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -173,7 +184,8 @@ const server = http.createServer((request, response) => {
       return;
     }
     const extension = path.extname(filePath);
-    const etag = `W/"${data.length.toString(16)}-${Math.floor(data.length / 7).toString(16)}"`;
+    const contentHash = crypto.createHash('sha256').update(data).digest('hex');
+    const etag = `W/"${contentHash}"`;
     if (request.headers['if-none-match'] === etag) {
       response.writeHead(304, { ETag: etag, 'Cache-Control': extension === '.html' ? 'no-cache' : 'public, max-age=3600' });
       response.end();
