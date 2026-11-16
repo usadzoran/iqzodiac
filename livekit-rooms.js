@@ -47,7 +47,18 @@
       modal.querySelector('[data-livekit-camera]').hidden = !(type === 'live' && canPublish);
       if (canPublish) { await room.localParticipant.setMicrophoneEnabled(true); if (type === 'live') await room.localParticipant.setCameraEnabled(true); }
       setStatus(canPublish ? 'أنت متصل كمضيف/متحدث.' : 'أنت متصل كمشاهد.', 'ok');
-    } catch (error) { setStatus(error.message === 'livekit_endpoint_missing' ? 'لم يتم ضبط رابط خدمة LiveKit بعد.' : error.message === 'room_access_denied' ? 'ليست لديك صلاحية دخول هذه الغرفة.' : 'تعذر الاتصال بالغرفة.', 'error'); }
+    } catch (error) {
+      const code = String(error?.message || 'unknown_error');
+      console.error('[IQZodiac LiveKit]', error);
+      const message = code === 'livekit_endpoint_missing' ? 'لم يتم ضبط رابط خدمة LiveKit بعد.'
+        : code === 'livekit_client_missing' ? 'تعذر تحميل مكتبة LiveKit. أعد تحميل الصفحة.'
+          : code === 'auth_required' ? 'انتهت جلسة الدخول. سجّل الخروج ثم ادخل من جديد.'
+            : code === 'room_access_denied' ? 'ليست لديك صلاحية دخول هذه الغرفة.'
+              : code === 'livekit_not_configured' ? 'متغيرات LiveKit ناقصة في Vercel.'
+                : code === 'supabase_not_configured' ? 'متغيرات Supabase ناقصة في Vercel.'
+                  : `تعذر الاتصال بالغرفة (${code}).`;
+      setStatus(message, 'error');
+    }
   };
   window.IQZodiacLiveKit = { joinAudio: (roomId, title) => open('audio', roomId, title, true), joinLive: (roomId, title) => open('live', roomId, title, false) };
   document.addEventListener('click', (event) => { const audio = event.target.closest('[data-livekit-audio-room-id]'); const live = event.target.closest('[data-livekit-live-room-id]'); if (audio) void open('audio', audio.dataset.livekitAudioRoomId, audio.dataset.title, true); else if (live) void open('live', live.dataset.livekitLiveRoomId, live.dataset.title, false); });
