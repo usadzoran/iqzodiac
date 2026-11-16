@@ -23,7 +23,12 @@ function applyCors(request, response) {
   const localOrigin = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
   const previewOrigin = /^https:\/\/(?:[a-z0-9-]+\.)*manus\.computer$/i.test(origin);
   const production = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
-  if (!allowedOrigins.includes(origin) && (production || (!localOrigin && !previewOrigin))) return false;
+  let sameHttpsHost = false;
+  try {
+    const parsedOrigin = new URL(origin);
+    sameHttpsHost = parsedOrigin.protocol === 'https:' && parsedOrigin.host.toLowerCase() === String(request.headers.host || '').toLowerCase();
+  } catch { /* Reject malformed origins below. */ }
+  if (!allowedOrigins.includes(origin) && !sameHttpsHost && (production || (!localOrigin && !previewOrigin))) return false;
 
   response.setHeader('Access-Control-Allow-Origin', origin);
   response.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
