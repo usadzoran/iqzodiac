@@ -13,8 +13,9 @@ The signup flow is still a local prototype. It does not create a Supabase Auth s
 1. Deploy this repository to Vercel so `api/vip/live.js` is available as a serverless function. The local `server.js` also exposes the route for development.
 2. Set `apiBaseUrl` in `../public/supabase-public-config.json` to the deployed Vercel origin, for example `https://your-project.vercel.app` (origin only, without `/api/vip/live`).
 3. In the Vercel project, set `IQZODIAC_ALLOWED_ORIGINS` to a comma-separated allowlist containing the actual GitHub Pages origin and any verified custom site origin. Redeploy after changing environment variables.
-4. Integrate Supabase Auth into signup/login and assign VIP roles only through a trusted administrative workflow. The existing local prototype cannot provide this session.
-5. Select and integrate a real WebRTC/HLS provider, signed playback, realtime chat/moderation, payment provider plus verified webhooks, and payout provider before enabling any feature flag.
+4. The LiveKit token endpoint separately reads `LIVEKIT_ALLOWED_ORIGINS`; include `https://iqzodiac.com`, `https://www.iqzodiac.com`, and `https://usadzoran.github.io` if configuring this variable.
+5. Integrate Supabase Auth into signup/login and assign VIP roles only through a trusted administrative workflow. The existing local prototype cannot provide this session.
+6. Select and integrate a real WebRTC/HLS provider, signed playback, realtime chat/moderation, payment provider plus verified webhooks, and payout provider before enabling any feature flag.
 
 Never place a Supabase Management API token, secret key, or `service_role` key in this repository, browser code, public config, or client storage. The publishable key is public by design and is restricted by RLS. Keep all feature flags false until their complete server-side workflows have been implemented and tested.
 

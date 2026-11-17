@@ -10,8 +10,10 @@ LIVEKIT_API_KEY=...
 LIVEKIT_API_SECRET=...
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_PUBLISHABLE_KEY=...
-LIVEKIT_ALLOWED_ORIGINS=https://usadzoran.github.io
+LIVEKIT_ALLOWED_ORIGINS=https://iqzodiac.com,https://www.iqzodiac.com,https://usadzoran.github.io
 ```
+
+The token endpoint also always includes these three verified site origins in its built-in allowlist, so a stale environment value containing only the GitHub Pages origin cannot block the production site.
 
 Deploy the repository's `api/livekit/token.js` to the same Vercel/serverless project used by the site. Then set the public endpoint in `livekit-config.js`:
 
