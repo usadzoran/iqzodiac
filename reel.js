@@ -6,6 +6,19 @@
   const PAGE_SIZE = 12;
   const MEDIA_BUCKET = 'iqzodiac-media';
   const database = () => window.IQZodiacSupabase?.ready;
+  const getSessionWithRetry = async (supabaseClient) => {
+    let lastError = null;
+    for (const delay of [0, 250, 600, 1200, 2000]) {
+      if (delay) await new Promise((resolve) => window.setTimeout(resolve, delay));
+      try {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) { lastError = error; continue; }
+        if (data.session) return data.session;
+      } catch (error) { lastError = error; }
+    }
+    if (lastError) throw lastError;
+    return null;
+  };
   const byId = (id) => document.getElementById(id);
   const feed = byId('reel-feed');
   const feedStatus = byId('reel-feed-status');
@@ -1148,10 +1161,9 @@
     loadingMore = true;
     if (pageIndex === 0 && feed.querySelectorAll('.reel-card').length === 0) setFeedMessage('loading', t('loading'));
     try {
-      const { data: sessionData, error: sessionError } = await client.auth.getSession();
-      if (sessionError) throw sessionError;
-      if (!sessionData.session?.user?.id) throw new Error('auth_required');
-      authenticatedUserId = sessionData.session.user.id;
+      const session = await getSessionWithRetry(client);
+      if (!session?.user?.id) throw new Error('auth_required');
+      authenticatedUserId = session.user.id;
       const start = pageIndex * PAGE_SIZE;
       const { data, error } = await client.from('reels')
         .select('id,author_id,caption,media_path,duration_seconds,created_at')
@@ -1374,9 +1386,9 @@
     try {
       client = await database();
       if (!client) throw new Error('missing-client');
-      const { data, error } = await client.auth.getSession();
-      if (error) throw error;
-      authenticatedUserId = data.session?.user?.id || null;
+      const session = await getSessionWithRetry(client);
+      if (!session?.user?.id) throw new Error('auth_required');
+      authenticatedUserId = session.user.id;
       bindEditor();
       setupReelCommentMediaControls(commentForm);
       bindCommentsForm();
@@ -1387,6 +1399,7 @@
       await openNotificationTarget();
     } catch (error) {
       console.warn('Reels could not be initialized.', error);
+      if (error?.message === 'auth_required') return;
       feed.replaceChildren();
       setFeedMessage('error', t('unavailable'), true);
     }
