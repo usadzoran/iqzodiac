@@ -507,7 +507,10 @@
       const { data, error } = await client.storage.from(MEDIA_BUCKET).createSignedUrl(row.media_path, 3600);
       if (error) throw error;
       return data?.signedUrl || '';
-    } catch { return ''; }
+    } catch (error) {
+      console.warn('Reel signed URL failed.', { reelId: row.id, mediaPath: row.media_path, error });
+      return '';
+    }
   }));
 
   const makeAvatar = (profile, name, className = 'reel-card-avatar') => {
@@ -974,6 +977,8 @@
         }
         return;
       }
+      if (video.paused) video.play().catch((error) => console.warn('Reel playback failed.', { reelId: row.id, error }));
+      else video.pause();
       card.classList.toggle('is-controls-hidden');
     });
     const pauseButton = document.createElement('button');
@@ -1027,6 +1032,7 @@
     video.playsInline = true;
     video.loop = true;
     video.muted = true;
+    video.controls = true;
     video.dataset.userMuted = 'true';
     video.preload = 'none';
     video.dataset.src = signedUrl;
@@ -1142,6 +1148,10 @@
     loadingMore = true;
     if (pageIndex === 0 && feed.querySelectorAll('.reel-card').length === 0) setFeedMessage('loading', t('loading'));
     try {
+      const { data: sessionData, error: sessionError } = await client.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!sessionData.session?.user?.id) throw new Error('auth_required');
+      authenticatedUserId = sessionData.session.user.id;
       const start = pageIndex * PAGE_SIZE;
       const { data, error } = await client.from('reels')
         .select('id,author_id,caption,media_path,duration_seconds,created_at')
@@ -1173,7 +1183,7 @@
       console.warn('Reels could not be loaded.', error);
       if (pageIndex === 0) {
         feed.replaceChildren(feedStatus, loadSentinel);
-        setFeedMessage('error', t('unavailable'), true);
+        setFeedMessage('error', error?.message === 'auth_required' ? t('signIn') : t('unavailable'), true);
       } else showToast(t('unavailable'));
       hasMore = false;
     } finally {
