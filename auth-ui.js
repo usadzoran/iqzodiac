@@ -19,15 +19,15 @@
   };
 
   const addLogoutButton = () => {
-    const navigation = document.querySelector('.site-nav');
     const profilePage = document.body?.classList.contains('profile-page');
-    const target = profilePage ? document.querySelector('#profile-logout-slot') : navigation;
+    if (!profilePage) return;
+    const target = document.querySelector('#profile-logout-slot');
     if (!target || target.querySelector('[data-logout]')) return;
 
     const button = document.createElement('button');
     button.type = 'button';
     button.dataset.logout = 'true';
-    button.className = profilePage ? 'site-logout profile-logout' : 'site-logout';
+    button.className = 'site-logout profile-logout';
     button.innerHTML = '<span class="nav-glyph" aria-hidden="true">↪</span><span data-logout-label></span>';
     updateLabel(button);
     button.addEventListener('click', async () => {
