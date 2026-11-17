@@ -994,12 +994,8 @@
       else video.pause();
       card.classList.toggle('is-controls-hidden');
     });
-    const pauseButton = document.createElement('button');
-    pauseButton.className = 'reel-wide-pause-button';
-    pauseButton.type = 'button';
-    pauseButton.dataset.state = 'playing';
-    pauseButton.setAttribute('aria-label', t('Pause Reel'));
-    pauseButton.textContent = 'Ⅱ';
+    const pauseButton = card.querySelector('.reel-wide-pause-button');
+    if (!pauseButton) return;
     pauseButton.addEventListener('click', (event) => {
       event.stopPropagation();
       if (video.paused) {
@@ -1056,6 +1052,12 @@
     playHint.className = 'reel-video-tap-hint';
     playHint.setAttribute('aria-hidden', 'true');
     playHint.textContent = '▶';
+    const pauseButton = document.createElement('button');
+    pauseButton.className = 'reel-wide-pause-button';
+    pauseButton.type = 'button';
+    pauseButton.dataset.state = 'playing';
+    pauseButton.setAttribute('aria-label', t('Pause Reel'));
+    pauseButton.textContent = 'Ⅱ';
 
     const authorName = row.display_name || row.handle || (language() === 'ar' ? 'عضو في المدار' : 'Orbit Member');
     const copyNode = document.createElement('div');
