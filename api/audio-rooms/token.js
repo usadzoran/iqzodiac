@@ -112,6 +112,25 @@ module.exports = async function handleAudioRoomToken(request, response) {
       return;
     }
 
+    const profileQuery = new URLSearchParams({
+      select: 'display_name,handle',
+      user_id: `eq.${user.id}`,
+      limit: '1',
+    });
+    let participantName = 'عضو IQZodiac';
+    try {
+      const profileResponse = await fetch(`${supabase.supabaseUrl}/rest/v1/profiles?${profileQuery}`, {
+        headers,
+        cache: 'no-store',
+        signal: AbortSignal.timeout(3000),
+      });
+      if (profileResponse.ok) {
+        const profiles = await profileResponse.json();
+        const profile = Array.isArray(profiles) ? profiles[0] : null;
+        participantName = String(profile?.display_name || profile?.handle || participantName).replace(/[<>\u0000-\u001f]/g, '').slice(0, 80) || participantName;
+      }
+    } catch { /* Profile display is optional; never block a valid room token on it. */ }
+
     const livekitUrl = String(process.env.LIVEKIT_URL || '').trim().replace(/\/+$/, '');
     const apiKey = String(process.env.LIVEKIT_API_KEY || '').trim();
     const apiSecret = String(process.env.LIVEKIT_API_SECRET || '').trim();
@@ -145,7 +164,7 @@ module.exports = async function handleAudioRoomToken(request, response) {
     const roomName = `iqzodiac-audio-${room.id}`;
     const accessToken = new AccessToken(apiKey, apiSecret, {
       identity: user.id,
-      name: 'عضو IQZodiac',
+      name: participantName,
       ttl: '15m',
     });
     accessToken.addGrant({
@@ -160,7 +179,7 @@ module.exports = async function handleAudioRoomToken(request, response) {
       token: jwt,
       serverUrl: livekitUrl,
       room: { id: room.id, title: room.title, category: room.category },
-      participant: { identity: user.id, isHost: room.host_user_id === user.id },
+      participant: { identity: user.id, name: participantName, isHost: room.host_user_id === user.id },
     });
   } catch {
     sendJson(response, 503, { error: { code: 'audio_room_service_unavailable' } });

@@ -47,25 +47,39 @@
 .rooms-form-status { min-height: 17px; margin: 0; color: #83e5e8; font-size: 12px; line-height: 1.5; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
-.audio-room-dialog { width: min(660px, calc(100vw - 32px)); max-width: none; max-height: min(780px, calc(100dvh - 32px)); margin: auto; overflow: auto; padding: clamp(18px, 4vw, 28px); border: 1px solid rgba(131,229,232,.32); border-radius: 26px; background: #111629; color: #eef1ff; box-shadow: 0 30px 100px rgba(0,0,0,.56), inset 0 1px 0 rgba(255,255,255,.03); }
+.audio-room-dialog { width: min(760px, calc(100vw - 32px)); max-width: none; max-height: min(860px, calc(100dvh - 32px)); margin: auto; overflow: auto; padding: clamp(18px, 4vw, 28px); border: 1px solid rgba(131,229,232,.32); border-radius: 26px; background: #111629; color: #eef1ff; box-shadow: 0 30px 100px rgba(0,0,0,.56), inset 0 1px 0 rgba(255,255,255,.03); }
 .audio-room-dialog::backdrop { background: rgba(2,5,14,.78); backdrop-filter: blur(10px); }
 .room-dialog-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
 .room-dialog-kicker { margin: 3px 0 9px; color: #83e5e8; font: 11px "DM Mono", monospace; letter-spacing: .14em; }
 .room-dialog-top h2 { max-width: 450px; margin: 0; overflow-wrap: anywhere; color: #eef1ff; font-size: clamp(22px, 5vw, 30px); }
 .room-close { display: grid; flex: none; width: 44px; height: 44px; place-items: center; border: 1px solid rgba(218,225,255,.2); border-radius: 50%; background: transparent; color: #eef1ff; font: 28px/1 Manrope, sans-serif; cursor: pointer; }
 .room-close:hover { border-color: #83e5e8; color: #83e5e8; }
-.room-stage { position: relative; display: flex; min-height: clamp(230px, 36vh, 340px); flex-direction: column; align-items: center; justify-content: center; gap: 20px; overflow: hidden; padding: 24px; border: 1px solid rgba(131,229,232,.12); border-radius: 17px; background: radial-gradient(ellipse at 50% 10%, rgba(29,55,79,.23), transparent 58%), #070d1b; text-align: center; }
+.room-stage { position: relative; display: flex; min-height: clamp(390px, 54vh, 590px); flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 16px; overflow: hidden; padding: 22px; border: 1px solid rgba(131,229,232,.12); border-radius: 20px; background: radial-gradient(ellipse at 50% 10%, rgba(29,55,79,.31), transparent 58%), #070d1b; text-align: center; }
 .room-stage::before, .room-stage::after { position: absolute; width: 210px; height: 210px; border: 1px solid rgba(131,229,232,.07); border-radius: 50%; content: ""; pointer-events: none; }
 .room-stage::after { width: 300px; height: 300px; }
-.room-stage-spinner { z-index: 1; width: 28px; height: 28px; border: 2px solid rgba(131,229,232,.18); border-top-color: #83e5e8; border-radius: 50%; animation: room-spin .9s linear infinite; }
+.room-stage-heading { z-index: 1; display: flex; min-height: 30px; align-items: center; justify-content: center; gap: 10px; }
+.room-stage-spinner { z-index: 1; width: 19px; height: 19px; flex: none; border: 2px solid rgba(131,229,232,.18); border-top-color: #83e5e8; border-radius: 50%; animation: room-spin .9s linear infinite; }
 .room-stage[data-state="connected"] .room-stage-spinner, .room-stage[data-state="error"] .room-stage-spinner { display: none; }
-.room-stage-message { z-index: 1; max-width: 90%; margin: 0; color: #c8cde0; font-size: clamp(16px, 4vw, 20px); line-height: 1.6; }
+.room-stage-message { z-index: 1; max-width: 90%; margin: 0; color: #b8c5d9; font-size: 13px; line-height: 1.6; }
 .room-stage[data-state="error"] .room-stage-message { color: #f2b39b; }
-.room-participants { z-index: 1; display: flex; max-width: 100%; flex-wrap: wrap; justify-content: center; gap: 14px; }
-.room-participant { display: grid; min-width: 74px; justify-items: center; gap: 8px; color: #c9d1e7; font-size: 11px; }
-.room-participant-avatar { display: grid; width: 58px; height: 58px; place-items: center; border: 1px solid rgba(131,229,232,.28); border-radius: 50%; background: linear-gradient(145deg, rgba(131,229,232,.2), rgba(171,147,255,.16)); color: #e8fafa; font-size: 19px; font-weight: 800; box-shadow: 0 0 0 5px rgba(131,229,232,.035); }
-.room-participant[data-speaking="true"] .room-participant-avatar { border-color: #83e5e8; box-shadow: 0 0 0 5px rgba(131,229,232,.1), 0 0 28px rgba(131,229,232,.23); }
-.room-participant-label { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.room-participants { z-index: 1; display: grid; width: 100%; max-width: 620px; grid-template-columns: repeat(4, minmax(0, 1fr)); align-content: center; gap: clamp(12px, 2.5vw, 23px) 12px; margin: auto; }
+.room-participants[hidden] { display: none; }
+.room-participant { display: grid; min-width: 0; justify-items: center; gap: 6px; color: #c9d1e7; font-size: 11px; }
+.room-seat { position: relative; padding: 4px 2px 9px; border-radius: 15px; }
+.room-participant-avatar { position: relative; display: grid; width: clamp(58px, 9vw, 82px); aspect-ratio: 1; place-items: center; overflow: hidden; border: 1px solid rgba(131,229,232,.34); border-radius: 50%; background: linear-gradient(145deg, rgba(131,229,232,.2), rgba(171,147,255,.16)); color: #e8fafa; font-size: 25px; font-weight: 800; box-shadow: 0 0 0 5px rgba(131,229,232,.035); }
+.room-participant-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.room-participant[data-speaking="true"] .room-participant-avatar { border-color: #83e5e8; box-shadow: 0 0 0 5px rgba(131,229,232,.11), 0 0 28px rgba(131,229,232,.28); animation: room-speaking-pulse 1.15s ease-in-out infinite alternate; }
+.room-seat-mic { position: absolute; top: 50px; inset-inline-start: calc(50% + 20px); display: grid; width: 23px; height: 23px; place-items: center; border: 1px solid rgba(255,255,255,.1); border-radius: 50%; background: #171e31; font-size: 11px; }
+.room-seat[data-mic="on"] .room-seat-mic { background: rgba(54,146,114,.92); }
+.room-participant-label { max-width: 138px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.room-seat-role { min-height: 16px; color: #83e5e8; font: 9px "DM Mono", monospace; letter-spacing: .04em; }
+.room-seat[data-host="true"] .room-seat-role { padding: 2px 8px; border: 1px solid rgba(131,229,232,.3); border-radius: 99px; background: rgba(131,229,232,.08); color: #a7f2ed; }
+.room-seat-empty { min-height: 112px; align-content: center; border: 1px dashed rgba(186,198,220,.15); background: rgba(255,255,255,.018); }
+.room-seat-empty .room-participant-avatar { width: clamp(46px, 7vw, 64px); border-style: dashed; border-color: rgba(155,167,194,.3); background: rgba(255,255,255,.025); color: #8995ad; font-size: 20px; box-shadow: none; }
+.room-seat-empty .room-participant-label { max-width: 140px; color: #8792a9; font-size: 10px; }
+.room-seat-empty .room-seat-role { color: #66718a; }
+.room-empty-state { z-index: 1; margin: -1px 0 0; color: #91a0b9; font-size: 12px; line-height: 1.6; }
+.room-empty-state[hidden] { display: none; }
 .room-audio-attachments { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 .room-connection-row { display: flex; min-height: 25px; align-items: center; gap: 9px; margin: 14px 0 4px; color: #9edfe1; }
 .room-connection-row p { margin: 0; font-size: 13px; }
@@ -74,7 +88,7 @@
 .audio-room-dialog[data-connection="error"] .room-connection-dot { background: #f29b89; box-shadow: 0 0 12px rgba(242,155,137,.4); }
 .room-participant-count { margin-inline-start: auto; color: #9ba7c2; font: 10px "DM Mono", monospace; }
 .room-help { min-height: 18px; margin: 4px 0 13px; color: #9ba7c2; font-size: 11px; line-height: 1.6; }
-.room-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; direction: ltr; }
+.room-controls { position: sticky; bottom: 0; z-index: 3; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 8px; background: linear-gradient(180deg, rgba(17,22,41,0), #111629 24%); direction: ltr; }
 .room-control-button { min-height: 52px; padding: 10px 14px; border: 1px solid rgba(218,225,255,.16); border-radius: 14px; background: rgba(255,255,255,.04); color: #eef1ff; font: 600 14px Manrope, sans-serif; cursor: pointer; direction: rtl; transition: background .18s ease, border-color .18s ease, opacity .18s ease; }
 .room-control-button:hover:not(:disabled) { border-color: rgba(131,229,232,.5); background: rgba(131,229,232,.08); }
 .room-control-button:disabled { opacity: .48; cursor: not-allowed; }
@@ -87,6 +101,7 @@
 .room-leave-button:hover:not(:disabled) { border-color: rgba(242,155,137,.55); background: rgba(242,155,137,.12); }
 
 @keyframes room-spin { to { transform: rotate(360deg); } }
+@keyframes room-speaking-pulse { from { box-shadow: 0 0 0 3px rgba(131,229,232,.08), 0 0 12px rgba(131,229,232,.12); } to { box-shadow: 0 0 0 8px rgba(131,229,232,.2), 0 0 31px rgba(131,229,232,.4); } }
 @media (max-width: 700px) {
   .rooms-shell { width: min(100% - 24px, 1080px); padding-top: 24px; }
   .rooms-header { display: block; }
@@ -102,15 +117,21 @@
   .rooms-shell { width: calc(100% - 20px); }
   .rooms-controls { gap: 7px; }
   .rooms-controls select { max-width: 150px; }
-  .audio-room-dialog { width: calc(100vw - 20px); max-height: calc(100dvh - 20px); padding: 17px; border-radius: 22px; }
+  .audio-room-dialog { width: calc(100vw - 16px); max-height: calc(100dvh - 12px - env(safe-area-inset-bottom)); padding: 14px; border-radius: 22px; }
   .room-dialog-top { margin-bottom: 15px; }
   .room-close { width: 40px; height: 40px; }
-  .room-stage { min-height: clamp(190px, 32vh, 270px); padding: 16px; }
-  .room-participant-avatar { width: 50px; height: 50px; }
+  .room-stage { min-height: clamp(370px, 51vh, 470px); gap: 10px; padding: 13px 8px; }
+  .room-participants { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 6px; }
+  .room-participant-avatar { width: 54px; }
+  .room-seat-mic { top: 40px; inset-inline-start: calc(50% + 16px); width: 21px; height: 21px; }
+  .room-seat-empty { min-height: 91px; }
+  .room-participant-label { max-width: 92px; font-size: 10px; }
+  .room-seat-empty .room-participant-avatar { width: 43px; }
   .room-controls { gap: 8px; }
   .room-control-button { min-height: 48px; padding: 9px 8px; font-size: 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .room-stage-spinner { animation-duration: 2.4s; }
+  .room-participant[data-speaking="true"] .room-participant-avatar { animation: none; }
   .room-join-button, .room-control-button { transition: none; }
 }

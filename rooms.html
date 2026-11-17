@@ -8,7 +8,7 @@
   <title>الغرف الصوتية — IQZodiac</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="stylesheet" href="./styles.css?v=live-categories-20261107" />
-  <link rel="stylesheet" href="./rooms.css?v=livekit-mobile-20261116" />
+  <link rel="stylesheet" href="./rooms.css?v=livekit-seats-20261117" />
 </head>
 <body class="has-site-nav rooms-page">
   <div class="aurora aurora-one" aria-hidden="true"></div>
@@ -81,9 +81,12 @@
       <button id="room-close" class="room-close" type="button" aria-label="إغلاق الغرفة">×</button>
     </div>
     <div id="room-stage" class="room-stage" data-state="connecting">
-      <div id="room-stage-spinner" class="room-stage-spinner" aria-hidden="true"></div>
-      <p id="room-stage-message" class="room-stage-message" role="status" aria-live="polite">جارٍ الاتصال بالغرفة الصوتية…</p>
-      <div id="room-participants" class="room-participants" aria-label="المشاركون"></div>
+      <div class="room-stage-heading">
+        <span id="room-stage-spinner" class="room-stage-spinner" aria-hidden="true"></span>
+        <p id="room-stage-message" class="room-stage-message" role="status" aria-live="polite">جارٍ الاتصال بالغرفة الصوتية…</p>
+      </div>
+      <div id="room-participants" class="room-participants" aria-label="مقاعد الغرفة" aria-live="polite"></div>
+      <p id="room-empty-state" class="room-empty-state" hidden>أنت أول من دخل الغرفة، في انتظار انضمام الآخرين.</p>
       <div id="room-audio-attachments" class="room-audio-attachments" aria-hidden="true"></div>
     </div>
     <div class="room-connection-row">
@@ -115,7 +118,7 @@
   <script src="./auth-ui.js"></script>
   <script src="./i18n-data.js?v=20261107-menu-fix"></script>
   <script src="./language.js?v=20261107-menu-fix"></script>
-  <script src="./rooms.js?v=livekit-mobile-20261116"></script>
+  <script src="./rooms.js?v=livekit-seats-20261117"></script>
   <script src="./nav-performance.js" defer></script>
 </body>
 </html>

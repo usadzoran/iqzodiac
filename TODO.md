@@ -78,7 +78,7 @@
 - [x] Keep room creation and the open-room directory backed by `audio_rooms` and its authenticated Supabase RPC/RLS policies.
 - [x] Request a short-lived LiveKit token from the server only after verifying the Supabase session and that the room is still open; never expose LiveKit secrets in the browser.
 - [x] Connect the room UI to LiveKit audio, keep the microphone off until the user enables it, and provide audio, leave, retry, and disconnected states.
-- [x] Use a responsive mobile room dialog based on the supplied screenshot, with an explicit connection status instead of an indefinite “Connecting” state.
+- [x] Keep the existing room dialog and redesign its participant area as responsive LiveKit seats: show the host first, connected members only, empty waiting seats, participant count, real mic/speaking states, and avatars only when existing RLS/privacy allows them. Show successful connection, first-member waiting, and useful errors instead of an indefinite “Connecting” state.
 - [ ] Configure the deployed backend with `LIVEKIT_URL`, `LIVEKIT_API_KEY`, and `LIVEKIT_API_SECRET`; allow the site origin in `IQZODIAC_ALLOWED_ORIGINS`; set the public `apiBaseUrl`; and verify a real two-member audio session on mobile.
 
 ## Face privacy and Match

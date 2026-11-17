@@ -16,6 +16,7 @@
   const connectionLabel = document.querySelector('#room-connection-label');
   const participantCount = document.querySelector('#room-participant-count');
   const participantList = document.querySelector('#room-participants');
+  const emptyRoomState = document.querySelector('#room-empty-state');
   const audioAttachments = document.querySelector('#room-audio-attachments');
   const helpText = document.querySelector('#room-help');
   const micButton = document.querySelector('#room-mic');
@@ -25,6 +26,7 @@
   const closeButton = document.querySelector('#room-close');
 
   const LIVEKIT_CLIENT_URL = 'https://cdn.jsdelivr.net/npm/livekit-client@2.24.1/dist/livekit-client.esm.mjs';
+  const ROOM_SEAT_COUNT = 8;
   const state = {
     liveRooms: [],
     audioRooms: [],
@@ -41,6 +43,10 @@
     attempt: 0,
     remoteAudioEnabled: false,
     microphoneEnabled: false,
+    activeParticipantName: '',
+    participantAvatars: new Map(),
+    participantAvatarLookups: new Set(),
+    livekitModule: null,
   };
 
   const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -89,8 +95,9 @@
       participantList.hidden = false;
       leaveButton.disabled = false;
     } else if (next === 'connecting' || next === 'error') {
-      participantList.hidden = true;
-      participantCount.textContent = '';
+      participantList.hidden = !(next === 'connecting' && state.livekitRoom);
+      emptyRoomState.hidden = true;
+      if (!state.livekitRoom) participantCount.textContent = '';
       micButton.setAttribute('aria-pressed', 'false');
       micButton.textContent = 'تشغيل الميكروفون';
       leaveButton.disabled = false;
@@ -287,7 +294,8 @@
         throw error;
       });
     }
-    return state.livekitModulePromise;
+    state.livekitModule = await state.livekitModulePromise;
+    return state.livekitModule;
   }
 
   function setMicrophoneControl(enabled) {
@@ -296,26 +304,124 @@
     micButton.textContent = state.microphoneEnabled ? 'إيقاف الميكروفون' : 'تشغيل الميكروفون';
   }
 
-  function renderParticipants(room, isHost) {
-    const participants = room ? [room.localParticipant, ...room.remoteParticipants.values()] : [];
-    participantList.replaceChildren();
-    participants.forEach((participant, index) => {
-      const local = index === 0;
+  function participantIdentity(participant, local = false) {
+    return String(participant?.identity || (local ? state.userId : '') || '');
+  }
+
+  function loadParticipantAvatars(participants, room, attempt) {
+    const userIds = [...new Set(participants.map((item) => participantIdentity(item.participant, item.local)).filter(Boolean))]
+      .filter((userId) => !state.participantAvatarLookups.has(userId));
+    if (!userIds.length) return;
+    userIds.forEach((userId) => state.participantAvatarLookups.add(userId));
+    (async () => {
+      try {
+        const client = state.client || await window.IQZodiacSupabase.ready;
+        state.client = client;
+        // RLS only returns this user's private avatar and other members' explicitly public avatars.
+        const { data, error } = await client.from('profile_media')
+          .select('user_id,storage_path,created_at')
+          .in('user_id', userIds)
+          .eq('media_type', 'avatar')
+          .order('created_at', { ascending: false })
+          .limit(userIds.length);
+        if (error) throw error;
+        const latest = new Map();
+        (data || []).forEach((item) => { if (item.storage_path && !latest.has(item.user_id)) latest.set(item.user_id, item.storage_path); });
+        const entries = [...latest.entries()];
+        if (entries.length) {
+          const { data: signed, error: signError } = await client.storage.from('iqzodiac-media')
+            .createSignedUrls(entries.map(([, path]) => path), 900);
+          if (signError) throw signError;
+          entries.forEach(([userId], index) => state.participantAvatars.set(userId, signed?.[index]?.signedUrl || ''));
+        }
+      } catch {
+        // Name initials remain available when avatars are private or storage is unavailable.
+      } finally {
+        userIds.forEach((userId) => state.participantAvatarLookups.add(userId));
+        if (state.livekitRoom === room && state.attempt === attempt && state.activeRecord) {
+          renderParticipants(room, state.activeRecord.host_user_id === state.userId, state.activeRecord, attempt, true);
+        }
+      }
+    })();
+  }
+
+  function renderParticipants(room, isHost, record = state.activeRecord, attempt = state.attempt, skipAvatarLookup = false) {
+    if (!room || !record) return;
+    const all = [
+      { participant: room.localParticipant, local: true },
+      ...[...room.remoteParticipants.values()].map((participant) => ({ participant, local: false })),
+    ];
+    all.sort((a, b) => {
+      const aHost = participantIdentity(a.participant, a.local) === record.host_user_id;
+      const bHost = participantIdentity(b.participant, b.local) === record.host_user_id;
+      return Number(bHost) - Number(aHost);
+    });
+    if (!skipAvatarLookup) loadParticipantAvatars(all, room, attempt);
+
+    const fragment = document.createDocumentFragment();
+    all.forEach(({ participant, local }) => {
+      const identity = participantIdentity(participant, local);
+      const host = identity === record.host_user_id;
+      const name = String(participant.name || (local ? state.activeParticipantName : '') || (host ? record.host_label : '') || (local ? 'أنت' : 'عضو')).trim();
+      const micPublication = participant.getTrackPublication?.(state.livekitModule?.Track.Source.Microphone || 'microphone');
+      const micOn = Boolean(participant.isMicrophoneEnabled && micPublication && !micPublication.isMuted);
       const card = document.createElement('div');
-      card.className = 'room-participant';
+      card.className = 'room-participant room-seat';
       card.dataset.speaking = String(Boolean(participant.isSpeaking));
+      card.dataset.host = String(host);
+      card.dataset.mic = micOn ? 'on' : 'off';
+
       const avatar = document.createElement('span');
       avatar.className = 'room-participant-avatar';
-      const labelText = local ? (isHost ? 'أنت · المضيف' : 'أنت') : String(participant.name || 'عضو');
-      avatar.textContent = labelText.trim().slice(0, 1) || 'م';
+      const avatarUrl = state.participantAvatars.get(identity);
+      if (avatarUrl) {
+        const image = document.createElement('img');
+        image.src = avatarUrl;
+        image.alt = '';
+        image.loading = 'lazy';
+        avatar.append(image);
+      } else {
+        avatar.textContent = name.slice(0, 1) || 'م';
+      }
+
+      const mic = document.createElement('span');
+      mic.className = 'room-seat-mic';
+      mic.setAttribute('aria-label', micOn ? 'الميكروفون مفتوح' : 'الميكروفون مغلق');
+      mic.textContent = micOn ? '🎙' : '🔇';
+
       const label = document.createElement('span');
       label.className = 'room-participant-label';
-      label.textContent = labelText;
-      card.append(avatar, label);
-      participantList.append(card);
+      label.textContent = local ? `أنت · ${name}` : name;
+      const details = document.createElement('span');
+      details.className = 'room-seat-role';
+      details.textContent = host ? 'HOST' : (participant.isSpeaking ? 'يتحدث الآن' : 'متصل');
+      card.append(avatar, mic, label, details);
+      fragment.append(card);
     });
-    const count = participants.length;
-    participantCount.textContent = count ? `${count} مشارك` : '';
+
+    const occupied = all.length;
+    const seatCount = Math.max(ROOM_SEAT_COUNT, occupied);
+    for (let index = occupied; index < seatCount; index += 1) {
+      const seat = document.createElement('div');
+      seat.className = 'room-participant room-seat room-seat-empty';
+      seat.setAttribute('aria-label', 'مقعد فارغ، في انتظار الانضمام');
+      const avatar = document.createElement('span');
+      avatar.className = 'room-participant-avatar';
+      avatar.textContent = '＋';
+      const label = document.createElement('span');
+      label.className = 'room-participant-label';
+      label.textContent = 'في انتظار الانضمام';
+      const details = document.createElement('span');
+      details.className = 'room-seat-role';
+      details.textContent = `مقعد ${index + 1}`;
+      seat.append(avatar, label, details);
+      fragment.append(seat);
+    }
+
+    participantList.replaceChildren(fragment);
+    participantList.hidden = false;
+    participantCount.textContent = `${occupied} مشارك`;
+    emptyRoomState.hidden = !(room.state === 'connected' && all.length <= 1);
   }
 
   function attachRemoteAudio(track, sdk) {
@@ -355,6 +461,7 @@
     try {
       const payload = await getAudioToken(record.id);
       if (attempt !== state.attempt || !dialog.open) return;
+      state.activeParticipantName = String(payload.participant?.name || '');
       const sdk = await loadLiveKitClient();
       if (attempt !== state.attempt || !dialog.open) return;
       room = new sdk.Room({ adaptiveStream: true, dynacast: true });
@@ -363,15 +470,22 @@
 
       room.on(sdk.RoomEvent.TrackSubscribed, (track) => attachRemoteAudio(track, sdk));
       room.on(sdk.RoomEvent.TrackUnsubscribed, (track) => detachRemoteAudio(track));
-      room.on(sdk.RoomEvent.ParticipantConnected, () => renderParticipants(room, isHost));
-      room.on(sdk.RoomEvent.ParticipantDisconnected, () => renderParticipants(room, isHost));
-      room.on(sdk.RoomEvent.ActiveSpeakersChanged, () => renderParticipants(room, isHost));
+      const refreshSeats = () => renderParticipants(room, isHost, record, attempt);
+      room.on(sdk.RoomEvent.ParticipantConnected, refreshSeats);
+      room.on(sdk.RoomEvent.ParticipantDisconnected, refreshSeats);
+      room.on(sdk.RoomEvent.ActiveSpeakersChanged, refreshSeats);
+      room.on(sdk.RoomEvent.TrackMuted, refreshSeats);
+      room.on(sdk.RoomEvent.TrackUnmuted, refreshSeats);
+      room.on(sdk.RoomEvent.LocalTrackPublished, refreshSeats);
+      room.on(sdk.RoomEvent.LocalTrackUnpublished, refreshSeats);
       room.on(sdk.RoomEvent.Disconnected, () => {
         if (state.livekitRoom !== room || attempt !== state.attempt || !state.activeRecord) return;
         setMicrophoneControl(false);
         setRoomState('error', 'انقطع اتصال الغرفة.', 'تحقّق من الشبكة ثم أعد المحاولة، أو غادر الغرفة.');
       });
 
+      // Render the local host seat before waiting for any remote audio track.
+      renderParticipants(room, isHost, record, attempt);
       const connectPromise = room.connect(payload.serverUrl, payload.token);
       let timeoutId;
       try {
@@ -386,8 +500,9 @@
         await room.disconnect();
         return;
       }
-      renderParticipants(room, isHost);
-      setRoomState('connected', isHost ? 'أنت متصل كمضيف.' : 'أنت متصل بالغرفة الصوتية.', 'الميكروفون مغلق افتراضيًا. فعّله فقط عندما ترغب في التحدث.');
+      renderParticipants(room, isHost, record, attempt);
+      setRoomState('connected', 'تم الاتصال بالغرفة.', 'الميكروفون مغلق افتراضيًا. فعّله فقط عندما ترغب في التحدث.');
+      renderParticipants(room, isHost, record, attempt);
       audioButton.disabled = false;
       micButton.disabled = false;
     } catch (error) {
@@ -428,6 +543,7 @@
     const current = state.livekitRoom;
     state.livekitRoom = null;
     state.remoteAudioEnabled = false;
+    state.activeParticipantName = '';
     setMicrophoneControl(false);
     micButton.disabled = true;
     audioButton.disabled = true;
@@ -464,6 +580,7 @@
       const enabled = !state.microphoneEnabled;
       await room.localParticipant.setMicrophoneEnabled(enabled);
       setMicrophoneControl(enabled);
+      renderParticipants(room, state.activeRecord.host_user_id === state.userId);
     } catch (error) {
       setMicrophoneControl(false);
       helpText.textContent = errorCopy(error);
