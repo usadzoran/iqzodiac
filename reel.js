@@ -515,16 +515,28 @@
     return metrics;
   };
 
-  const signReelMedia = async (rows) => Promise.all(rows.map(async (row) => {
+  const signReelMedia = async (rows) => {
+    const paths = rows.map((row) => row.media_path).filter(Boolean);
+    if (!paths.length) return rows.map(() => '');
     try {
-      const { data, error } = await client.storage.from(MEDIA_BUCKET).createSignedUrl(row.media_path, 3600);
+      const { data, error } = await client.storage.from(MEDIA_BUCKET).createSignedUrls(paths, 3600);
       if (error) throw error;
-      return data?.signedUrl || '';
+      const signedByPath = new Map((data || []).map((item) => [item.path, item.signedUrl || '']));
+      return rows.map((row) => signedByPath.get(row.media_path) || '');
     } catch (error) {
-      console.warn('Reel signed URL failed.', { reelId: row.id, mediaPath: row.media_path, error });
-      return '';
+      console.warn('Reel signed URLs failed.', { count: paths.length, error });
+      return Promise.all(rows.map(async (row) => {
+        try {
+          const { data, error: singleError } = await client.storage.from(MEDIA_BUCKET).createSignedUrl(row.media_path, 3600);
+          if (singleError) throw singleError;
+          return data?.signedUrl || '';
+        } catch (singleError) {
+          console.warn('Fallback Reel signed URL failed.', { reelId: row.id, error: singleError });
+          return '';
+        }
+      }));
     }
-  }));
+  };
 
   const makeAvatar = (profile, name, className = 'reel-card-avatar') => {
     const avatar = document.createElement('span');
@@ -1029,7 +1041,7 @@
     updateWideViewButton(card);
   };
 
-  const renderCard = (row, signedUrl) => {
+  const renderCard = (row, signedUrl, eager = false) => {
     const card = document.createElement('article');
     card.className = 'reel-card';
     card.dataset.reelId = row.id;
@@ -1043,8 +1055,11 @@
     video.muted = true;
     video.controls = true;
     video.dataset.userMuted = 'true';
-    video.preload = 'none';
-    video.dataset.src = signedUrl;
+    video.preload = eager ? 'auto' : 'none';
+    if (eager) {
+      video.src = signedUrl;
+      video.load();
+    } else video.dataset.src = signedUrl;
     video.setAttribute('aria-label', language() === 'ar' ? 'فيديو Reel' : 'Reel video');
     video.setAttribute('tabindex', '0');
 
@@ -1182,10 +1197,10 @@
       const enriched = await enrichRows(rows);
       if (pageIndex === 0) feed.replaceChildren(feedStatus, loadSentinel);
       setFeedMessage('', '');
-      enriched.forEach((row) => {
+      enriched.forEach((row, index) => {
         reelById.set(row.id, row);
         if (!row.signed_url) return;
-        feed.insertBefore(renderCard(row, row.signed_url), loadSentinel);
+        feed.insertBefore(renderCard(row, row.signed_url, pageIndex === 0 && index < 2), loadSentinel);
       });
       pageIndex += 1;
       hasMore = rows.length === PAGE_SIZE;
