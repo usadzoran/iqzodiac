@@ -53,7 +53,7 @@
 - [x] Restore the selected personality element after reload and remove stale discovery answers when the member starts over.
 - [x] Add a scoped conversational assistant for site help, YouTube search, and film/character search without admin or private-data permissions.
 - [x] Create `assistant_conversation_logs` with user-scoped RLS and deploy the JWT-verified `assistant-chat` Supabase Edge Function.
-- [ ] Add the server-only OpenAI, YouTube, and optional TMDB secrets in Supabase Edge Function settings, then run live assistant searches.
+- [ ] Add the server-only `AI_API_KEY`, YouTube, and optional TMDB secrets in Supabase Edge Function settings, then run live assistant searches.
 
 ## Voice-guided onboarding assistant
 - [x] Automatically read the active onboarding prompt aloud in the selected Arabic or English language at startup and after each answer when browser speech is available.

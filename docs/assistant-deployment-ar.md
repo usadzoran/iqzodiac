@@ -13,14 +13,15 @@ https://mludiumdvwdvuetivxvj.supabase.co/functions/v1/assistant-chat
 أضف هذه القيم في Supabase Dashboard → Edge Functions → Secrets، أو عبر Supabase CLI:
 
 ```text
-OPENAI_API_KEY=your_server_only_key
+AI_API_KEY=your_server_only_key
+GEMINI_MODEL=gemini-flash-latest
 YOUTUBE_API_KEY=your_server_only_key
 TMDB_API_KEY=your_server_only_key
 IQZODIAC_ASSISTANT_MODEL=gpt-6-luna
 ASSISTANT_ALLOWED_ORIGIN=https://usadzoran.github.io
 ```
 
-`TMDB_API_KEY` و`YOUTUBE_API_KEY` اختياريان، لكن البحث عن الأفلام أو الفيديوهات لن يعمل فعليًا بدونهما. لا تضع أي مفتاح داخل ملفات frontend أو GitHub.
+`AI_API_KEY` هو مفتاح Google Gemini الإلزامي للمحادثة الفعلية، ويُستخدم فقط داخل Edge Function. `TMDB_API_KEY` و`YOUTUBE_API_KEY` اختياريان، لكن البحث عن الأفلام أو الفيديوهات لن يعمل فعليًا بدونهما. لا تضع أي مفتاح داخل ملفات frontend أو GitHub. يستخدم التنفيذ endpoint الرسمي لـ Gemini `generateContent` عبر ترويسة `X-goog-api-key` مع مهلة 20 ثانية، ولا يقدم ردودًا وهمية عند غياب المزود.
 
 ## سجل المحادثات وRLS
 
@@ -45,4 +46,4 @@ ASSISTANT_ALLOWED_ORIGIN=https://usadzoran.github.io
 
 ## التحقق
 
-تم نشر الوظيفة بحالة `ACTIVE` مع `verify_jwt=true`. كما تم تشغيل فحص JavaScript المحلي بعد تحديث إعدادات الاتصال. يجب بعد إضافة الأسرار اختبار سؤال عن الموقع، بحث YouTube، وبحث فيلم بحساب مستخدم مسجل الدخول.
+تم نشر الوظيفة بحالة `ACTIVE` مع `verify_jwt=true`. تتحقق الوظيفة من JWT داخل الخادم، وتفرض حدًا مؤقتًا قدره 20 طلبًا لكل مستخدم خلال 5 دقائق، وتدعم العربية والإنجليزية والفرنسية والإسبانية والبرتغالية والألمانية. كما تم تشغيل فحص JavaScript المحلي بعد تحديث إعدادات الاتصال. يجب بعد إضافة الأسرار اختبار سؤال عن الموقع، بحث YouTube، وبحث فيلم بحساب مستخدم مسجل الدخول.
