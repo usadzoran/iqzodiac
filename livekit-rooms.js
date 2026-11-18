@@ -14,6 +14,7 @@
   let membershipChannel = null;
   let tokenAllowsPublish = false;
   let moderationMuted = false;
+  let handRaised = false;
   let requestVersion = 0;
   const overflowParticipants = new Set();
   let modal;
@@ -49,7 +50,7 @@
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('aria-labelledby', 'livekit-modal-title');
     const seats = Array.from({ length: MAX_SEATS }, (_, index) => `<article class="livekit-seat is-empty" data-livekit-seat data-seat-index="${index}" role="listitem" aria-label="مقعد فارغ"><div class="livekit-seat-avatar" aria-hidden="true">＋</div><div class="livekit-seat-copy"><strong data-seat-name>مقعد متاح</strong><small data-seat-role>بانتظار مشارك</small></div><div class="livekit-seat-media" data-seat-media></div></article>`).join('');
-    modal.innerHTML = `<div class="livekit-panel"><header class="livekit-header"><div><p class="rooms-kicker">LIVEKIT SECURE ROOM</p><h2 id="livekit-modal-title">الغرفة الصوتية</h2><p class="livekit-seat-count" data-livekit-seat-count>0/${MAX_SEATS} مشاركين</p></div><button type="button" class="livekit-close" data-livekit-close aria-label="إغلاق">×</button></header><div class="livekit-stage" data-livekit-stage role="list" aria-label="مقاعد المشاركين">${seats}</div><p class="livekit-overflow" data-livekit-overflow hidden></p><div class="livekit-audio-sink" data-livekit-audio-sink aria-label="مسارات صوت المشاركين الإضافيين"></div><p class="livekit-status" data-livekit-status role="status" aria-live="polite"></p><div class="livekit-controls" role="group" aria-label="عناصر التحكم بالغرفة"><button type="button" data-livekit-mic>تشغيل الميكروفون</button><button type="button" data-livekit-camera hidden>تشغيل الكاميرا</button><button type="button" class="danger" data-livekit-leave>مغادرة الغرفة</button></div></div>`;
+    modal.innerHTML = `<div class="livekit-panel"><header class="livekit-header"><div><p class="rooms-kicker">LIVEKIT SECURE ROOM</p><h2 id="livekit-modal-title">الغرفة الصوتية</h2><p class="livekit-seat-count" data-livekit-seat-count>0/${MAX_SEATS} مشاركين</p></div><button type="button" class="livekit-close" data-livekit-close aria-label="إغلاق">×</button></header><div class="livekit-stage" data-livekit-stage role="list" aria-label="مقاعد المشاركين">${seats}</div><p class="livekit-overflow" data-livekit-overflow hidden></p><div class="livekit-audio-sink" data-livekit-audio-sink aria-label="مسارات صوت المشاركين الإضافيين"></div><p class="livekit-status" data-livekit-status role="status" aria-live="polite"></p><div class="livekit-controls" role="group" aria-label="عناصر التحكم بالغرفة"><button type="button" data-livekit-mic>تشغيل الميكروفون</button><button type="button" data-livekit-hand aria-pressed="false">رفع اليد</button><button type="button" data-livekit-camera hidden>تشغيل الكاميرا</button><button type="button" class="danger" data-livekit-leave>مغادرة الغرفة</button></div></div>`;
     document.body.append(modal);
     modal.querySelector('[data-livekit-close]').addEventListener('click', () => { void close(false); });
     modal.querySelector('[data-livekit-leave]').addEventListener('click', () => { void close(true); });
@@ -70,6 +71,15 @@
         }
         button.disabled = moderationMuted || (activeType === 'audio' && !tokenAllowsPublish);
       }
+    });
+    modal.querySelector('[data-livekit-hand]').addEventListener('click', async () => {
+      handRaised = !handRaised;
+      const button = modal.querySelector('[data-livekit-hand]');
+      button.setAttribute('aria-pressed', String(handRaised));
+      button.textContent = handRaised ? 'خفض اليد' : 'رفع اليد';
+      const payload = new TextEncoder().encode(JSON.stringify({ type: 'raise_hand', raised: handRaised }));
+      try { await room?.localParticipant?.publishData(payload, { reliable: true, topic: 'iqzodiac-room-controls' }); }
+      catch (error) { setStatus('تعذر إرسال حالة رفع اليد، لكن تم تحديثها محليًا.', 'error'); }
     });
     modal.querySelector('[data-livekit-camera]').addEventListener('click', async () => {
       if (!room || !room.localParticipant) return;
@@ -116,6 +126,7 @@
     audioMembershipJoined = false;
     tokenAllowsPublish = false;
     moderationMuted = false;
+    handRaised = false;
     if (membershipChannel && activeClient) {
       const channel = membershipChannel; membershipChannel = null;
       try { void activeClient.removeChannel(channel).catch((error) => console.warn('[IQZodiac LiveKit] membership channel cleanup failed', error)); }
@@ -144,10 +155,12 @@
       modal.querySelector('[data-livekit-mic]').hidden = false;
       modal.querySelector('[data-livekit-mic]').disabled = false;
       modal.querySelector('[data-livekit-mic]').textContent = 'تشغيل الميكروفون';
+      modal.querySelector('[data-livekit-hand]').textContent = 'رفع اليد';
+      modal.querySelector('[data-livekit-hand]').setAttribute('aria-pressed', 'false');
       modal.querySelector('[data-livekit-camera]').textContent = 'تشغيل الكاميرا';
       if (hideModal) modal.hidden = true;
     }
-    if (hideModal) unlockPageScroll();
+    if (hideModal) { unlockPageScroll(); document.body.classList.remove('livekit-room-open'); }
     if (roomId) window.dispatchEvent(new CustomEvent('iqzodiac-livekit-closed', { detail: { type: endedType, roomId } }));
     if (restoreFocus && previousFocus?.isConnected) previousFocus.focus();
     if (restoreFocus) previousFocus = null;
@@ -246,7 +259,7 @@
     const wasHidden = modal.hidden;
     if (wasHidden) previousFocus = document.activeElement;
     modal.hidden = false;
-    if (wasHidden) lockPageScroll();
+    if (wasHidden) { lockPageScroll(); document.body.classList.add('livekit-room-open'); }
     modal.querySelector('#livekit-modal-title').textContent = title || (type === 'live' ? 'البث المباشر' : 'الغرفة الصوتية');
     setStatus('جارٍ التحقق من الجلسة والاتصال…');
     clearSeats();
@@ -318,6 +331,16 @@
       room.on(window.LivekitClient.RoomEvent.ActiveSpeakersChanged, (speakers) => {
         modal.querySelectorAll('[data-livekit-seat]').forEach((seat) => seat.classList.toggle('is-speaking', speakers.some((speaker) => speaker.identity === seat.dataset.identity)));
       });
+      if (window.LivekitClient.RoomEvent.DataReceived) {
+        room.on(window.LivekitClient.RoomEvent.DataReceived, (payload, participant) => {
+          try {
+            const message = JSON.parse(new TextDecoder().decode(payload));
+            if (message?.type !== 'raise_hand' || !participant) return;
+            const seat = findSeat(participant, true);
+            if (seat) seat.querySelector('[data-seat-role]').textContent = message.raised ? '✋ رفع اليد' : 'مشارك متصل';
+          } catch (error) { console.warn('[IQZodiac LiveKit] room control message ignored', error); }
+        });
+      }
       room.on(window.LivekitClient.RoomEvent.LocalTrackPublished, (publication, participant) => {
         if (publication.track) attachTrack(publication.track, publication, participant || room?.localParticipant);
       });
