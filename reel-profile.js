@@ -26,9 +26,9 @@
 
   const setProfile = (profile) => { const name = profile?.display_name || profile?.handle || 'Orbit Member'; document.getElementById('member-name').textContent = name; document.getElementById('member-handle').textContent = profile?.handle || '@orbit-member'; document.getElementById('member-avatar').textContent = initials(name); };
   const render = async (rows, client) => {
-    grid.replaceChildren(); document.getElementById('reel-total').textContent = rows.length; document.getElementById('reel-likes-total').textContent = rows.reduce((sum, row) => sum + Number(row.like_count || 0), 0); status.textContent = `${rows.length} ${rows.length === 1 ? 'Reel' : 'Reels'}`;
+    grid.replaceChildren(); document.getElementById('reel-total').textContent = rows.length; document.getElementById('reel-likes-total').textContent = rows.reduce((sum, row) => sum + Number(row.like_count || 0), 0); document.getElementById('reel-views-total').textContent = rows.reduce((sum, row) => sum + Number(row.view_count || 0), 0); document.getElementById('reel-comments-total').textContent = rows.reduce((sum, row) => sum + Number(row.comment_count || 0), 0); status.textContent = `${rows.length} ${rows.length === 1 ? 'Reel' : 'Reels'}`;
     if (!rows.length) { grid.innerHTML = '<p class="profile-reel-empty">No published Reels yet.</p>'; return; }
-    rows.forEach((row) => { const card = document.createElement('article'); card.className = 'profile-reel-card'; const video = document.createElement('video'); video.controls = true; video.playsInline = true; video.preload = 'none'; video.muted = true; video.dataset.path = row.media_path; video.setAttribute('aria-label', 'Published Reel'); const copy = document.createElement('div'); copy.className = 'profile-reel-card-copy'; copy.innerHTML = `<p class="profile-reel-date">${escapeHTML(formatDate(row.created_at))} · ${Number(row.duration_seconds || 0).toFixed(0)}s · ${Number(row.like_count || 0)} likes</p>${row.caption ? `<p class="profile-reel-caption">${escapeHTML(row.caption)}</p>` : ''}`; const share = document.createElement('button'); share.className = 'profile-reel-share'; share.type = 'button'; share.textContent = '↗ Share'; share.addEventListener('click', () => { void shareReel(card, row); }); copy.append(share); card.append(video, copy); grid.append(card); lazyVideos.observe(video); });
+    rows.forEach((row) => { const card = document.createElement('article'); card.className = 'profile-reel-card'; const video = document.createElement('video'); video.controls = true; video.playsInline = true; video.preload = 'none'; video.muted = true; video.dataset.path = row.media_path; video.setAttribute('aria-label', 'Published Reel'); const copy = document.createElement('div'); copy.className = 'profile-reel-card-copy'; copy.innerHTML = `<p class="profile-reel-date">${escapeHTML(formatDate(row.created_at))} · ${Number(row.duration_seconds || 0).toFixed(0)}s · ${Number(row.like_count || 0)} likes · ${Number(row.view_count || 0)} views · ${Number(row.comment_count || 0)} comments</p>${row.caption ? `<p class="profile-reel-caption">${escapeHTML(row.caption)}</p>` : ''}`; const share = document.createElement('button'); share.className = 'profile-reel-share'; share.type = 'button'; share.textContent = '↗ Share'; share.addEventListener('click', () => { void shareReel(card, row); }); copy.append(share); card.append(video, copy); grid.append(card); lazyVideos.observe(video); });
   };
 
   (async () => {
@@ -55,8 +55,8 @@
       const ids = (reels || []).map((row) => row.id);
       let metrics = [];
       if (ids.length) { const result = await client.rpc('get_reel_feed_metrics', { p_reel_ids: ids }); if (result.error) throw result.error; metrics = result.data || []; }
-      const counts = new Map(metrics.map((row) => [row.reel_id, row.like_count]));
-      await render((reels || []).map((row) => ({ ...row, like_count: counts.get(row.id) || 0 })), client);
+      const metricsById = new Map(metrics.map((row) => [row.reel_id, row]));
+      await render((reels || []).map((row) => { const metric = metricsById.get(row.id) || {}; return { ...row, like_count: metric.like_count || 0, view_count: metric.view_count || 0, comment_count: metric.comment_count || 0 }; }), client);
     } catch (error) { console.warn('Reel profile could not be loaded.', error); status.textContent = 'Unavailable'; grid.innerHTML = '<p class="profile-reel-empty">This profile could not be loaded right now.</p>'; }
   })();
 })();
