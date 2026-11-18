@@ -50,7 +50,7 @@
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('aria-labelledby', 'livekit-modal-title');
     const seats = Array.from({ length: MAX_SEATS }, (_, index) => `<article class="livekit-seat is-empty" data-livekit-seat data-seat-index="${index}" role="listitem" aria-label="مقعد فارغ"><div class="livekit-seat-avatar" aria-hidden="true">＋</div><div class="livekit-seat-copy"><strong data-seat-name>مقعد متاح</strong><small data-seat-role>بانتظار مشارك</small></div><div class="livekit-seat-media" data-seat-media></div></article>`).join('');
-    modal.innerHTML = `<div class="livekit-panel"><header class="livekit-header"><div><p class="rooms-kicker">LIVEKIT SECURE ROOM</p><h2 id="livekit-modal-title">الغرفة الصوتية</h2><p class="livekit-seat-count" data-livekit-seat-count>0/${MAX_SEATS} مشاركين</p></div><button type="button" class="livekit-close" data-livekit-close aria-label="إغلاق">×</button></header><div class="livekit-stage" data-livekit-stage role="list" aria-label="مقاعد المشاركين">${seats}</div><p class="livekit-overflow" data-livekit-overflow hidden></p><div class="livekit-audio-sink" data-livekit-audio-sink aria-label="مسارات صوت المشاركين الإضافيين"></div><p class="livekit-status" data-livekit-status role="status" aria-live="polite"></p><div class="livekit-controls" role="group" aria-label="عناصر التحكم بالغرفة"><button type="button" data-livekit-mic>تشغيل الميكروفون</button><button type="button" data-livekit-hand aria-pressed="false">رفع اليد</button><button type="button" data-livekit-camera hidden>تشغيل الكاميرا</button><button type="button" class="danger" data-livekit-leave>مغادرة الغرفة</button></div></div>`;
+    modal.innerHTML = `<div class="livekit-panel"><header class="livekit-header"><div><p class="rooms-kicker">غرفة صوتية مباشرة</p><h2 id="livekit-modal-title">الغرفة الصوتية</h2><p class="livekit-seat-count" data-livekit-seat-count>0/${MAX_SEATS} مشاركين</p></div><button type="button" class="livekit-close" data-livekit-close aria-label="إغلاق">×</button></header><div class="livekit-stage" data-livekit-stage role="list" aria-label="مقاعد المشاركين">${seats}</div><p class="livekit-overflow" data-livekit-overflow hidden></p><div class="livekit-audio-sink" data-livekit-audio-sink aria-label="مسارات صوت المشاركين الإضافيين"></div><p class="livekit-status" data-livekit-status role="status" aria-live="polite"></p><div class="livekit-controls" role="group" aria-label="عناصر التحكم بالغرفة"><button type="button" data-livekit-mic>تشغيل الميكروفون</button><button type="button" data-livekit-hand aria-pressed="false">رفع اليد</button><button type="button" data-livekit-camera hidden>تشغيل الكاميرا</button><button type="button" class="danger" data-livekit-leave>مغادرة الغرفة</button></div></div>`;
     document.body.append(modal);
     modal.querySelector('[data-livekit-close]').addEventListener('click', () => { void close(false); });
     modal.querySelector('[data-livekit-leave]').addEventListener('click', () => { void close(true); });
@@ -66,7 +66,7 @@
       } catch (error) { setStatus(`تعذر تغيير الميكروفون: ${String(error?.message || 'خطأ في الجهاز')}`, 'error'); }
       finally {
         if (moderationMuted) {
-          try { await room?.localParticipant?.setMicrophoneEnabled(false); } catch (error) { console.warn('[IQZodiac LiveKit] microphone mute reassertion failed', error); }
+          try { await room?.localParticipant?.setMicrophoneEnabled(false); } catch (error) { console.warn('[IQZodiac realtime] microphone mute reassertion failed', error); }
           button.textContent = 'الميكروفون مكتوم';
         }
         button.disabled = moderationMuted || (activeType === 'audio' && !tokenAllowsPublish);
@@ -129,8 +129,8 @@
     handRaised = false;
     if (membershipChannel && activeClient) {
       const channel = membershipChannel; membershipChannel = null;
-      try { void activeClient.removeChannel(channel).catch((error) => console.warn('[IQZodiac LiveKit] membership channel cleanup failed', error)); }
-      catch (error) { console.warn('[IQZodiac LiveKit] membership channel cleanup failed', error); }
+      try { void activeClient.removeChannel(channel).catch((error) => console.warn('[IQZodiac realtime] membership channel cleanup failed', error)); }
+      catch (error) { console.warn('[IQZodiac realtime] membership channel cleanup failed', error); }
     }
     const currentRoom = room;
     room = null;
@@ -139,11 +139,11 @@
         currentRoom.remoteParticipants?.forEach((participant) => participant.trackPublications?.forEach((publication) => publication.track?.detach().forEach((element) => element.remove())));
         currentRoom.localParticipant?.trackPublications?.forEach((publication) => publication.track?.detach().forEach((element) => element.remove()));
         await currentRoom.disconnect();
-      } catch (error) { console.warn('[IQZodiac LiveKit] disconnect failed', error); }
+      } catch (error) { console.warn('[IQZodiac realtime] disconnect failed', error); }
     }
     if (shouldLeave) {
       try { await leaveMembership(activeClient, roomId); }
-      catch (error) { console.warn('[IQZodiac LiveKit] membership cleanup failed', error); }
+      catch (error) { console.warn('[IQZodiac realtime] membership cleanup failed', error); }
     }
     activeType = '';
     activeRoomId = '';
@@ -254,7 +254,7 @@
     if (admittedMembership && admittedMembership.roomId !== roomId) {
       const previous = admittedMembership;
       try { await leaveMembership(previous.client, previous.roomId); }
-      catch (error) { console.warn('[IQZodiac LiveKit] previous room membership cleanup failed', error); }
+      catch (error) { console.warn('[IQZodiac realtime] previous room membership cleanup failed', error); }
     }
     const wasHidden = modal.hidden;
     if (wasHidden) previousFocus = document.activeElement;
@@ -279,7 +279,7 @@
         if (error) throw error;
         if (sequence !== requestVersion) {
           try { await leaveMembership(client, roomId); }
-          catch (leaveError) { console.warn('[IQZodiac LiveKit] stale join cleanup failed', leaveError); }
+          catch (leaveError) { console.warn('[IQZodiac realtime] stale join cleanup failed', leaveError); }
           return false;
         }
         audioMembershipJoined = true;
@@ -302,7 +302,7 @@
               micButton.disabled = true;
               micButton.textContent = 'الميكروفون مكتوم';
               try { await room?.localParticipant?.setMicrophoneEnabled(false); }
-              catch (error) { console.warn('[IQZodiac LiveKit] forced microphone mute failed', error); }
+              catch (error) { console.warn('[IQZodiac realtime] forced microphone mute failed', error); }
               setStatus('كتم المشرف الميكروفون. سيبقى الاستماع متاحًا.', 'error');
             } else if (micButton?.disabled && type === 'audio') {
               moderationMuted = false;
@@ -317,7 +317,7 @@
             }
           });
         membershipChannel.subscribe((state) => {
-          if (state === 'CHANNEL_ERROR' || state === 'TIMED_OUT') console.warn('[IQZodiac LiveKit] membership updates unavailable', state);
+          if (state === 'CHANNEL_ERROR' || state === 'TIMED_OUT') console.warn('[IQZodiac realtime] membership updates unavailable', state);
         });
       }
       const token = await tokenRequest(type, roomId, accessToken);
@@ -338,7 +338,7 @@
             if (message?.type !== 'raise_hand' || !participant) return;
             const seat = findSeat(participant, true);
             if (seat) seat.querySelector('[data-seat-role]').textContent = message.raised ? '✋ رفع اليد' : 'مشارك متصل';
-          } catch (error) { console.warn('[IQZodiac LiveKit] room control message ignored', error); }
+          } catch (error) { console.warn('[IQZodiac realtime] room control message ignored', error); }
         });
       }
       room.on(window.LivekitClient.RoomEvent.LocalTrackPublished, (publication, participant) => {
@@ -347,7 +347,7 @@
       room.on(window.LivekitClient.RoomEvent.LocalTrackUnpublished, (publication, participant) => {
         if (publication.track) detachTrack(publication.track, participant || room?.localParticipant);
       });
-      room.on(window.LivekitClient.RoomEvent.Disconnected, () => { if (modal && !modal.hidden) setStatus('انقطع اتصال LiveKit. يمكنك المغادرة ثم إعادة المحاولة.', 'error'); });
+      room.on(window.LivekitClient.RoomEvent.Disconnected, () => { if (modal && !modal.hidden) setStatus('انقطع الاتصال المباشر. يمكنك المغادرة ثم إعادة المحاولة.', 'error'); });
       await room.connect(token.url, token.token);
       if (sequence !== requestVersion) { await teardown(false, false); return false; }
       addParticipant(room.localParticipant);
@@ -384,21 +384,21 @@
       room = null;
       if (failedRoom) {
         try { await failedRoom.disconnect(); }
-        catch (disconnectError) { console.warn('[IQZodiac LiveKit] failed connection cleanup failed', disconnectError); }
+        catch (disconnectError) { console.warn('[IQZodiac realtime] failed connection cleanup failed', disconnectError); }
       }
       const code = String(error?.message || 'unknown_error');
-      console.error('[IQZodiac LiveKit]', error);
-      const message = code === 'livekit_endpoint_missing' ? 'لم يتم ضبط رابط خدمة LiveKit بعد.'
-        : code === 'livekit_client_missing' ? 'تعذر تحميل مكتبة LiveKit. أعد تحميل الصفحة.'
+      console.error('[IQZodiac realtime]', error);
+      const message = code === 'livekit_endpoint_missing' ? 'لم يتم ضبط خدمة الاتصال المباشر بعد.'
+        : code === 'livekit_client_missing' ? 'تعذر تحميل خدمة الاتصال المباشر. أعد تحميل الصفحة.'
           : code === 'auth_required' ? 'انتهت جلسة الدخول. سجّل الدخول مجددًا.'
             : code === 'room_access_denied' || code === 'member_removed' || code === 'private_room_access_required' ? 'ليست لديك صلاحية نشطة لدخول هذه الغرفة.'
-              : code === 'livekit_not_configured' ? 'متغيرات LiveKit ناقصة في Vercel.'
+              : code === 'livekit_not_configured' ? 'إعدادات خدمة الاتصال المباشر ناقصة في الخادم.'
                 : code === 'supabase_not_configured' ? 'متغيرات Supabase ناقصة في Vercel.'
                   : code === 'livekit_token_invalid' ? 'استلمنا استجابة اتصال غير مكتملة. حاول مجددًا.'
                     : `تعذر الاتصال بالغرفة (${code}).`;
       setStatus(message, 'error');
       if (audioMembershipJoined && activeClient) {
-        try { await leaveMembership(activeClient, roomId); } catch (leaveError) { console.warn('[IQZodiac LiveKit] cleanup after join failure failed', leaveError); }
+        try { await leaveMembership(activeClient, roomId); } catch (leaveError) { console.warn('[IQZodiac realtime] cleanup after join failure failed', leaveError); }
         audioMembershipJoined = false;
       }
       return false;
@@ -416,10 +416,10 @@
       const restUrl = String(client?.rest?.url || '').replace(/\/$/, '');
       const apiKey = String(client?.supabaseKey || '');
       if (restUrl && apiKey && accessToken) {
-        void fetch(`${restUrl}/rpc/iqzodiac_leave_audio_room`, { method: 'POST', keepalive: true, headers: { apikey: apiKey, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_room_id: roomId }) }).catch((error) => console.warn('[IQZodiac LiveKit] page-exit membership cleanup failed', error));
+        void fetch(`${restUrl}/rpc/iqzodiac_leave_audio_room`, { method: 'POST', keepalive: true, headers: { apikey: apiKey, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_room_id: roomId }) }).catch((error) => console.warn('[IQZodiac realtime] page-exit membership cleanup failed', error));
       } else {
-        try { void client.rpc('iqzodiac_leave_audio_room', { p_room_id: roomId }).catch((error) => console.warn('[IQZodiac LiveKit] page-exit membership cleanup failed', error)); }
-        catch (error) { console.warn('[IQZodiac LiveKit] page-exit membership cleanup failed', error); }
+        try { void client.rpc('iqzodiac_leave_audio_room', { p_room_id: roomId }).catch((error) => console.warn('[IQZodiac realtime] page-exit membership cleanup failed', error)); }
+        catch (error) { console.warn('[IQZodiac realtime] page-exit membership cleanup failed', error); }
       }
     }
     try { room?.disconnect(); } catch {}

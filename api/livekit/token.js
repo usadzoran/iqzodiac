@@ -10,6 +10,6 @@ module.exports = async (request, response) => {
     response.statusCode = 503;
     response.setHeader('Cache-Control', 'no-store');
     response.setHeader('Content-Type', 'application/json; charset=utf-8');
-    response.end(JSON.stringify({ error: { code: String(error?.message || 'livekit_service_error').slice(0, 80), message: 'LiveKit token service configuration failed.' } }));
+    response.end(JSON.stringify({ error: { code: String(error?.message || 'livekit_service_error').slice(0, 80), message: 'Direct connection service configuration failed.' } }));
   }
 };
