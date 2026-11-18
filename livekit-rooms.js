@@ -246,7 +246,99 @@
     seat.querySelector('[data-seat-media]').replaceChildren();
     setSeatCount();
   };
+  let liveModal = null;
+  let liveRoom = null;
+  let liveRoomId = '';
+  let liveRequestVersion = 0;
+  let liveChatChannel = null;
+  const makeLiveModal = () => {
+    if (liveModal) return liveModal;
+    liveModal = document.createElement('section');
+    liveModal.className = 'live-broadcast-modal';
+    liveModal.hidden = true;
+    liveModal.setAttribute('role', 'dialog');
+    liveModal.setAttribute('aria-modal', 'true');
+    liveModal.innerHTML = `<div class="live-broadcast-shell"><video class="live-broadcast-video" data-live-video autoplay playsinline></video><div class="live-broadcast-shade"></div><header class="live-broadcast-top"><div class="live-broadcast-host"><span class="live-broadcast-avatar" data-live-avatar>•</span><span><strong data-live-host>Live broadcast</strong><small><b class="live-badge">LIVE</b><span data-live-viewers>0 viewers</span></small></span><button type="button" class="live-follow-button" data-live-follow>Follow</button></div><button type="button" class="live-broadcast-close" data-live-close aria-label="Close">×</button></header><div class="live-broadcast-comments" data-live-comments aria-live="polite"><p>Welcome to the live broadcast.</p></div><footer class="live-broadcast-bottom"><div class="live-broadcast-actions"><button type="button" data-live-mic>Mute</button><button type="button" data-live-camera>Camera off</button><button type="button" data-live-gift>Gift</button><button type="button" data-live-share>Share</button><button type="button" class="live-like-button" data-live-like aria-label="Like">♥</button></div><form class="live-comment-form" data-live-comment-form><input data-live-comment-input maxlength="300" autocomplete="off" placeholder="Say something…" aria-label="Live comment" /><button type="submit">Send</button></form><button type="button" class="live-end-button" data-live-end hidden>End live</button></footer></div>`;
+    document.body.append(liveModal);
+    liveModal.querySelector('[data-live-close]').addEventListener('click', () => { void closeLive(false); });
+    liveModal.querySelector('[data-live-end]').addEventListener('click', () => { void closeLive(true); });
+    liveModal.querySelector('[data-live-mic]').addEventListener('click', async () => { if (!liveRoom?.localParticipant) return; const enabled = !liveRoom.localParticipant.isMicrophoneEnabled; await liveRoom.localParticipant.setMicrophoneEnabled(enabled); liveModal.querySelector('[data-live-mic]').textContent = enabled ? 'Mute' : 'Unmute'; });
+    liveModal.querySelector('[data-live-camera]').addEventListener('click', async () => { if (!liveRoom?.localParticipant) return; const enabled = !liveRoom.localParticipant.isCameraEnabled; await liveRoom.localParticipant.setCameraEnabled(enabled); liveModal.querySelector('[data-live-camera]').textContent = enabled ? 'Camera off' : 'Camera on'; });
+    liveModal.querySelector('[data-live-share]').addEventListener('click', async () => { const url = new URL(`./rooms.html?live=${encodeURIComponent(liveRoomId)}`, document.baseURI).href; try { if (navigator.share) await navigator.share({ title: 'Live broadcast', url }); else await navigator.clipboard.writeText(url); } catch {} });
+    liveModal.querySelector('[data-live-like]').addEventListener('click', () => { const bubble = document.createElement('span'); bubble.className = 'live-reaction-bubble'; bubble.textContent = '♥'; liveModal.querySelector('.live-broadcast-shell').append(bubble); window.setTimeout(() => bubble.remove(), 1500); });
+    liveModal.querySelector('[data-live-gift]').addEventListener('click', () => addLiveComment('Gifts are available from the live actions.'));
+    liveModal.querySelector('[data-live-follow]').addEventListener('click', (event) => { event.currentTarget.textContent = event.currentTarget.textContent === 'Follow' ? 'Following' : 'Follow'; });
+    liveModal.querySelector('[data-live-comment-form]').addEventListener('submit', async (event) => { event.preventDefault(); const input = liveModal.querySelector('[data-live-comment-input]'); const value = input.value.trim(); if (!value || !liveRoomId || !activeClient) return; const { error } = await activeClient.from('vip_live_chat_messages').insert({ live_session_id: liveRoomId, sender_user_id: (await activeClient.auth.getUser()).data.user?.id, body: value }); if (!error) input.value = ''; });
+    return liveModal;
+  };
+  const addLiveComment = (text) => { const list = liveModal?.querySelector('[data-live-comments]'); if (!list) return; const item = document.createElement('p'); item.textContent = text; list.append(item); while (list.children.length > 8) list.firstElementChild.remove(); };
+  const attachLiveTrack = (track, publication, participant) => {
+    if (!track || !liveModal) return;
+    if (track.kind === 'video') {
+      const video = track.attach(); video.className = 'live-broadcast-video'; video.autoplay = true; video.playsInline = true; video.dataset.trackSid = publication?.trackSid || track.sid || '';
+      liveModal.querySelector('[data-live-video]')?.remove(); liveModal.querySelector('.live-broadcast-shell').prepend(video);
+    } else if (track.kind === 'audio' && participant?.identity !== liveRoom?.localParticipant?.identity) {
+      const audio = track.attach(); audio.autoplay = true; audio.className = 'live-broadcast-audio'; liveModal.querySelector('.live-broadcast-shell').append(audio);
+    }
+  };
+  const closeLive = async (endBroadcast = false) => {
+    liveRequestVersion += 1;
+    const id = liveRoomId;
+    if (endBroadcast && id && activeClient) {
+      try { await activeClient.rpc('iqzodiac_end_live_session', { p_live_session_id: id }); } catch (error) { console.warn('[IQZodiac realtime] live end failed', error); }
+    }
+    if (liveChatChannel && activeClient) { try { await activeClient.removeChannel(liveChatChannel); } catch (error) { console.warn('[IQZodiac realtime] chat channel cleanup failed', error); } liveChatChannel = null; }
+    try { await liveRoom?.disconnect(); } catch (error) { console.warn('[IQZodiac realtime] live disconnect failed', error); }
+    liveRoom = null; liveRoomId = '';
+    if (liveModal) { liveModal.hidden = true; liveModal.querySelector('.live-broadcast-shell').querySelectorAll('video,audio').forEach((node) => node.remove()); }
+    document.body.classList.remove('live-broadcast-open');
+  };
+  const openLive = async (roomId, title) => {
+    makeLiveModal();
+    const sequence = ++liveRequestVersion;
+    if (liveRoom) await closeLive(false);
+    liveRoomId = roomId;
+    liveModal.hidden = false;
+    document.body.classList.add('live-broadcast-open');
+    liveModal.querySelector('[data-live-host]').textContent = title || 'Live broadcast';
+    liveModal.querySelector('[data-live-end]').hidden = true;
+    liveModal.querySelector('[data-live-viewers]').textContent = 'Live now';
+    const client = await window.IQZodiacSupabase.ready;
+    activeClient = client;
+    const { data: sessionData } = await client.auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+    if (!accessToken) { addLiveComment('Please sign in to join this live broadcast.'); return false; }
+    const { data: chatRows } = await client.from('vip_live_chat_messages').select('body,created_at').eq('live_session_id', roomId).order('created_at', { ascending: true }).limit(30);
+    (chatRows || []).forEach((row) => addLiveComment(row.body));
+    liveChatChannel = client.channel(`live-chat-${roomId}-${Date.now()}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'vip_live_chat_messages', filter: `live_session_id=eq.${roomId}` }, (payload) => { if (payload.new?.body) addLiveComment(payload.new.body); }).subscribe();
+    const token = await tokenRequest('live', roomId, accessToken);
+    if (sequence !== liveRequestVersion) return false;
+    if (!window.LivekitClient?.Room || !window.LivekitClient?.RoomEvent) throw new Error('livekit_client_missing');
+    liveRoom = new window.LivekitClient.Room({ adaptiveStream: true, dynacast: true });
+    liveRoom.on(window.LivekitClient.RoomEvent.TrackSubscribed, attachLiveTrack);
+    liveRoom.on(window.LivekitClient.RoomEvent.LocalTrackPublished, (publication, participant) => { if (publication.track) attachLiveTrack(publication.track, publication, participant || liveRoom?.localParticipant); });
+    liveRoom.on(window.LivekitClient.RoomEvent.LocalTrackUnpublished, (publication) => { publication.track?.detach().forEach((node) => node.remove()); });
+    liveRoom.on(window.LivekitClient.RoomEvent.TrackUnsubscribed, (track) => track?.detach().forEach((node) => node.remove()));
+    liveRoom.on(window.LivekitClient.RoomEvent.ParticipantConnected, () => { liveModal.querySelector('[data-live-viewers]').textContent = 'Live now'; });
+    liveRoom.on(window.LivekitClient.RoomEvent.Disconnected, () => addLiveComment('The live connection ended.'));
+    await liveRoom.connect(token.url, token.token);
+    liveRoom.remoteParticipants.forEach((participant) => participant.trackPublications.forEach((publication) => { if (publication.track && publication.isSubscribed) attachLiveTrack(publication.track, publication, participant); }));
+    const isHost = Boolean(token.canPublish);
+    liveModal.querySelector('[data-live-end]').hidden = !isHost;
+    liveModal.querySelector('[data-live-mic]').hidden = !isHost;
+    liveModal.querySelector('[data-live-camera]').hidden = !isHost;
+    if (isHost) {
+      await liveRoom.localParticipant.setMicrophoneEnabled(true);
+      await liveRoom.localParticipant.setCameraEnabled(true);
+      liveModal.querySelector('[data-live-mic]').textContent = 'Mute';
+      liveModal.querySelector('[data-live-camera]').textContent = 'Camera off';
+    }
+    addLiveComment(isHost ? 'You are live. Your camera is now visible.' : 'You joined the live broadcast.');
+    return true;
+  };
+
   const open = async (type, roomId, title, joinAudio = false) => {
+    if (type === 'live') return openLive(roomId, title);
     makeModal();
     const sequence = ++requestVersion;
     if (room || activeRoomId) await teardown(false, false, true);
