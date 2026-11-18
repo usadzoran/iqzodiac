@@ -102,7 +102,7 @@ const server = http.createServer((request, response) => {
     handleLiveKitToken(request, response).catch(() => {
       if (!response.headersSent) {
         response.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
-        response.end(JSON.stringify({ error: { code: 'livekit_unavailable', message: 'LiveKit token service is temporarily unavailable.' } }));
+        response.end(JSON.stringify({ error: { code: 'livekit_unavailable', message: 'Direct connection service is temporarily unavailable.' } }));
       }
     });
     return;
