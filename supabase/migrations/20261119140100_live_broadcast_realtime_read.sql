@@ -1,0 +1,3 @@
+grant select on public.vip_live_viewers, public.vip_live_likes to authenticated;
+create policy vip_live_viewers_read_active on public.vip_live_viewers for select to authenticated using (exists (select 1 from public.vip_live_sessions s where s.id = live_session_id and ((s.visibility = 'public' and s.status in ('scheduled','live')) or s.host_user_id = auth.uid())));
+create policy vip_live_likes_read_active on public.vip_live_likes for select to authenticated using (exists (select 1 from public.vip_live_sessions s where s.id = live_session_id and ((s.visibility = 'public' and s.status in ('scheduled','live')) or s.host_user_id = auth.uid())));
