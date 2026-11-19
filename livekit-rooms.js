@@ -354,6 +354,8 @@
     liveModal.querySelector('[data-live-mic]').hidden = !isHost;
     liveModal.querySelector('[data-live-camera]').hidden = !isHost;
     if (isHost) {
+      const { error: startError } = await activeClient.rpc('iqzodiac_start_live_session', { p_live_session_id: roomId });
+      if (startError) throw startError;
       await liveRoom.localParticipant.setMicrophoneEnabled(true);
       await liveRoom.localParticipant.setCameraEnabled(true);
       liveModal.querySelector('[data-live-mic]').textContent = 'Mute';
