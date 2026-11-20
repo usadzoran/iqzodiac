@@ -51,6 +51,7 @@
   let wideViewCard = null;
   let wideViewVideo = null;
   let wideViewExitRequested = false;
+  let wideViewScrollTop = 0;
   let suppressVideoClickUntil = 0;
   const DOUBLE_TAP_WINDOW = 320;
   const DOUBLE_TAP_DISTANCE = 42;
@@ -630,6 +631,10 @@
     document.body.classList.remove('reel-wide-view');
     card?.classList.remove('is-wide-view');
     updateWideViewButton(card);
+    if (feed && Number.isFinite(wideViewScrollTop)) {
+      feed.scrollTop = wideViewScrollTop;
+      window.requestAnimationFrame(() => { feed.scrollTop = wideViewScrollTop; });
+    }
   };
 
   const showSeekFeedback = (card, seconds) => {
@@ -659,11 +664,11 @@
     if (!wideViewCard) return;
     wideViewExitRequested = true;
     const fullscreenActive = document.fullscreenElement || document.webkitFullscreenElement;
-    clearWideView();
     const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
     if (fullscreenActive && exitFullscreen) {
       try { await exitFullscreen.call(document); } catch { /* CSS fallback already restored the feed. */ }
     }
+    clearWideView();
     wideViewExitRequested = false;
   };
 
@@ -682,6 +687,7 @@
     if (wideViewCard === card) { await exitWideView(); return; }
     wideViewCard = card;
     wideViewVideo = card.querySelector('.reel-card-video');
+    wideViewScrollTop = feed?.scrollTop || 0;
     card.classList.add('is-wide-view');
     document.body.classList.add('reel-wide-view');
     updateWideViewButton(card);
@@ -1029,7 +1035,7 @@
       lastTouchX = touch.clientX;
       if (!sameCard) return;
       event.preventDefault();
-      suppressVideoClickUntil = now + DOUBLE_TAP_WINDOW;
+      suppressVideoClickUntil = now + 700;
       const position = (touch.clientX - rect.left) / Math.max(1, rect.width);
       if (position < 1 / 3) seekReel(card, -10);
       else if (position > 2 / 3) seekReel(card, 10);
