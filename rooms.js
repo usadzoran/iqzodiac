@@ -17,6 +17,7 @@
   const dateLabel = (value) => value ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—';
   let liveRooms = []; let audioRooms = [];
   let currentUserId = null;
+  let autoJoinedLiveId = '';
   const normalizeCategory = (value) => ({ Music: 'ترفيه', Gaming: 'ترفيه', Sports: 'ترفيه', 'Beauty & Lifestyle': 'ترفيه', General: 'ترفيه', 'Talk & Advice': 'حرية الرأي', Opinion: 'حرية الرأي', Debate: 'حرية الرأي', Education: 'تكنولوجيا', Technology: 'تكنولوجيا', Tech: 'تكنولوجيا', 'حرية الرأي': 'حرية الرأي', تكنولوجيا: 'تكنولوجيا', ترفيه: 'ترفيه', '+18': '+18' }[String(value || '').trim()] || String(value || 'ترفيه').trim() || 'ترفيه');
   const groupByCategory = (rows) => rows.reduce((groups, row) => { const category = row.category || 'General'; (groups[category] ||= []).push(row); return groups; }, {});
   const renderLive = () => {
@@ -41,6 +42,14 @@
       const hosts = [...new Set((audio || []).map((room) => room.host_user_id))]; const { data: profiles } = hosts.length ? await client.from('profiles').select('user_id,handle,display_name').in('user_id', hosts).limit(100) : { data: [] }; const profileMap = new Map((profiles || []).map((profile) => [profile.user_id, profile.handle || profile.display_name || 'مضيف']));
       liveRooms = (live || []).map((room) => ({ ...room, category: normalizeCategory(room.category) })); audioRooms = (audio || []).map((room) => ({ ...room, category: normalizeCategory(room.category), host_label: profileMap.get(room.host_user_id) || 'مضيف' }));
       refreshCategoryOptions(); renderLive(); renderAudio(); if (status) status.textContent = showLive ? `${liveRooms.length} بث · ${new Set(liveRooms.map((room) => room.category)).size} فئة` : `${audioRooms.length} غرفة مفتوحة`; if (audioStatus) audioStatus.textContent = showAudio ? `${audioRooms.length} غرفة مفتوحة` : '';
+      const requestedLiveId = new URLSearchParams(window.location.search).get('live');
+      if (showLive && requestedLiveId && requestedLiveId !== autoJoinedLiveId) {
+        const requestedLive = liveRooms.find((item) => item.id === requestedLiveId);
+        if (requestedLive && requestedLive.status === 'live') {
+          autoJoinedLiveId = requestedLiveId;
+          void window.IQZodiacLiveKit?.joinLive(requestedLive.id, requestedLive.title);
+        }
+      }
     } catch (error) { status.textContent = 'تعذر الاتصال'; if (audioStatus) audioStatus.textContent = 'تعذر الاتصال'; if (liveList) liveList.innerHTML = `<p class="rooms-error">تعذر تحميل البثوث. ${escapeHTML(error?.message || '')}</p>`; if (audioList) audioList.innerHTML = `<p class="rooms-error">تعذر تحميل الغرف الصوتية. ${escapeHTML(error?.message || '')}</p>`; }
   };
   categoryFilter?.addEventListener('change', () => { categoryCards.forEach((card) => card.classList.toggle('is-active', card.dataset.category === categoryFilter.value)); renderLive(); renderAudio(); });
