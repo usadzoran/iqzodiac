@@ -258,6 +258,13 @@
   let liveLikeLastSentAt = 0;
   let liveHeartbeatTimer = null;
   let liveViewerChannel = null;
+  let liveGiftChannel = null;
+  let liveGiftSeenIds = new Set();
+  let liveGiftCatalog = new Map();
+  let liveGiftCount = 0;
+  let liveGiftCoins = 0;
+  let liveAudioMuted = false;
+  let liveIsHost = false;
   const makeLiveModal = () => {
     if (liveModal) return liveModal;
     liveModal = document.createElement('section');
@@ -265,19 +272,28 @@
     liveModal.hidden = true;
     liveModal.setAttribute('role', 'dialog');
     liveModal.setAttribute('aria-modal', 'true');
-    liveModal.innerHTML = `<div class="live-broadcast-shell"><div class="live-effect-overlay" data-live-effect-overlay aria-hidden="true"></div><video class="live-broadcast-video" data-live-video autoplay playsinline></video><div class="live-broadcast-shade"></div><header class="live-broadcast-top"><div class="live-broadcast-host"><span class="live-broadcast-avatar" data-live-avatar>•</span><span><strong data-live-host>Live broadcast</strong><small><b class="live-badge">LIVE</b><span data-live-viewers>0 viewers</span></small></span><button type="button" class="live-follow-button" data-live-follow>Follow</button></div><button type="button" class="live-broadcast-close" data-live-close aria-label="Close">×</button></header><div class="live-broadcast-comments" data-live-comments aria-live="polite"><p>Welcome to the live broadcast.</p></div><footer class="live-broadcast-bottom"><div class="live-broadcast-actions"><button type="button" data-live-mic>Mute</button><button type="button" data-live-camera>Camera off</button><button type="button" data-live-gift>🎁 Gift</button><button type="button" data-live-share>Share</button><button type="button" class="live-like-button" data-live-like aria-label="Like">♥ <span data-live-like-count>0</span></button><button type="button" class="live-effects-toggle" data-live-effects-toggle aria-expanded="false">✨ Effects</button></div><div class="live-gift-panel" data-live-gift-panel hidden><strong>Live gifts</strong><div data-live-gift-list><small>Loading gifts…</small></div><small data-live-gift-note></small><button type="button" data-live-send-gift disabled>Send selected gift</button></div><div class="live-effects-panel" data-live-effects-panel hidden><span>Effects</span><button type="button" data-live-effect="original" class="is-selected">Original</button><button type="button" data-live-effect="vivid">Vivid</button><button type="button" data-live-effect="warm">Warm</button><button type="button" data-live-effect="cool">Cool</button><button type="button" data-live-effect="mono">Mono</button><button type="button" data-live-effect="dreamy">Dreamy</button><button type="button" data-live-overlay="glow">Glow</button><button type="button" data-live-overlay="sparkle">Sparkle</button></div><form class="live-comment-form" data-live-comment-form><input data-live-comment-input maxlength="300" autocomplete="off" placeholder="Say something…" aria-label="Live comment" /><button type="submit">Send</button></form><button type="button" class="live-end-button" data-live-end hidden>End live</button></footer></div>`;
+    liveModal.innerHTML = `<div class="live-broadcast-shell"><div class="live-effect-overlay" data-live-effect-overlay aria-hidden="true"></div><video class="live-broadcast-video" data-live-video autoplay playsinline></video><div class="live-broadcast-shade"></div><header class="live-broadcast-top"><div class="live-broadcast-host"><span class="live-broadcast-avatar" data-live-avatar>•</span><span><strong data-live-host>Live broadcast</strong><small><b class="live-badge">LIVE</b><span data-live-viewers>0 viewers</span><span class="live-gift-summary" data-live-earnings>🎁 0 gifts · 0 coins</span></small></span><button type="button" class="live-follow-button" data-live-follow>Follow</button></div><button type="button" class="live-broadcast-close" data-live-close aria-label="Close">×</button></header><div class="live-broadcast-comments" data-live-comments aria-live="polite"><p>Welcome to the live broadcast.</p></div><footer class="live-broadcast-bottom"><div class="live-broadcast-actions"><button type="button" data-live-comments-toggle>💬 Comments</button><button type="button" data-live-mic>Mute</button><button type="button" data-live-camera>Camera off</button><button type="button" data-live-gift>🎁 Gift</button><button type="button" data-live-share>Share</button><button type="button" data-live-mute aria-pressed="false">🔊 Sound</button><button type="button" class="live-like-button" data-live-like aria-label="Like">♥ <span data-live-like-count>0</span></button><button type="button" class="live-effects-toggle" data-live-effects-toggle aria-expanded="false">✨ Effects</button></div><div class="live-gift-panel" data-live-gift-panel hidden><strong>Live gifts</strong><div data-live-gift-list><small>Loading gifts…</small></div><small data-live-gift-note></small><button type="button" data-live-send-gift disabled>Send selected gift</button></div><div class="live-effects-panel" data-live-effects-panel hidden><span>Effects</span><button type="button" data-live-effect="original" class="is-selected">Original</button><button type="button" data-live-effect="vivid">Vivid</button><button type="button" data-live-effect="warm">Warm</button><button type="button" data-live-effect="cool">Cool</button><button type="button" data-live-effect="mono">Mono</button><button type="button" data-live-effect="dreamy">Dreamy</button><button type="button" data-live-overlay="glow">Glow</button><button type="button" data-live-overlay="sparkle">Sparkle</button></div><form class="live-comment-form" data-live-comment-form><input data-live-comment-input maxlength="300" autocomplete="off" placeholder="Say something…" aria-label="Live comment" /><button type="submit">Send</button></form><button type="button" class="live-end-button" data-live-end hidden>End live</button></footer></div>`;
     document.body.append(liveModal);
     liveModal.querySelector('[data-live-close]').addEventListener('click', () => { void closeLive(false); });
     liveModal.querySelector('[data-live-end]').addEventListener('click', () => { void closeLive(true); });
     liveModal.querySelector('[data-live-mic]').addEventListener('click', async () => { if (!liveRoom?.localParticipant) return; const enabled = !liveRoom.localParticipant.isMicrophoneEnabled; await liveRoom.localParticipant.setMicrophoneEnabled(enabled); liveModal.querySelector('[data-live-mic]').textContent = enabled ? 'Mute' : 'Unmute'; });
     liveModal.querySelector('[data-live-camera]').addEventListener('click', async () => { if (!liveRoom?.localParticipant) return; const enabled = !liveRoom.localParticipant.isCameraEnabled; await liveRoom.localParticipant.setCameraEnabled(enabled); liveModal.querySelector('[data-live-camera]').textContent = enabled ? 'Camera off' : 'Camera on'; });
     liveModal.querySelector('[data-live-share]').addEventListener('click', async () => { const url = new URL(`./rooms.html?live=${encodeURIComponent(liveRoomId)}`, document.baseURI).href; try { if (navigator.share) await navigator.share({ title: 'Live broadcast', url }); else await navigator.clipboard.writeText(url); } catch {} });
+    liveModal.querySelector('[data-live-mute]').addEventListener('click', (event) => {
+      liveAudioMuted = !liveAudioMuted;
+      liveModal.querySelectorAll('.live-broadcast-audio').forEach((audio) => { audio.muted = liveAudioMuted; });
+      event.currentTarget.setAttribute('aria-pressed', String(liveAudioMuted));
+      event.currentTarget.textContent = liveAudioMuted ? '🔇 Sound' : '🔊 Sound';
+    });
+    liveModal.querySelector('[data-live-comments-toggle]').addEventListener('click', () => {
+      liveModal.querySelector('[data-live-comment-input]')?.focus({ preventScroll: true });
+    });
     liveModal.querySelector('[data-live-effects-toggle]').addEventListener('click', (event) => { const panel = liveModal.querySelector('[data-live-effects-panel]'); const open = panel.hidden; panel.hidden = !open; event.currentTarget.setAttribute('aria-expanded', String(open)); });
     liveModal.querySelectorAll('[data-live-effect]').forEach((button) => button.addEventListener('click', () => setLiveEffect(button.dataset.liveEffect)));
     liveModal.querySelectorAll('[data-live-overlay]').forEach((button) => button.addEventListener('click', () => setLiveOverlay(button.dataset.liveOverlay)));
     liveModal.querySelector('[data-live-like]').addEventListener('click', async () => { const now = Date.now(); if (!liveRoomId || now - liveLikeLastSentAt < 700 || !activeClient) return; liveLikeLastSentAt = now; try { const { data, error } = await activeClient.rpc('iqzodiac_live_like', { p_live_session_id: liveRoomId }); if (error) throw error; liveLikeCount = Number(data || liveLikeCount + 1); liveModal.querySelector('[data-live-like-count]').textContent = String(liveLikeCount); const bubble = document.createElement('span'); bubble.className = 'live-reaction-bubble'; bubble.textContent = '♥'; liveModal.querySelector('.live-broadcast-shell').append(bubble); window.setTimeout(() => bubble.remove(), 1500); } catch (error) { if (error?.message !== 'live_like_rate_limited') console.warn('[IQZodiac realtime] live like failed', error); } });
     liveModal.querySelector('[data-live-gift]').addEventListener('click', () => { const panel = liveModal.querySelector('[data-live-gift-panel]'); panel.hidden = !panel.hidden; });
-    liveModal.querySelector('[data-live-send-gift]').addEventListener('click', async (event) => { if (!liveSelectedGift || !liveRoomId || !window.IQZodiacData?.adapter) return; event.currentTarget.disabled = true; const note = liveModal.querySelector('[data-live-gift-note]'); try { await window.IQZodiacData.adapter.sendGift({ liveSessionId: liveRoomId, giftId: liveSelectedGift.id, quantity: 1, idempotencyKey: crypto.randomUUID() }); if (note) note.textContent = 'Gift sent successfully.'; } catch (error) { if (note) note.textContent = error?.message === 'insufficient_coins' ? 'Insufficient coins.' : 'Gift was not sent; no balance was deducted.'; } finally { event.currentTarget.disabled = !liveSelectedGift; } });
+    liveModal.querySelector('[data-live-send-gift]').addEventListener('click', async (event) => { if (!liveSelectedGift || !liveRoomId || !window.IQZodiacData?.adapter) return; event.currentTarget.disabled = true; const note = liveModal.querySelector('[data-live-gift-note]'); try { const transaction = await window.IQZodiacData.adapter.sendGift({ liveSessionId: liveRoomId, giftId: liveSelectedGift.id, quantity: 1, idempotencyKey: crypto.randomUUID() }); showLiveGift(transaction, false); if (note) note.textContent = 'Gift sent successfully.'; } catch (error) { if (note) note.textContent = error?.message === 'insufficient_coins' ? 'Insufficient coins.' : 'Gift was not sent; no balance was deducted.'; } finally { event.currentTarget.disabled = !liveSelectedGift; } });
     liveModal.querySelector('[data-live-follow]').addEventListener('click', (event) => { event.currentTarget.textContent = event.currentTarget.textContent === 'Follow' ? 'Following' : 'Follow'; });
     liveModal.querySelector('[data-live-comment-form]').addEventListener('submit', async (event) => { event.preventDefault(); const input = liveModal.querySelector('[data-live-comment-input]'); const value = input.value.trim(); if (!value || !liveRoomId || !activeClient) return; const { error } = await activeClient.from('vip_live_chat_messages').insert({ live_session_id: liveRoomId, sender_user_id: (await activeClient.auth.getUser()).data.user?.id, body: value }); if (!error) input.value = ''; });
     return liveModal;
@@ -288,15 +304,54 @@
   const updateLiveViewers = (count = null) => { if (!liveModal) return; const visibleCount = Number.isFinite(Number(count)) ? Number(count) : Math.max(0, liveRoom?.remoteParticipants?.size || 0); liveModal.querySelector('[data-live-viewers]').textContent = `${visibleCount} viewers`; };
   const syncLiveViewerPresence = async (present = true) => { if (!activeClient || !liveRoomId) return; try { const { data, error } = await activeClient.rpc('iqzodiac_live_heartbeat', { p_live_session_id: liveRoomId, p_present: present }); if (error) throw error; if (present) updateLiveViewers(data); } catch (error) { console.warn('[IQZodiac realtime] viewer heartbeat failed', error); } };
   const escapeLiveHtml = (value) => String(value ?? '').replace(/[&<>\"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#39;' }[character]));
-  const loadLiveGifts = async (client) => { const list = liveModal?.querySelector('[data-live-gift-list]'); const note = liveModal?.querySelector('[data-live-gift-note]'); const send = liveModal?.querySelector('[data-live-send-gift]'); if (!list) return; const { data, error } = await client.from('vip_gifts').select('id,name,gift_code,price_coins,icon_asset_ref').eq('is_active', true).order('sort_order', { ascending: true }).limit(24); if (error || !data?.length) { list.innerHTML = '<small>No active gifts are available yet.</small>'; if (note) note.textContent = 'The gift catalog is unavailable.'; return; } list.innerHTML = data.map((gift) => `<button type="button" data-gift-id="${escapeLiveHtml(gift.id)}" title="${escapeLiveHtml(gift.name)}">${escapeLiveHtml(gift.icon_asset_ref || '🎁')} ${escapeLiveHtml(gift.name)}<small>${escapeLiveHtml(gift.price_coins)} coins</small></button>`).join(''); list.querySelectorAll('[data-gift-id]').forEach((button) => button.addEventListener('click', () => { liveSelectedGift = data.find((gift) => gift.id === button.dataset.giftId) || null; list.querySelectorAll('[data-gift-id]').forEach((item) => item.classList.remove('is-selected')); button.classList.add('is-selected'); if (send) send.disabled = !liveSelectedGift; if (note) note.textContent = liveSelectedGift ? `${liveSelectedGift.name} selected · ${liveSelectedGift.price_coins} coins.` : ''; })); if (note) note.textContent = 'Select a gift, then confirm sending.'; };
-  const addLiveComment = (text) => { const list = liveModal?.querySelector('[data-live-comments]'); if (!list) return; const item = document.createElement('p'); item.textContent = text; list.append(item); while (list.children.length > 8) list.firstElementChild.remove(); const bubble = document.createElement('span'); bubble.className = 'live-comment-float'; bubble.textContent = text; liveModal.querySelector('.live-broadcast-shell')?.append(bubble); window.setTimeout(() => bubble.remove(), 4200); };
+  const loadLiveGifts = async (client) => { const list = liveModal?.querySelector('[data-live-gift-list]'); const note = liveModal?.querySelector('[data-live-gift-note]'); const send = liveModal?.querySelector('[data-live-send-gift]'); if (!list) return; const { data, error } = await client.from('vip_gifts').select('id,name,gift_code,price_coins,icon_asset_ref').eq('is_active', true).order('sort_order', { ascending: true }).limit(24); if (error || !data?.length) { list.innerHTML = '<small>No active gifts are available yet.</small>'; if (note) note.textContent = 'The gift catalog is unavailable.'; return; } liveGiftCatalog = new Map(data.map((gift) => [gift.id, gift])); list.innerHTML = data.map((gift) => `<button type="button" data-gift-id="${escapeLiveHtml(gift.id)}" title="${escapeLiveHtml(gift.name)}">${escapeLiveHtml(gift.icon_asset_ref || '🎁')} ${escapeLiveHtml(gift.name)}<small>${escapeLiveHtml(gift.price_coins)} coins</small></button>`).join(''); list.querySelectorAll('[data-gift-id]').forEach((button) => button.addEventListener('click', () => { liveSelectedGift = data.find((gift) => gift.id === button.dataset.giftId) || null; list.querySelectorAll('[data-gift-id]').forEach((item) => item.classList.remove('is-selected')); button.classList.add('is-selected'); if (send) send.disabled = !liveSelectedGift; if (note) note.textContent = liveSelectedGift ? `${liveSelectedGift.name} selected · ${liveSelectedGift.price_coins} coins.` : ''; })); if (note) note.textContent = 'Select a gift, then confirm sending.'; };
+  const updateLiveGiftSummary = () => {
+    const node = liveModal?.querySelector('[data-live-earnings]');
+    if (node) node.textContent = `🎁 ${liveGiftCount} gifts · ${liveGiftCoins} coins`;
+  };
+  const showLiveGift = (transaction, broadcast = false, render = true) => {
+    if (!transaction || transaction.status !== 'settled' || (transaction.id && liveGiftSeenIds.has(transaction.id))) return;
+    if (transaction.id) liveGiftSeenIds.add(transaction.id);
+    const quantity = Number(transaction.quantity || 1);
+    const coins = Number(transaction.total_price_coins || (transaction.price_coins_snapshot || 0) * quantity);
+    liveGiftCount += 1;
+    liveGiftCoins += Number.isFinite(coins) ? coins : 0;
+    updateLiveGiftSummary();
+    const gift = liveGiftCatalog.get(transaction.gift_id) || {};
+    const icon = gift.icon_asset_ref || '🎁';
+    const sender = transaction.sender_label || 'مستخدم';
+    const name = transaction.gift_name_snapshot || gift.name || 'Gift';
+    if (!render) return;
+    const bubble = document.createElement('div');
+    bubble.className = 'live-gift-float';
+    bubble.innerHTML = `<span aria-hidden="true">${escapeLiveHtml(icon)}</span><strong>${escapeLiveHtml(sender)}</strong><span>${escapeLiveHtml(name)} · ${escapeLiveHtml(coins)} coins</span>`;
+    liveModal?.querySelector('.live-broadcast-shell')?.append(bubble);
+    window.setTimeout(() => bubble.remove(), 4800);
+    if (broadcast && liveRoom?.localParticipant) {
+      const payload = new TextEncoder().encode(JSON.stringify({ type: 'gift_notification', transaction: { id: transaction.id, status: 'settled', sender_label: sender, gift_name_snapshot: name, gift_id: transaction.gift_id || null, price_coins_snapshot: transaction.price_coins_snapshot || 0, total_price_coins: coins, quantity } }));
+      void liveRoom.localParticipant.publishData(payload, { reliable: true, topic: 'iqzodiac-live-gifts' }).catch((error) => console.warn('[IQZodiac realtime] gift broadcast failed', error));
+    }
+  };
+  const loadLiveGiftTotals = async () => {
+    if (!activeClient || !liveRoomId || !liveIsHost) return;
+    const { data, error } = await activeClient.from('vip_gift_transactions').select('id,status,quantity,total_price_coins,price_coins_snapshot,gift_id,gift_name_snapshot').eq('live_session_id', liveRoomId).eq('status', 'settled').order('created_at', { ascending: true }).limit(100);
+    if (error) { console.warn('[IQZodiac realtime] gift totals could not be loaded', error); return; }
+    liveGiftCount = 0; liveGiftCoins = 0; liveGiftSeenIds = new Set();
+    (data || []).forEach((transaction) => showLiveGift(transaction, false, false));
+  };
+  const refreshLiveViewerCount = async () => {
+    if (!activeClient || !liveRoomId || !liveModal) return;
+    const { data } = await activeClient.from('vip_live_sessions').select('viewer_count').eq('id', liveRoomId).limit(1).maybeSingle();
+    if (data && Number.isFinite(Number(data.viewer_count))) updateLiveViewers(Number(data.viewer_count));
+  };
+  const addLiveComment = (text, sender = '') => { const list = liveModal?.querySelector('[data-live-comments]'); if (!list) return; const display = sender ? `${sender}: ${text}` : text; const item = document.createElement('p'); item.textContent = display; list.append(item); while (list.children.length > 8) list.firstElementChild.remove(); const bubble = document.createElement('span'); bubble.className = 'live-comment-float'; bubble.textContent = display; liveModal.querySelector('.live-broadcast-shell')?.append(bubble); window.setTimeout(() => bubble.remove(), 4200); };
   const attachLiveTrack = (track, publication, participant) => {
     if (!track || !liveModal) return;
     if (track.kind === 'video') {
       const video = track.attach(); video.className = 'live-broadcast-video'; applyLiveVideoEffect(video); video.autoplay = true; video.playsInline = true; video.dataset.trackSid = publication?.trackSid || track.sid || '';
       liveModal.querySelector('[data-live-video]')?.remove(); liveModal.querySelector('.live-broadcast-shell').prepend(video);
     } else if (track.kind === 'audio' && participant?.identity !== liveRoom?.localParticipant?.identity) {
-      const audio = track.attach(); audio.autoplay = true; audio.className = 'live-broadcast-audio'; liveModal.querySelector('.live-broadcast-shell').append(audio);
+      const audio = track.attach(); audio.autoplay = true; audio.muted = liveAudioMuted; audio.className = 'live-broadcast-audio'; liveModal.querySelector('.live-broadcast-shell').append(audio);
     }
   };
   const closeLive = async (endBroadcast = false) => {
@@ -307,6 +362,7 @@
     }
     if (liveHeartbeatTimer) { window.clearInterval(liveHeartbeatTimer); liveHeartbeatTimer = null; }
     if (liveViewerChannel && activeClient) { try { await activeClient.removeChannel(liveViewerChannel); } catch (error) { console.warn('[IQZodiac realtime] viewer channel cleanup failed', error); } liveViewerChannel = null; }
+    if (liveGiftChannel && activeClient) { try { await activeClient.removeChannel(liveGiftChannel); } catch (error) { console.warn('[IQZodiac realtime] gift channel cleanup failed', error); } liveGiftChannel = null; }
     if (id && activeClient) await syncLiveViewerPresence(false);
     if (liveChatChannel && activeClient) { try { await activeClient.removeChannel(liveChatChannel); } catch (error) { console.warn('[IQZodiac realtime] chat channel cleanup failed', error); } liveChatChannel = null; }
     try { await liveRoom?.disconnect(); } catch (error) { console.warn('[IQZodiac realtime] live disconnect failed', error); }
@@ -323,17 +379,25 @@
     document.body.classList.add('live-broadcast-open');
     liveModal.querySelector('[data-live-host]').textContent = title || 'Live broadcast';
     liveModal.querySelector('[data-live-end]').hidden = true;
-    liveLikeCount = 0; liveSelectedGift = null; liveLikeLastSentAt = 0; liveModal.querySelector('[data-live-like-count]').textContent = '0'; liveModal.querySelector('[data-live-viewers]').textContent = '0 viewers'; liveModal.querySelector('[data-live-send-gift]').disabled = true;
+    liveLikeCount = 0; liveSelectedGift = null; liveLikeLastSentAt = 0; liveGiftCount = 0; liveGiftCoins = 0; liveGiftSeenIds = new Set(); liveAudioMuted = false; liveIsHost = false; updateLiveGiftSummary(); liveModal.querySelector('[data-live-like-count]').textContent = '0'; liveModal.querySelector('[data-live-viewers]').textContent = '0 viewers'; liveModal.querySelector('[data-live-send-gift]').disabled = true; liveModal.querySelector('[data-live-mute]').textContent = '🔊 Sound'; liveModal.querySelector('[data-live-mute]').setAttribute('aria-pressed', 'false');
     const client = await window.IQZodiacSupabase.ready;
     void loadLiveGifts(client);
     activeClient = client;
+    const { data: liveSession } = await client.from('vip_live_sessions').select('host_user_id,title').eq('id', roomId).limit(1).maybeSingle();
+    if (liveSession?.host_user_id) {
+      const { data: hostProfile } = await client.from('profiles').select('display_name,handle').eq('user_id', liveSession.host_user_id).limit(1).maybeSingle();
+      const hostName = hostProfile?.display_name || hostProfile?.handle || title || 'Live broadcast';
+      liveModal.querySelector('[data-live-host]').textContent = hostName;
+      liveModal.querySelector('[data-live-avatar]').textContent = String(hostName).trim().slice(0, 1).toUpperCase() || '•';
+    }
     const { data: sessionData } = await client.auth.getSession();
     const accessToken = sessionData?.session?.access_token;
     if (!accessToken) { addLiveComment('Please sign in to join this live broadcast.'); return false; }
-    const { data: chatRows } = await client.from('vip_live_chat_messages').select('body,created_at').eq('live_session_id', roomId).order('created_at', { ascending: true }).limit(30);
-    (chatRows || []).forEach((row) => addLiveComment(row.body));
-    liveChatChannel = client.channel(`live-chat-${roomId}-${Date.now()}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'vip_live_chat_messages', filter: `live_session_id=eq.${roomId}` }, (payload) => { if (payload.new?.body) addLiveComment(payload.new.body); }).subscribe();
-    liveViewerChannel = client.channel(`live-viewers-${roomId}-${Date.now()}`).on('postgres_changes', { event: '*', schema: 'public', table: 'vip_live_viewers', filter: `live_session_id=eq.${roomId}` }, () => { void syncLiveViewerPresence(true); }).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'vip_live_likes', filter: `live_session_id=eq.${roomId}` }, () => { liveLikeCount += 1; liveModal.querySelector('[data-live-like-count]').textContent = String(liveLikeCount); const bubble = document.createElement('span'); bubble.className = 'live-reaction-bubble'; bubble.textContent = '♥'; liveModal.querySelector('.live-broadcast-shell').append(bubble); window.setTimeout(() => bubble.remove(), 1500); }).subscribe();
+    const { data: chatRows } = await client.from('vip_live_chat_messages').select('body,sender_user_id,created_at').eq('live_session_id', roomId).order('created_at', { ascending: true }).limit(30);
+    (chatRows || []).forEach((row) => addLiveComment(row.body, row.sender_user_id ? 'مستخدم' : ''));
+    liveChatChannel = client.channel(`live-chat-${roomId}-${Date.now()}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'vip_live_chat_messages', filter: `live_session_id=eq.${roomId}` }, (payload) => { if (payload.new?.body) addLiveComment(payload.new.body, payload.new.sender_user_id ? 'مستخدم' : ''); }).subscribe();
+    liveViewerChannel = client.channel(`live-viewers-${roomId}-${Date.now()}`).on('postgres_changes', { event: '*', schema: 'public', table: 'vip_live_viewers', filter: `live_session_id=eq.${roomId}` }, () => { void refreshLiveViewerCount(); }).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'vip_live_likes', filter: `live_session_id=eq.${roomId}` }, () => { liveLikeCount += 1; liveModal.querySelector('[data-live-like-count]').textContent = String(liveLikeCount); const bubble = document.createElement('span'); bubble.className = 'live-reaction-bubble'; bubble.textContent = '♥'; liveModal.querySelector('.live-broadcast-shell').append(bubble); window.setTimeout(() => bubble.remove(), 1500); }).subscribe();
+    liveGiftChannel = client.channel(`live-gifts-${roomId}-${Date.now()}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'vip_gift_transactions', filter: `live_session_id=eq.${roomId}` }, (payload) => { if (payload.new?.status === 'settled') showLiveGift(payload.new, liveIsHost); }).subscribe();
     const token = await tokenRequest('live', roomId, accessToken);
     if (sequence !== liveRequestVersion) return false;
     if (!window.LivekitClient?.Room || !window.LivekitClient?.RoomEvent) throw new Error('livekit_client_missing');
@@ -345,14 +409,22 @@
     liveRoom.on(window.LivekitClient.RoomEvent.ParticipantConnected, updateLiveViewers);
     liveRoom.on(window.LivekitClient.RoomEvent.ParticipantDisconnected, updateLiveViewers);
     liveRoom.on(window.LivekitClient.RoomEvent.Disconnected, () => addLiveComment('The live connection ended.'));
+    if (window.LivekitClient.RoomEvent.DataReceived) liveRoom.on(window.LivekitClient.RoomEvent.DataReceived, (payload) => {
+      try {
+        const message = JSON.parse(new TextDecoder().decode(payload));
+        if (message?.type === 'gift_notification') showLiveGift(message.transaction, false);
+      } catch (error) { console.warn('[IQZodiac realtime] live gift notification ignored', error); }
+    });
     await liveRoom.connect(token.url, token.token);
     await syncLiveViewerPresence(true);
     liveHeartbeatTimer = window.setInterval(() => { void syncLiveViewerPresence(true); }, 20000);
     liveRoom.remoteParticipants.forEach((participant) => participant.trackPublications.forEach((publication) => { if (publication.track && publication.isSubscribed) attachLiveTrack(publication.track, publication, participant); }));
     const isHost = Boolean(token.canPublish);
+    liveIsHost = isHost;
     liveModal.querySelector('[data-live-end]').hidden = !isHost;
     liveModal.querySelector('[data-live-mic]').hidden = !isHost;
     liveModal.querySelector('[data-live-camera]').hidden = !isHost;
+    liveModal.querySelector('[data-live-earnings]').hidden = !isHost;
     if (isHost) {
       const { error: startError } = await activeClient.rpc('iqzodiac_start_live_session', { p_live_session_id: roomId });
       if (startError) throw startError;
@@ -360,6 +432,7 @@
       await liveRoom.localParticipant.setCameraEnabled(true);
       liveModal.querySelector('[data-live-mic]').textContent = 'Mute';
       liveModal.querySelector('[data-live-camera]').textContent = 'Camera off';
+      await loadLiveGiftTotals();
     }
     addLiveComment(isHost ? 'You are live. Your camera is now visible.' : 'You joined the live broadcast.');
     return true;
