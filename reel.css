@@ -1047,7 +1047,31 @@ body.reel-wide-view .reel-feed {
   object-fit: contain;
   background: #000;
   cursor: pointer;
+  touch-action: none;
 }
+
+.reel-seek-feedback {
+  position: absolute;
+  top: 50%;
+  z-index: 10;
+  display: grid;
+  width: 86px;
+  height: 54px;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 999px;
+  background: rgba(8,10,16,.72);
+  color: #fff;
+  font: 800 18px/1 "Manrope", sans-serif;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) scale(.8);
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.reel-seek-feedback.is-rewind { left: 15%; }
+.reel-seek-feedback.is-forward { right: 15%; }
+.reel-seek-feedback.is-visible { opacity: 1; transform: translateY(-50%) scale(1); }
 
 .reel-delete-button .reel-action-icon,
 .reel-comment-delete {
@@ -1098,6 +1122,7 @@ body.reel-wide-view .reel-feed {
 /* Stable fullscreen behavior: keep the same video element and playback state. */
 .reel-card.is-wide-view:fullscreen, .reel-card.is-wide-view:-webkit-full-screen { width:100vw; height:100vh; max-width:none; margin:0; }
 .reel-card.is-wide-view .reel-card-video { object-fit:contain; }
+.reel-card.is-wide-view .reel-wide-pause-button { display:none !important; }
 .reel-card.is-controls-hidden .reel-actions, .reel-card.is-controls-hidden .reel-card-copy { opacity:0; pointer-events:none; }
 .reel-card .reel-actions, .reel-card .reel-card-copy { transition:opacity .18s ease; }
 .reel-wide-pause-button{display:none}

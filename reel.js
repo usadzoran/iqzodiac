@@ -51,6 +51,9 @@
   let wideViewCard = null;
   let wideViewVideo = null;
   let wideViewExitRequested = false;
+  let suppressVideoClickUntil = 0;
+  const DOUBLE_TAP_WINDOW = 320;
+  const DOUBLE_TAP_DISTANCE = 42;
   let selectedCommentReel = null;
   let pageIndex = 0;
   let hasMore = true;
@@ -621,12 +624,35 @@
   const clearWideView = () => {
     const card = wideViewCard;
     const video = wideViewVideo;
-    if (video) video.dataset.wideViewUserPaused = 'false';
+    if (video) { video.dataset.wideViewUserPaused = 'false'; video.controls = true; }
     wideViewCard = null;
     wideViewVideo = null;
     document.body.classList.remove('reel-wide-view');
     card?.classList.remove('is-wide-view');
     updateWideViewButton(card);
+  };
+
+  const showSeekFeedback = (card, seconds) => {
+    let feedback = card.querySelector('.reel-seek-feedback');
+    if (!feedback) {
+      feedback = document.createElement('span');
+      feedback.className = 'reel-seek-feedback';
+      feedback.setAttribute('aria-live', 'polite');
+      card.append(feedback);
+    }
+    feedback.textContent = seconds > 0 ? `+${seconds}s` : `${seconds}s`;
+    feedback.classList.remove('is-visible', 'is-forward', 'is-rewind');
+    void feedback.offsetWidth;
+    feedback.classList.add('is-visible', seconds > 0 ? 'is-forward' : 'is-rewind');
+    window.clearTimeout(feedback._hideTimer);
+    feedback._hideTimer = window.setTimeout(() => feedback.classList.remove('is-visible'), 650);
+  };
+
+  const seekReel = (card, seconds) => {
+    const video = card?.querySelector('.reel-card-video');
+    if (!video || !Number.isFinite(video.duration)) return;
+    video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + seconds));
+    showSeekFeedback(card, seconds);
   };
 
   const exitWideView = async () => {
@@ -663,6 +689,7 @@
     if (wideViewVideo) {
       wideViewVideo.dataset.wideViewResume = 'true';
       wideViewVideo.dataset.wideViewUserPaused = 'false';
+      wideViewVideo.controls = false;
     }
     if (wideViewVideo?.paused) wideViewVideo.play().catch(() => {});
     const requestFullscreen = card.requestFullscreen || card.webkitRequestFullscreen;
@@ -990,8 +1017,27 @@
     wideButton.addEventListener('click', (event) => { event.stopPropagation(); void enterWideView(card); });
     deleteButton?.addEventListener('click', () => { void deleteReel(card, row, deleteButton); });
     const video = card.querySelector('.reel-card-video');
+    let lastTouchAt = 0;
+    let lastTouchX = 0;
+    video.addEventListener('touchend', (event) => {
+      const touch = event.changedTouches?.[0];
+      if (!touch) return;
+      const now = Date.now();
+      const rect = video.getBoundingClientRect();
+      const sameCard = now - lastTouchAt <= DOUBLE_TAP_WINDOW && Math.abs(touch.clientX - lastTouchX) <= DOUBLE_TAP_DISTANCE;
+      lastTouchAt = now;
+      lastTouchX = touch.clientX;
+      if (!sameCard) return;
+      event.preventDefault();
+      suppressVideoClickUntil = now + DOUBLE_TAP_WINDOW;
+      const position = (touch.clientX - rect.left) / Math.max(1, rect.width);
+      if (position < 1 / 3) seekReel(card, -10);
+      else if (position > 2 / 3) seekReel(card, 10);
+      else void enterWideView(card);
+    }, { passive: false });
     video.addEventListener('click', (event) => {
       event.stopPropagation();
+      if (Date.now() < suppressVideoClickUntil) { event.preventDefault(); return; }
       if (card === wideViewCard) {
         if (video.paused) {
           video.dataset.wideViewUserPaused = 'false';
