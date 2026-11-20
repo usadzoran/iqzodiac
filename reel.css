@@ -1199,3 +1199,67 @@ body.reel-wide-view .reel-feed {
   .reel-action-icon { width: 34px; height: 34px; border-radius: 11px; font-size: 20px; }
   .reel-action-label { font-size: 7px; }
 }
+
+/* Compact actions menu: the action rail is available only after opening ⋮. */
+.reel-card { width: 100vw; max-width: 760px; }
+
+.reel-more-menu {
+  position: absolute;
+  right: 14px;
+  bottom: max(104px, calc(102px + env(safe-area-inset-bottom, 0px)));
+  z-index: 7;
+}
+
+.reel-more-button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  padding: 0 0 7px;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 50%;
+  background: rgba(8,11,18,.62);
+  box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  backdrop-filter: blur(16px);
+  color: #fff;
+  cursor: pointer;
+  font: 800 27px/1 "Manrope", sans-serif;
+  transition: transform .18s ease, background .18s ease, border-color .18s ease;
+}
+
+.reel-more-button:hover,
+.reel-more-button:focus-visible,
+.reel-card.is-actions-open .reel-more-button {
+  border-color: rgba(166,255,223,.72);
+  background: rgba(20,31,43,.9);
+  outline: none;
+  transform: scale(1.06);
+}
+
+.reel-actions {
+  display: none;
+  right: 0;
+  bottom: 54px;
+  grid-template-columns: repeat(2, minmax(92px, 1fr));
+  width: min(204px, calc(100vw - 32px));
+  max-height: min(62dvh, 430px);
+  overflow-y: auto;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 16px;
+  background: rgba(8,12,21,.86);
+  box-shadow: 0 18px 45px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.1);
+  backdrop-filter: blur(20px) saturate(140%);
+}
+
+.reel-card.is-actions-open .reel-actions { display: grid; }
+.reel-actions .reel-action { min-width: 0; }
+.reel-card-author-link.reel-card-avatar-link { display: block; width: 36px; height: 36px; }
+.reel-card-avatar-link:focus-visible { border-radius: 50%; outline: 2px solid #a6ffdf; outline-offset: 3px; }
+body.reel-wide-view .reel-more-menu { display: none !important; }
+
+@media (max-width: 600px) {
+  .reel-more-menu { right: 10px; }
+  .reel-actions { right: 0; bottom: 52px; }
+}

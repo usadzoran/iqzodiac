@@ -622,6 +622,13 @@
     button.querySelector('.reel-action-label').textContent = t(active ? 'exitWideView' : 'wideView');
   };
 
+  const closeActionsMenu = (card) => {
+    if (!card) return;
+    card.classList.remove('is-actions-open');
+    const button = card.querySelector('.reel-more-button');
+    button?.setAttribute('aria-expanded', 'false');
+  };
+
   const clearWideView = () => {
     const card = wideViewCard;
     const video = wideViewVideo;
@@ -968,6 +975,19 @@
     const soundButton = card.querySelector('.reel-sound-button');
     const wideButton = card.querySelector('.reel-wide-button');
     const deleteButton = card.querySelector('.reel-delete-button');
+    const moreButton = card.querySelector('.reel-more-button');
+    const actions = card.querySelector('.reel-actions');
+
+    moreButton?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const open = !card.classList.contains('is-actions-open');
+      card.classList.toggle('is-actions-open', open);
+      moreButton.setAttribute('aria-expanded', String(open));
+    });
+    actions?.addEventListener('click', () => closeActionsMenu(card), true);
+    document.addEventListener('click', (event) => {
+      if (!card.contains(event.target)) closeActionsMenu(card);
+    });
 
     likeButton.addEventListener('click', async (event) => {
       event.stopPropagation();
@@ -1043,6 +1063,7 @@
     }, { passive: false });
     video.addEventListener('click', (event) => {
       event.stopPropagation();
+      closeActionsMenu(card);
       if (Date.now() < suppressVideoClickUntil) { event.preventDefault(); return; }
       if (card === wideViewCard) {
         if (video.paused) {
@@ -1132,11 +1153,11 @@
     const author = document.createElement('div');
     author.className = 'reel-card-author';
     const profile = row.profile || null;
-    author.append(makeAvatar(profile, authorName));
     const authorLink = document.createElement('a');
-    authorLink.className = 'reel-card-author-link';
+    authorLink.className = 'reel-card-author-link reel-card-avatar-link';
     authorLink.href = `./reel-profile.html?user=${encodeURIComponent(row.author_id)}`;
-    authorLink.textContent = authorName;
+    authorLink.setAttribute('aria-label', language() === 'ar' ? 'فتح ملف المنشئ' : 'Open creator profile');
+    authorLink.append(makeAvatar(profile, authorName));
     author.append(authorLink);
     copyNode.append(author);
     if (row.caption) {
@@ -1154,7 +1175,17 @@
     actions.className = 'reel-actions';
     const deleteAction = row.author_id === authenticatedUserId ? `<button type="button" class="reel-action reel-delete-button" aria-label="${escapeHTML(t('deleteReel'))}" title="${escapeHTML(t('deleteReel'))}"><span class="reel-action-icon" aria-hidden="true">×</span><span class="reel-action-label">${escapeHTML(t('deleteReel'))}</span></button>` : '';
     actions.innerHTML = `<button type="button" class="reel-action reel-like-button" data-reel-id="${escapeHTML(row.id)}" data-liked="${Boolean(row.liked_by_me)}"><span class="reel-action-icon" aria-hidden="true">${row.liked_by_me ? '♥' : '♡'}</span><span class="reel-action-label">${escapeHTML(t(row.liked_by_me ? 'liked' : 'like'))}</span><span class="reel-action-count" data-count="${numeric(row.like_count)}">${escapeHTML(t('count', numeric(row.like_count)))}</span></button><button type="button" class="reel-action reel-save-button" data-reel-id="${escapeHTML(row.id)}" data-saved="${Boolean(row.saved_by_viewer)}"><span class="reel-action-icon" aria-hidden="true">${row.saved_by_viewer ? '🔖' : '▱'}</span><span class="reel-action-label">${escapeHTML(t(row.saved_by_viewer ? 'savedReel' : 'save'))}</span></button><button type="button" class="reel-action reel-comment-button" data-reel-id="${escapeHTML(row.id)}" aria-label="${escapeHTML(t('comments'))}"><span class="reel-action-icon" aria-hidden="true">▱</span><span class="reel-action-label">${escapeHTML(t('comments'))}</span><span class="reel-action-count" data-count="${numeric(row.comment_count)}">${escapeHTML(t('count', numeric(row.comment_count)))}</span></button><button type="button" class="reel-action reel-share-button"><span class="reel-action-icon" aria-hidden="true">↗</span><span class="reel-action-label">${escapeHTML(t('share'))}</span></button><button type="button" class="reel-action reel-download-button"><span class="reel-action-icon" aria-hidden="true">↓</span><span class="reel-action-label">${escapeHTML(t('download'))}</span></button><button type="button" class="reel-action reel-sound-button"><span class="reel-action-icon reel-sound-icon" aria-hidden="true">♫</span><span class="reel-action-label">${escapeHTML(t('unmute'))}</span></button><button type="button" class="reel-action reel-wide-button"><span class="reel-action-icon reel-wide-icon" aria-hidden="true">⛶</span><span class="reel-action-label">${escapeHTML(t('wideView'))}</span></button>${deleteAction}`;
-    card.append(video, playHint, pauseButton, copyNode, actions);
+    const actionMenu = document.createElement('div');
+    actionMenu.className = 'reel-more-menu';
+    const moreButton = document.createElement('button');
+    moreButton.type = 'button';
+    moreButton.className = 'reel-more-button';
+    moreButton.setAttribute('aria-label', language() === 'ar' ? 'المزيد من الإجراءات' : 'More Reel actions');
+    moreButton.setAttribute('title', language() === 'ar' ? 'المزيد من الإجراءات' : 'More Reel actions');
+    moreButton.setAttribute('aria-expanded', 'false');
+    moreButton.textContent = '⋮';
+    actionMenu.append(moreButton, actions);
+    card.append(video, playHint, pauseButton, copyNode, actionMenu);
     bindCardActions(card, row);
     if (reelObserver) reelObserver.observe(video);
     return card;
