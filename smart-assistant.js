@@ -104,6 +104,8 @@
       const token = await getAccessToken();
       if (!token) throw new Error('unauthorized');
       const headers = { 'Content-Type': 'application/json' };
+      const publishableKey = window.IQZodiacSupabase?.publishableKey;
+      if (publishableKey) headers.apikey = publishableKey;
       if (token) headers.Authorization = `Bearer ${token}`;
       const response = await fetch(apiBase, { method: 'POST', headers, body: JSON.stringify({ message: text, history: guestMode ? [] : state.history.slice(-13, -1), conversationId: state.conversationId, guest: false }) });
       const payload = await response.json().catch(() => ({}));

@@ -38,7 +38,7 @@ ASSISTANT_ALLOWED_ORIGIN=https://usadzoran.github.io
 
 ## إعداد الواجهة
 
-تم تحديث `assistant-config.js` ليستخدم رابط Supabase مباشرة. ترسل الواجهة access token الحالي في ترويسة `Authorization`، وترسل `conversationId` للحفاظ على سجل المحادثة نفسه.
+تم تحديث `assistant-config.js` ليستخدم رابط Supabase مباشرة. ترسل الواجهة مفتاح Supabase العام في ترويسة `apikey` ورمز جلسة المستخدم الحالي في ترويسة `Authorization`، وترسل `conversationId` للحفاظ على سجل المحادثة نفسه. يظل مفتاح Gemini سرًا داخل Edge Function فقط.
 
 ## الوظائف الممنوعة
 
