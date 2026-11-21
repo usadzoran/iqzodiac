@@ -1,51 +1,36 @@
-# IQZodiac — Match & Face Privacy Plan
 
-## Implementation approach
 
-Extend the existing static HTML/JavaScript prototype without replacing its pages or visual system. Add a shared browser data layer (`privacy-core.js`) that exposes repository-shaped methods for profiles, likes, matches, reveal-consent state, and conversations. The current adapter uses `localStorage`; the method boundary is intentionally API-shaped so it can later be replaced by authenticated server calls without changing the UI.
+## Clad Body API Integration
 
-Add `match.html`, `match.css`, and `match.js` as the new Match area. It uses the existing IQZodiac dark aurora, Manrope/DM Mono typography, cyan/lilac/orange palette, and fixed user menu. Match cards expose only protected preview metadata and never place an original face asset URL in the DOM. The demo previews are rendered as protected visual cards; a future upload service must generate/store the protected derivative server-side and keep the original behind authorization.
+Reuse the existing `profile-body3d` capture flow, private `iqzodiac-body-private` bucket, `profile_body_models` records, `body-model-access` viewer, and `body-model-delete` cleanup. The official Clad photo contract accepts one photo plus `height_cm`, returns an asynchronous `job_id`, and later returns a base64 GLB mesh, measurements, and opaque params. The existing front photo is the provider input; the remaining private views are retained for the user's private capture set and existing readiness guard.
 
-Extend `messages.html` and `messages.js` with a face reveal consent panel. Each side has an explicit consent flag; the face is revealed only when both flags are true. The prototype includes a clearly labelled demo control to represent the other participant's consent until a real authenticated backend exists.
+Add a server-only `body-model-reconstruct` Edge Function. It authenticates the Supabase JWT, reads the front JPEG from private Storage with the service role, reads `CLAD_API_KEY` only from Edge Function environment variables, submits the multipart request to `https://api.clad.you/v1/body/from-photo`, polls only the returned Clad job URL, validates the returned GLB container and size, uploads it to the existing private bucket, stores measurements and provider metadata, and marks the model ready. Failures mark the model failed without exposing provider keys or raw provider responses.
 
-Extend `signup.js` to persist account/profile metadata only, including a reference placeholder for the original face asset rather than the image bytes. This preserves the current local-only prototype while defining the fields needed for a secure upload service.
+Extend the existing model record additively with source, provider reference, provider params, measurements JSON, and processing error metadata. No existing tables, photos, models, or storage files are deleted. The UI adds a required height field and invokes reconstruction after all private uploads, showing Uploading, Processing, Completed, and Failed states. Existing viewer, visibility rules, and deletion remain in place.
 
-## Project structure
+### Project structure
 
-- `match.html`: new Match route and accessible card/match UI.
-- `match.css`: Match-specific responsive presentation using existing design tokens.
-- `match.js`: card navigation, like/skip persistence, mutual-match state, and reveal-safe rendering.
-- `privacy-core.js`: shared repository adapter and privacy/reveal rules.
-- `messages.html` / `messages.js` / `messages.css`: private conversation reveal-consent UI and state.
-- `signup.js`: account metadata persistence boundary.
-- `server.js`, `public/manus-routes.json`: route registration for `/match`.
-- existing `home.html`, `profile.html`, `discover.html`, `rooms.html`: only navigation links are extended; existing sections remain intact.
+- `profile.html`, `profile-body3d.js`, `profile-body3d-data.js`: existing capture UI and authenticated client calls.
+- `body3d-viewer.js`: existing Three.js GLB viewer, reused unchanged.
+- `supabase/functions/body-model-reconstruct/index.ts`: authenticated Clad integration and result persistence.
+- `supabase/functions/_shared/clad-body-provider.ts`: Clad request, polling, GLB validation, and measurement normalization.
+- `supabase/migrations/20261121170000_clad_body_integration.sql`: additive metadata and safe trigger compatibility.
 
-## YouTube Search and In-Site Playback
+### Design
 
-Keep GitHub Pages as the existing static site host. Add a bilingual, responsive `youtube.html` experience that queries real video results through a same-origin Node route for local development and a minimal Vercel serverless endpoint for deployment. Both backend entry points share one server-only YouTube Data API v3 handler; the API key comes only from `YOUTUBE_API_KEY`, with origin restrictions, short-lived response caching, best-effort per-instance request limits, safe query validation, and clear quota/configuration errors.
+- Design movement: restrained cyber-luxury product UI.
+- Core principles: private by default, explicit consent, truthful processing states, and progressive disclosure of measurements.
+- Color philosophy: retain IQZodiac's midnight blue and cyan accents; use cyan for active processing and green only for a confirmed completed model.
+- Layout paradigm: keep the existing profile card and add a compact measurement/status panel rather than creating a new section.
+- Signature elements: privacy badge, stateful progress label, and a compact measurement grid.
+- Interaction philosophy: every provider action is explicit and cancellable through deletion; no success state is shown before a real GLB is stored.
+- Animation: subtle status transitions only; respect reduced-motion preferences.
+- Typography system: reuse the existing profile typography and card hierarchy.
+- Brand essence: a private, measurable body profile for IQZodiac members; precise, discreet, practical.
+- Brand voice: clear and honest, e.g. “Your model is processing securely.” and “No model is shown until a real result is stored.”
+- Wordmark & logo: reuse existing IQZodiac identity; no new logo.
+- Signature brand color: existing cyan accent used for secure processing.
 
-Render YouTube Data API metadata as accessible result cards, paginate with `nextPageToken`, and retain the current query/results while switching to and from the official YouTube IFrame Player. Handle removed/private and embedding-disabled videos honestly; show an external YouTube link only after the player reports that embedding is unavailable. Do not modify authentication, accounts, storage, or existing sections. Because GitHub Pages cannot run the protected API, deployment also requires a public function URL configured in the non-secret `youtube-config.js` file.
+### Official evidence
 
-Files: `youtube.html`, `youtube.css`, `youtube.js`, `youtube-config.js`, `api/youtube/search.js`, `lib/youtube-search.js`, plus minimal route, shared-menu, translation, and documentation updates.
-
-## Design direction
-
-Chosen style: **Celestial editorial minimalism**. Probability 0.07.
-
-- **Design movement:** quiet luxury editorial interface with orbital science motifs.
-- **Core principles:** privacy-first, spacious hierarchy, restrained glow, and purposeful motion.
-- **Color philosophy:** deep night backgrounds make protected imagery feel intentional; cyan signals trust, lilac signals compatibility, and orange signals human warmth.
-- **Layout paradigm:** a focused single-card discovery stage with a secondary trust rail, rather than a dense grid.
-- **Signature elements:** orbit rings, protected-image veil, and match constellation pulse.
-- **Interaction philosophy:** every reveal is an explicit consent action; likes are reversible and immediately visible.
-- **Animation:** short lift/fade transitions, a restrained match pulse, and reduced-motion fallbacks.
-- **Typography system:** Manrope for readable UI and DM Mono for labels/state metadata.
-- **Brand essence:** discover the mind before the face; thoughtful, private, curious. Personality: curious, safe, intimate.
-- **Brand voice:** calm, direct, consent-led. Examples: “Notice the person, not the reveal.” / “A face opens only when both people choose it.”
-- **Wordmark & logo:** retain the existing IQZ orbit mark.
-- **Signature brand color:** the existing cyan `#83e5e8`.
-
-## Backend contract for later wiring
-
-The adapter methods are `getCurrentProfile`, `listCandidates`, `recordLike`, `recordSkip`, `getMatches`, `getRevealState`, `requestReveal`, `setOwnRevealConsent`, `setPartnerRevealConsent` (demo-only), `canRevealFace`, and `getConversation`. A production implementation should replace the local adapter with authenticated endpoints, signed short-lived protected-preview URLs, server-side image redaction, and authorization checks on every original-image request. The browser must never decide reveal eligibility by itself.
+Clad's official developer page states that the service accepts one photo or eight short questions and exposes GLB meshes plus ISO 8559-1 measurements. The official OpenAPI document defines `POST /v1/body/from-photo` as multipart form data with `photo` and `height_cm`, returning an asynchronous `job_id`; `GET /v1/jobs/{job_id}` returns queued, running, completed, or failed status and the completed mesh, measurements, and opaque params. It also defines bearer authentication and a weekly photo quota. Source: https://clad.you/developers and https://api.clad.you/openapi.json.

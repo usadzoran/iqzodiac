@@ -18,7 +18,9 @@
 
     async listMine() {
       const { client } = await signedInClient();
-      const { data, error } = await client.rpc('get_my_profile_body_models');
+      const { data, error } = await client.from('profile_body_models')
+        .select('id,status,visibility,face_anonymized,originals_retention,created_at,updated_at,source_provider,provider_job_id,provider_model_ref,measurements,processing_error,height_cm')
+        .order('created_at', { ascending: false }).limit(1000);
       if (error) throw error;
       return Array.isArray(data) ? data : [];
     },
@@ -84,6 +86,14 @@
       if (error) throw error;
       if (data?.deleted !== true) throw new Error('The body photo set could not be deleted.');
       return true;
+    },
+
+    async reconstruct(modelId, heightCm) {
+      const { client } = await signedInClient();
+      const { data, error } = await client.functions.invoke('body-model-reconstruct', { body: { model_id: modelId, height_cm: Number(heightCm) } });
+      if (error) throw error;
+      if (!data || data.status !== 'completed') throw new Error(data?.error || 'The body model was not completed.');
+      return data;
     },
 
     async setVisibility(modelId, visibility) {

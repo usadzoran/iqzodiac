@@ -12,6 +12,8 @@
   const qualityNote = document.getElementById('body3d-quality-note');
   const engineBadge = document.getElementById('body3d-privacy-badge');
   const ownerModels = document.getElementById('body3d-owner-models');
+  const measurementsPanel = document.getElementById('body3d-measurements');
+  const heightInput = document.getElementById('body3d-height');
   const guide = document.getElementById('body3d-instructions');
   const selected = new Map();
   let activeAngle = null;
@@ -25,6 +27,19 @@
   const errorText = (error, arabic) => t(error?.message || 'An unexpected error occurred.', arabic);
   const angleNamesArabic = { front: 'الواجهة الأمامية', back: 'الواجهة الخلفية', left: 'الجانب الأيسر', right: 'الجانب الأيمن', front_left_45: 'أمامي ٤٥°', back_left_45: 'خلفي ٤٥°' };
   const checksPassed = () => ['body3d-check-full', 'body3d-check-pose'].every((id) => document.getElementById(id).checked);
+  const validHeight = () => Number.isFinite(Number(heightInput?.value)) && Number(heightInput.value) >= 140 && Number(heightInput.value) <= 220;
+  const renderMeasurements = (measurements) => {
+    if (!measurementsPanel) return;
+    measurementsPanel.replaceChildren();
+    const entries = Object.entries(measurements || {}).filter(([, value]) => typeof value === 'number' && Number.isFinite(value));
+    measurementsPanel.hidden = !entries.length;
+    if (!entries.length) return;
+    const title = document.createElement('h3'); title.textContent = t('Clad measurements', 'قياسات Clad');
+    const note = document.createElement('p'); note.textContent = t('These values came from the completed Clad result.', 'هذه القيم جاءت من نتيجة Clad المكتملة.');
+    const list = document.createElement('dl');
+    entries.forEach(([key, value]) => { const term = document.createElement('dt'); term.textContent = key.replaceAll('_', ' '); const valueNode = document.createElement('dd'); valueNode.textContent = String(value); list.append(term, valueNode); });
+    measurementsPanel.append(title, note, list);
+  };
 
   const refreshProgress = () => {
     const count = selected.size;
@@ -47,7 +62,7 @@
         thumb.append(image, quality);
       }
     });
-    saveButton.disabled = busy || count !== angles.length || !checksPassed();
+    saveButton.disabled = busy || count !== angles.length || !checksPassed() || !validHeight();
     deleteAllButton.hidden = busy || (!selected.size && !existing.length);
   };
 
@@ -160,10 +175,10 @@
     for (const model of existing) {
       const item = document.createElement('article');
       item.className = 'body3d-saved-set';
-      const titleCopy = model.status === 'ready' ? ['3D model ready', 'المجسم ثلاثي الأبعاد جاهز'] : model.status === 'failed' ? ['Reconstruction failed', 'فشلت إعادة بناء المجسم'] : model.status === 'cancelled' ? ['Photo set cancelled', 'أُلغيت مجموعة الصور'] : ['Private photo set · awaiting reconstruction service', 'مجموعة صور خاصة · بانتظار خدمة إعادة البناء'];
+      const titleCopy = model.status === 'ready' ? ['3D model ready', 'المجسم ثلاثي الأبعاد جاهز'] : model.status === 'failed' ? ['Reconstruction failed', 'فشلت إعادة بناء المجسم'] : model.status === 'processing' ? ['Processing securely with Clad…', 'جارٍ المعالجة بأمان عبر Clad…'] : model.status === 'cancelled' ? ['Photo set cancelled', 'أُلغيت مجموعة الصور'] : ['Private photo set · ready to process', 'مجموعة صور خاصة · جاهزة للمعالجة'];
       const title = document.createElement('h3'); title.textContent = t(...titleCopy);
       const copy = document.createElement('p');
-      copy.textContent = model.status === 'ready' ? t('The actual reconstruction service reported this model as ready.', 'أكدت خدمة إعادة البناء الفعلية جاهزية هذا المجسم.') : t('The six private images are stored securely. Reconstruction does not start until a real AI service is connected.', 'حُفظت الصور الخاصة الست بأمان. لن تبدأ إعادة البناء حتى ربط خدمة ذكاء اصطناعي فعلية.');
+      copy.textContent = model.status === 'ready' ? t('The actual Clad service reported this model as ready.', 'أكدت خدمة Clad الفعلية جاهزية هذا المجسم.') : model.status === 'processing' ? t('Clad is processing the front view and height. Keep this page open.', 'تعالج Clad صورة الواجهة والطول. أبقِ الصفحة مفتوحة.') : model.status === 'failed' ? t(`Processing failed: ${model.processing_error || 'unknown error'}.`, `فشلت المعالجة: ${model.processing_error || 'خطأ غير معروف'}.`) : t('The six private images are stored securely and ready for a real Clad reconstruction.', 'حُفظت الصور الخاصة الست بأمان وهي جاهزة لمعالجة Clad الفعلية.');
       const details = document.createElement('p');
       details.textContent = model.originals_retention === 'keep_until_deleted' ? t('Original retention: Keep until deleted', 'الاحتفاظ بالصور الأصلية: حتى حذفها') : t('Original retention: Delete after processing', 'الاحتفاظ بالصور الأصلية: حذفها بعد المعالجة');
       const visibilityLabel = document.createElement('label');
@@ -182,6 +197,11 @@
       });
       visibilityLabel.append(visibility);
       item.append(title, copy, details, visibilityLabel);
+      if (model.status === 'ready') {
+        const measurements = document.createElement('div'); measurements.className = 'body3d-model-measurements';
+        Object.entries(model.measurements || {}).forEach(([key, value]) => { if (typeof value !== 'number' || !Number.isFinite(value)) return; const span = document.createElement('span'); span.textContent = `${key.replaceAll('_', ' ')}: ${value}`; measurements.append(span); });
+        if (measurements.childElementCount) item.append(measurements);
+      }
       if (model.status === 'ready') {
         const viewer = document.createElement('div'); viewer.className = 'body3d-viewer-wrap'; viewer.setAttribute('data-body3d-viewer', 'owner'); viewer.setAttribute('aria-label', t('Private 3D body model viewer', 'عارض المجسم ثلاثي الأبعاد الخاص'));
         item.append(viewer);
@@ -215,7 +235,7 @@
   };
 
   saveButton.addEventListener('click', async () => {
-    if (busy || selected.size !== angles.length || !checksPassed()) return;
+    if (busy || selected.size !== angles.length || !checksPassed() || !validHeight()) return;
     busy = true; refreshProgress();
     let modelId = null;
     try {
@@ -228,7 +248,9 @@
         uploaded++;
         setStatus(t(`Uploading private photos: ${uploaded} / ${angles.length}.`, `جارٍ رفع الصور الخاصة: ${new Intl.NumberFormat('ar').format(uploaded)} من ${new Intl.NumberFormat('ar').format(angles.length)}.`), 'busy');
       }
-      setStatus(t('All six photos are stored privately. Status: awaiting reconstruction service; no model has been generated.', 'حُفظت الصور الست بشكل خاص. الحالة: بانتظار خدمة إعادة البناء؛ لم يُنشأ أي مجسم.'), 'success');
+      setStatus(t('Uploading complete. Clad is processing the real model and measurements…', 'اكتمل الرفع. تعالج Clad المجسم والقياسات الحقيقية…'), 'busy');
+      await data.reconstruct(modelId, Number(heightInput.value));
+      setStatus(t('Completed: the real GLB model and measurements are ready.', 'اكتمل: أصبح ملف GLB الحقيقي والقياسات جاهزين.'), 'success');
       for (const current of selected.values()) URL.revokeObjectURL(current.url);
       selected.clear();
       document.querySelectorAll('.body3d-checklist input').forEach((input) => { input.checked = false; });
@@ -242,6 +264,8 @@
       await renderSavedModels().catch(() => {});
     } finally { busy = false; refreshProgress(); }
   });
+
+  heightInput?.addEventListener('input', refreshProgress);
 
   deleteAllButton.addEventListener('click', async () => {
     if (!window.confirm('Permanently delete all your body photos, 3D models and related records? This cannot be undone.')) return;

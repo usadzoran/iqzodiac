@@ -151,9 +151,12 @@
             <div><p class="card-kicker">YOUR BODY · PRIVATE 3D</p><h2 id="body3d-title">Your 3D Body</h2></div>
             <span class="body3d-privacy-badge" id="body3d-privacy-badge">HIDDEN</span>
           </div>
-          <p class="section-intro">Capture six private views to prepare for a future, verified 3D body reconstruction service. Your photos remain private; reconstruction is not connected yet.</p>
-          <div class="body3d-engine-note" role="status"><span aria-hidden="true">◉</span><div><strong>Reconstruction engine not connected</strong><small>Your securely saved photo set will wait here. No model is fabricated and no processing is claimed.</small></div></div>
+          <p class="section-intro">Capture six private views. IQZodiac sends only the front view and your height to Clad to generate the real GLB model and measurements; the remaining views stay private in your capture set.</p>
+          <div class="body3d-engine-note" role="status"><span aria-hidden="true">◉</span><div><strong>Clad reconstruction service</strong><small>Your API key stays server-side. A model is shown only after a real GLB result and measurements are stored.</small></div></div>
           <div class="body3d-controls">
+            <label class="field-label" for="body3d-height">Your height in centimetres</label>
+            <input id="body3d-height" type="number" min="140" max="220" step="0.1" inputmode="decimal" placeholder="e.g. 175" required />
+            <p class="field-help">Enter your real height between 140 and 220 cm. This value is sent to Clad with the front photo.</p>
             <label class="field-label" for="body3d-retention">Original photo retention</label>
             <select id="body3d-retention"><option value="delete_after_processing">Delete originals after a future successful reconstruction</option><option value="keep_until_deleted">Keep originals until I delete them</option></select>
             <p class="field-help">The retention choice is saved with the photo set. It will only be applied after a real reconstruction service is connected.</p>
@@ -171,6 +174,7 @@
           <p class="body3d-quality-note" id="body3d-quality-note" role="status" aria-live="polite">Image checks estimate size, exposure, contrast and sharpness only. Check body completeness, obstructions and pose consistency yourself; the app does not recognize bodies or faces.</p>
           <div class="body3d-actions"><button class="button button-secondary" id="body3d-customize" type="button">Customize Your Model</button><button class="button button-primary" id="body3d-save-set" type="button" disabled>Save photo set privately</button><button class="button button-secondary" id="body3d-delete-all" type="button" hidden>Delete all body data</button></div>
           <p class="body3d-record-status" id="body3d-record-status" role="status" aria-live="polite">Loading your private body data…</p>
+          <div id="body3d-measurements" class="body3d-measurements" hidden></div>
           <div id="body3d-owner-models" class="body3d-owner-models"></div>
         </section>
       </div>
