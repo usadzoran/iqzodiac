@@ -2,6 +2,11 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const configuredOrigin = Deno.env.get("ASSISTANT_ALLOWED_ORIGIN") || "https://usadzoran.github.io";
+const allowedOrigins = new Set([
+  configuredOrigin,
+  "https://usadzoran.github.io",
+  "https://iqzodiac-yrbo.vercel.app",
+]);
 const maxMessageLength = 1200;
 const maxHistoryMessages = 12;
 const maxRequestsPerWindow = 20;
@@ -29,7 +34,7 @@ const systemPrompt = `You are the official IQZodiac website assistant. Answer on
 
 function headers(req: Request) {
   const origin = req.headers.get("Origin") || configuredOrigin;
-  const allowed = origin === configuredOrigin ? origin : configuredOrigin;
+  const allowed = allowedOrigins.has(origin) ? origin : configuredOrigin;
   return {
     "Access-Control-Allow-Origin": allowed,
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
