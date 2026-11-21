@@ -90,7 +90,7 @@
       <div class="assistant-modal-backdrop" data-assistant-close></div>
       <section class="assistant-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="landing-assistant-title">
         <button type="button" class="assistant-modal-close" data-assistant-close aria-label="Close assistant">×</button>
-        <section id="smart-assistant" class="smart-assistant" data-guest="true" aria-labelledby="landing-assistant-title">
+        <section id="smart-assistant" class="smart-assistant" aria-labelledby="landing-assistant-title">
           <header class="smart-assistant-head">
             <div><p id="smart-assistant-kicker" class="card-kicker">SCOPED AI · SITE HELP</p><h2 id="landing-assistant-title">Ask IQZodiac <span id="smart-assistant-title-tail">anything useful.</span></h2></div>
             <p id="smart-assistant-permissions" class="smart-assistant-permissions">Can explain the site, its sections, and how to get started. Cannot access private data or change accounts.</p>
@@ -104,10 +104,12 @@
 
     <script src="./i18n-data.js?v=20261022-global"></script>
     <script src="./language.js?v=menu-reels-20261117"></script>
-    <script src="./assistant-config.js?v=assistant-gemini-20261118"></script>
-    <script src="./smart-assistant.js?v=assistant-gemini-20261118"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-client.js?v=assistant-auth-20261121"></script>
+    <script src="./assistant-config.js?v=assistant-auth-20261121"></script>
+    <script src="./smart-assistant.js?v=assistant-auth-20261121"></script>
     <script src="./index-assistant.js"></script>
     <script src="./script.js"></script>
-      <script src="./nav-performance.js" defer></script>
+    <script src="./nav-performance.js" defer></script>
   </body>
 </html>

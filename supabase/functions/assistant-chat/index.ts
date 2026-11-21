@@ -42,6 +42,11 @@ function response(req: Request, status: number, body: unknown) {
   return new Response(JSON.stringify(body), { status, headers: { ...headers(req), "Content-Type": "application/json", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } });
 }
 
+function safeErrorType(error: unknown) {
+  const name = error instanceof Error ? error.name : "unknown";
+  return /^[A-Za-z0-9_-]{1,40}$/.test(name) ? name : "Error";
+}
+
 function detectIntent(message: string) {
   if (/(youtube|يوتيوب|فيديو|فيديوهات|أغنية|اغنية|قناة|video|song|channel)/i.test(message)) return "youtube_search";
   if (/(فيلم|أفلام|افلام|مسلسل|ممثل|ممثلة|شخصية|شخصيات|movie|film|series|actor|actress|character|director|película|film|filme)/i.test(message)) return "media_search";
@@ -81,7 +86,8 @@ async function searchMedia(query: string) {
 async function callModel(messages: any[]) {
   const apiKey = Deno.env.get("AI_API_KEY");
   if (!apiKey) throw new Error("ai_not_configured");
-  const base = (Deno.env.get("GEMINI_API_BASE") || "https://generativelanguage.googleapis.com/v1beta").replace(/\/$/, "");
+  const baseSetting = Deno.env.get("GEMINI_API_BASE") || "https://generativelanguage.googleapis.com/v1beta";
+  const base = baseSetting.endsWith("/") ? baseSetting.slice(0, -1) : baseSetting;
   const model = Deno.env.get("GEMINI_MODEL") || Deno.env.get("IQZODIAC_ASSISTANT_MODEL") || "gemini-flash-latest";
   const system = messages.find((message) => message.role === "system")?.content || "";
   const contents = messages.filter((message) => message.role !== "system").map((message) => ({
@@ -93,7 +99,7 @@ async function callModel(messages: any[]) {
     headers: { "X-goog-api-key": apiKey, "Content-Type": "application/json" },
     body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents, generationConfig: { maxOutputTokens: 700 } }),
   }), 20000);
-  if (!upstream.ok) { console.error(`Gemini request failed with status ${upstream.status} using model ${model}`); throw new Error("ai_upstream_failed"); }
+  if (!upstream.ok) { console.error("Gemini request failed", { status: upstream.status }); throw new Error("ai_upstream_failed"); }
   const payload = await upstream.json();
   const answer = payload.candidates?.[0]?.content?.parts?.map((part: any) => part.text || "").join("").trim();
   if (!answer) throw new Error("ai_empty_response");
@@ -118,7 +124,7 @@ Deno.serve(async (req: Request) => {
   const message = String(body.message || "").trim();
   if (!message || message.length > maxMessageLength) return response(req, 400, { error: { code: "invalid_message", message: "Message must contain between 1 and 1200 characters." } });
   const authHeader = req.headers.get("Authorization") || "";
-  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+  const token = authHeader.toLowerCase().startsWith("bearer ") ? authHeader.slice(7).trim() : authHeader.trim();
   if (!token) return response(req, 401, { error: { code: "unauthorized", message: "Please sign in before using the assistant." } });
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
@@ -137,14 +143,17 @@ Deno.serve(async (req: Request) => {
   try {
     if (intent === "youtube_search") searchResults = await searchYouTube(query);
     if (intent === "media_search") searchResults = await searchMedia(query);
-  } catch (error) { console.error("assistant search failed", error); searchResults = { unavailable: true, reason: "search_failed" }; }
+  } catch (error) { console.error("assistant search failed", { errorType: safeErrorType(error) }); searchResults = { unavailable: true, reason: "search_failed" }; }
 
   const context = JSON.stringify({ intent, query, siteMap, searchResults });
   let answer: string;
   try {
-    answer = await callModel([{ role: "system", content: `${systemPrompt}\n\nServer-authorized IQZodiac context:\n${context}` }, ...history, { role: "user", content: message }]);
+    answer = await callModel([{ role: "system", content: `${systemPrompt}
+
+Server-authorized IQZodiac context:
+${context}` }, ...history, { role: "user", content: message }]);
   } catch (error) {
-    console.error("assistant model failed", error);
+    console.error("assistant model failed", { errorType: safeErrorType(error) });
     const code = error instanceof Error && error.message === "ai_not_configured" ? "ai_not_configured" : "ai_unavailable";
     return response(req, 503, { error: { code, message: "The AI assistant is temporarily unavailable. Please try again later." } });
   }
@@ -155,6 +164,6 @@ Deno.serve(async (req: Request) => {
     { user_id: user.id, conversation_id: conversationId, role: "assistant", content: answer.slice(0, 4000), intent, results: Array.isArray(searchResults?.items) ? searchResults.items : [] },
   ];
   const { error: logError } = await supabase.from("assistant_conversation_logs").insert(logRows);
-  if (logError) console.error("assistant log insert failed", logError.message);
+  if (logError) console.error("assistant log insert failed", { code: logError.code || "insert_failed" });
   return response(req, 200, { answer, intent, results: searchResults?.items || [], conversationId });
 });

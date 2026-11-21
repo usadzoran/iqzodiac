@@ -9,10 +9,12 @@
   const status = root.querySelector('#smart-chat-status');
   const send = root.querySelector('#smart-chat-send');
   const suggestions = root.querySelector('#smart-chat-suggestions');
-  const guestMode = root.dataset.guest === 'true';
   const config = window.IQZodiacAssistantConfig || {};
   const apiBase = String(config.apiBase || '').trim() || (/github\.io$/i.test(window.location.hostname) ? '' : '/api/assistant/chat');
-  const state = { history: [], busy: false, conversationId: '' };
+  const state = { history: [], busy: false, conversationId: '', notice: '' };
+  let currentSession = null;
+  let currentUserId = '';
+  let authRevision = 0;
 
   const language = () => {
     const current = String(document.documentElement.lang || navigator.language || 'en').toLowerCase();
@@ -28,6 +30,47 @@
   };
   const t = (key) => (copy[language()] || copy.en)[key] || copy.en[key];
   const escape = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+
+  const errorCopy = {
+    ar: { signIn: 'سجّل الدخول أولًا لاستخدام المساعد.', expired: 'انتهت الجلسة أو لم تعد صالحة. سجّل الدخول مجددًا.', forbidden: 'لا تملك صلاحية استخدام المساعد.', notFound: 'تعذر العثور على خدمة المساعد.', rateLimited: 'أرسلت طلبات كثيرة. انتظر قليلًا ثم أعد المحاولة.', server: 'حدث خطأ في خادم المساعد. حاول لاحقًا.', service: 'خدمة المساعد غير متاحة مؤقتًا. حاول لاحقًا.', setup: 'المساعد غير مهيأ حاليًا. يرجى التواصل مع الدعم.', network: 'تعذر الاتصال بالمساعد. تحقق من اتصالك وحاول مجددًا.', generic: 'تعذر تنفيذ الطلب. حاول مرة أخرى.' },
+    en: { signIn: 'Please sign in to use the assistant.', expired: 'Your session expired or is no longer valid. Please sign in again.', forbidden: 'Your account is not allowed to use the assistant.', notFound: 'The assistant service could not be found.', rateLimited: 'Too many requests. Wait a moment and try again.', server: 'The assistant server encountered an error. Please try again later.', service: 'The assistant service is temporarily unavailable. Please try again later.', setup: 'The assistant is not configured. Please contact support.', network: 'Could not connect to the assistant. Check your connection and try again.', generic: 'The request failed. Please try again.' },
+    fr: { signIn: 'Connectez-vous pour utiliser l’assistant.', expired: 'Votre session a expiré ou n’est plus valide. Reconnectez-vous.', forbidden: 'Votre compte n’est pas autorisé à utiliser l’assistant.', notFound: 'Le service de l’assistant est introuvable.', rateLimited: 'Trop de demandes. Attendez un instant puis réessayez.', server: 'Le serveur de l’assistant a rencontré une erreur. Réessayez plus tard.', service: 'Le service de l’assistant est temporairement indisponible.', setup: 'L’assistant n’est pas configuré. Contactez le support.', network: 'Impossible de joindre l’assistant. Vérifiez votre connexion.', generic: 'La demande a échoué. Veuillez réessayer.' },
+    es: { signIn: 'Inicia sesión para usar el asistente.', expired: 'Tu sesión expiró o ya no es válida. Inicia sesión otra vez.', forbidden: 'Tu cuenta no tiene permiso para usar el asistente.', notFound: 'No se encontró el servicio del asistente.', rateLimited: 'Demasiadas solicitudes. Espera un momento y vuelve a intentarlo.', server: 'El servidor del asistente tuvo un error. Inténtalo más tarde.', service: 'El servicio del asistente no está disponible temporalmente.', setup: 'El asistente no está configurado. Contacta con soporte.', network: 'No se pudo conectar con el asistente. Comprueba tu conexión.', generic: 'La solicitud falló. Inténtalo de nuevo.' },
+    pt: { signIn: 'Inicie sessão para usar o assistente.', expired: 'Sua sessão expirou ou não é mais válida. Entre novamente.', forbidden: 'Sua conta não tem permissão para usar o assistente.', notFound: 'O serviço do assistente não foi encontrado.', rateLimited: 'Muitas solicitações. Aguarde um momento e tente novamente.', server: 'O servidor do assistente encontrou um erro. Tente mais tarde.', service: 'O serviço do assistente está temporariamente indisponível.', setup: 'O assistente não está configurado. Fale com o suporte.', network: 'Não foi possível conectar ao assistente. Verifique sua conexão.', generic: 'A solicitação falhou. Tente novamente.' },
+    de: { signIn: 'Bitte melde dich an, um den Assistenten zu verwenden.', expired: 'Deine Sitzung ist abgelaufen oder ungültig. Bitte melde dich erneut an.', forbidden: 'Dein Konto darf den Assistenten nicht verwenden.', notFound: 'Der Assistentendienst wurde nicht gefunden.', rateLimited: 'Zu viele Anfragen. Warte kurz und versuche es erneut.', server: 'Der Assistentenserver ist auf einen Fehler gestoßen. Versuche es später erneut.', service: 'Der Assistentendienst ist vorübergehend nicht verfügbar.', setup: 'Der Assistent ist nicht eingerichtet. Bitte wende dich an den Support.', network: 'Verbindung zum Assistenten fehlgeschlagen. Prüfe deine Verbindung.', generic: 'Die Anfrage ist fehlgeschlagen. Bitte versuche es erneut.' },
+  };
+  const errorText = (key) => (errorCopy[language()] || errorCopy.en)[key] || errorCopy.en.generic;
+  const safeErrorCode = (value) => /^[a-z0-9_-]{1,64}$/i.test(String(value || '')) ? String(value) : 'request_failed';
+  const makeError = (code, statusCode = 0) => Object.assign(new Error('assistant_request_failed'), { code: safeErrorCode(code), status: Number(statusCode) || 0 });
+  const sessionFailure = (error) => {
+    const statusCode = Number(error?.status) || 0;
+    const code = String(error?.code || '').toLowerCase();
+    return statusCode === 400 || statusCode === 401 || /refresh.*(invalid|not_found|expired|already_used)|session.*expired/.test(code)
+      ? makeError('session_expired', statusCode || 401)
+      : makeError('session_unavailable', statusCode);
+  };
+  const authClientPromise = (async () => {
+    const client = await window.IQZodiacSupabase?.ready;
+    if (!client?.auth?.getSession) throw makeError('supabase_unavailable');
+    const { data, error } = await client.auth.getSession();
+    if (error) throw sessionFailure(error);
+    currentSession = data?.session || null;
+    currentUserId = currentSession?.user?.id || '';
+    client.auth.onAuthStateChange((event, session) => {
+      const nextUserId = session?.user?.id || '';
+      if (event === 'SIGNED_OUT' || (currentUserId && currentUserId !== nextUserId)) {
+        authRevision += 1;
+        state.history = [];
+        state.conversationId = '';
+      }
+      currentSession = session || null;
+      currentUserId = nextUserId;
+    });
+    return client;
+  })().catch((error) => {
+    console.error('Assistant auth initialization failed', { code: safeErrorCode(error?.code || error?.name) });
+    return null;
+  });
 
   function addMessage(role, text, results = []) {
     const item = document.createElement('article');
@@ -70,52 +113,74 @@
     root.querySelector('#smart-assistant-permissions').textContent = t('permissions');
     input.placeholder = t('placeholder');
     send.textContent = t('send');
-    status.textContent = state.busy ? t('thinking') : t('ready');
+    status.textContent = state.busy ? t('thinking') : (state.notice || t('ready'));
     root.classList.toggle('is-thinking', state.busy);
     renderSuggestions();
   }
 
-  async function getAccessToken() {
-    if (guestMode) return '';
-    try {
-      const client = await window.IQZodiacSupabase?.ready;
-      const { data } = await client.auth.getSession();
-      return data.session?.access_token || '';
-    } catch { return ''; }
+  async function getAuthenticatedSession() {
+    const client = await authClientPromise;
+    if (!client) throw makeError('supabase_unavailable');
+    const { data, error } = await client.auth.getSession();
+    if (error) throw sessionFailure(error);
+    let session = data?.session || null;
+    const expiresAt = Number(session?.expires_at || 0);
+    if (session?.access_token && expiresAt && expiresAt <= (Date.now() / 1000) + 30) {
+      const refreshed = await client.auth.refreshSession();
+      if (refreshed.error) throw sessionFailure(refreshed.error);
+      session = refreshed.data?.session || null;
+    }
+    if (!session?.access_token) throw makeError('no_active_session', 401);
+    currentSession = session;
+    currentUserId = session.user?.id || '';
+    return { client, session, revision: authRevision };
   }
 
   async function submit(message) {
     if (state.busy) return;
-    const text = message.trim();
+    const text = String(message || '').trim();
     if (!text) { status.textContent = t('empty'); return; }
-    if (guestMode) {
-      addMessage('assistant', language() === 'ar' ? 'سجّل الدخول أولًا لاستخدام مساعد IQZodiac.' : 'Please sign in first to use the IQZodiac assistant.');
-      return;
-    }
-    if (!apiBase) { status.textContent = t('offline'); return; }
+    if (!apiBase) { state.notice = t('offline'); renderCopy(); return; }
     state.busy = true;
+    state.notice = '';
     send.disabled = true;
     input.disabled = true;
     if (suggestions) suggestions.hidden = true;
-    addMessage('user', text);
-    state.history.push({ role: 'user', content: text });
     renderCopy();
     try {
-      const token = await getAccessToken();
-      if (!token) throw new Error('unauthorized');
-      const headers = { 'Content-Type': 'application/json' };
+      const auth = await getAuthenticatedSession();
+      const token = auth.session.access_token;
       const publishableKey = window.IQZodiacSupabase?.publishableKey;
-      if (publishableKey) headers.apikey = publishableKey;
-      if (token) headers.Authorization = `Bearer ${token}`;
-      const response = await fetch(apiBase, { method: 'POST', headers, body: JSON.stringify({ message: text, history: guestMode ? [] : state.history.slice(-13, -1), conversationId: state.conversationId, guest: false }) });
+      if (!publishableKey) throw makeError('auth_not_configured', 503);
+      addMessage('user', text);
+      state.history.push({ role: 'user', content: text });
+      const headers = { 'Content-Type': 'application/json', apikey: publishableKey, Authorization: `Bearer ${token}` };
+      const response = await fetch(apiBase, { method: 'POST', headers, body: JSON.stringify({ message: text, history: state.history.slice(-13, -1), conversationId: state.conversationId }) });
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.error?.code || 'request_failed');
+      if (!response.ok) throw makeError(payload.error?.code || payload.code || 'request_failed', response.status);
+      if (auth.revision !== authRevision || currentUserId !== (auth.session.user?.id || '')) throw makeError('session_expired', 401);
       addMessage('assistant', payload.answer || t('error'), payload.results || []);
       if (payload.conversationId) state.conversationId = payload.conversationId;
       state.history.push({ role: 'assistant', content: payload.answer || '' });
     } catch (error) {
-      const message = error.message === 'unauthorized' ? (language() === 'ar' ? 'سجّل الدخول أولًا لاستخدام المساعد.' : 'Please sign in before using the assistant.') : t('error');
-      addMessage('assistant', message);
+      const statusCode = Number(error?.status) || 0;
+      const code = safeErrorCode(error?.code || (error instanceof TypeError ? 'network_error' : 'request_failed'));
+      let messageKey = 'generic';
+      if (code === 'no_active_session') messageKey = 'signIn';
+      else if (statusCode === 401 || code === 'session_expired') messageKey = 'expired';
+      else if (statusCode === 403) messageKey = 'forbidden';
+      else if (statusCode === 404) messageKey = 'notFound';
+      else if (statusCode === 429) messageKey = 'rateLimited';
+      else if (statusCode === 500) messageKey = 'server';
+      else if (statusCode === 503) messageKey = ['ai_not_configured', 'auth_not_configured'].includes(code) ? 'setup' : 'service';
+      else if (['network_error', 'supabase_unavailable', 'session_unavailable'].includes(code)) messageKey = 'network';
+      state.notice = errorText(messageKey);
+      console.error('Assistant request failed', { httpStatus: statusCode || null, errorCode: code });
+      if (statusCode === 401 || code === 'session_expired' || code === 'no_active_session') {
+        state.history = [];
+        state.conversationId = '';
+      }
+      addMessage('assistant', state.notice);
     } finally {
       state.busy = false;
       send.disabled = false;
