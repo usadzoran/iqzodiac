@@ -13,7 +13,7 @@ https://mludiumdvwdvuetivxvj.supabase.co/functions/v1/assistant-chat
 أضف هذه القيم في Supabase Dashboard → Edge Functions → Secrets، أو عبر Supabase CLI:
 
 ```text
-AI_API_KEY=your_server_only_key
+AI_API_KEY2=your_server_only_key
 GEMINI_MODEL=gemini-flash-latest
 YOUTUBE_API_KEY=your_server_only_key
 TMDB_API_KEY=your_server_only_key
@@ -21,7 +21,7 @@ IQZODIAC_ASSISTANT_MODEL=gpt-6-luna
 ASSISTANT_ALLOWED_ORIGIN=https://usadzoran.github.io
 ```
 
-`AI_API_KEY` هو مفتاح Google Gemini الإلزامي للمحادثة الفعلية، ويُستخدم فقط داخل Edge Function. `TMDB_API_KEY` و`YOUTUBE_API_KEY` اختياريان، لكن البحث عن الأفلام أو الفيديوهات لن يعمل فعليًا بدونهما. لا تضع أي مفتاح داخل ملفات frontend أو GitHub. يستخدم التنفيذ endpoint الرسمي لـ Gemini `generateContent` عبر ترويسة `X-goog-api-key` مع مهلة 20 ثانية، ولا يقدم ردودًا وهمية عند غياب المزود.
+`AI_API_KEY2` هو الاسم الأساسي المدعوم حاليًا لمفتاح Google Gemini، مع استمرار دعم `AI_API_KEY` للتوافق، ويُستخدم فقط داخل Edge Function. `TMDB_API_KEY` و`YOUTUBE_API_KEY` اختياريان، لكن البحث عن الأفلام أو الفيديوهات لن يعمل فعليًا بدونهما. لا تضع أي مفتاح داخل ملفات frontend أو GitHub. يستخدم التنفيذ endpoint الرسمي لـ Gemini `generateContent` عبر ترويسة `X-goog-api-key` مع مهلة 20 ثانية، ولا يقدم ردودًا وهمية عند غياب المزود.
 
 ## سجل المحادثات وRLS
 

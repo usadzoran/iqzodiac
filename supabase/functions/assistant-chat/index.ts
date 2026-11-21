@@ -84,7 +84,7 @@ async function searchMedia(query: string) {
 }
 
 async function callModel(messages: any[]) {
-  const apiKey = Deno.env.get("AI_API_KEY");
+  const apiKey = Deno.env.get("AI_API_KEY2") || Deno.env.get("AI_API_KEY");
   if (!apiKey) throw new Error("ai_not_configured");
   const baseSetting = Deno.env.get("GEMINI_API_BASE") || "https://generativelanguage.googleapis.com/v1beta";
   const base = baseSetting.endsWith("/") ? baseSetting.slice(0, -1) : baseSetting;
