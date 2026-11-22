@@ -22,4 +22,7 @@
 - [x] Store ad records under RLS and restrict write access to the existing server-side admin identity.
 - [x] Render published ads through sandboxed iframes so supplied HTML cannot access the IQZodiac page DOM or session.
 - [x] Add protected per-ad analytics for unique daily views, clicks, and click-through rate, with event recording isolated from the ad iframe.
-- [ ] Run a production smoke test with one draft and one active multi-section advertisement in each supported placement.
+- [x] Simplify the private studio in Arabic with safe defaults for all currently ad-enabled sections and a visible placement; separate “Publish to all visitors” from “Save draft,” and make targeting/height/priority optional advanced settings.
+- [x] Confirm save success only after Supabase returns the persisted ad row; preserve form contents and show an actionable error if insert/update fails or no row is returned.
+- [x] Ensure published active ads are readable by anonymous visitors and refreshed on already-open Home/Reels pages; keep drafts hidden and do not add synthetic test ads to production.
+- [ ] With explicit user approval, verify a real ad using the user's content; do not create or publish test data in production.

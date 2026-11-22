@@ -1,85 +1,100 @@
 <!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex,nofollow,noarchive" />
-  <meta name="description" content="Private IQZodiac advertising manager." />
-  <title>Ads Manager — IQZodiac</title>
+  <meta name="description" content="استوديو إدارة إعلانات IQZodiac الخاص." />
+  <title>إدارة الإعلانات — IQZodiac</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css" />
-  <link rel="stylesheet" href="./ads-manager.css" />
+  <link rel="stylesheet" href="./ads-manager.css?v=ads-studio-20261122" />
 </head>
 <body class="ads-page">
   <div class="aurora aurora-one" aria-hidden="true"></div><div class="aurora aurora-two" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
   <main class="ads-shell">
     <header class="ads-header">
       <div>
-        <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> PRIVATE ADS STUDIO</p>
-        <h1>Ads <span>Manager.</span></h1>
-        <p>Create one HTML advertisement and send it to several IQZodiac sections and positions at once. The studio keeps the code isolated and makes each campaign easy to review.</p>
+        <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> استوديو الإعلانات الخاص</p>
+        <h1>إدارة <span>الإعلانات.</span></h1>
+        <p class="ads-intro">أنشئ إعلانك، عاينه، ثم اختر النشر للزوار أو الحفظ كمسودة. افتراضيًا يظهر الإعلان المنشور في رأس صفحتي الرئيسية وReels للزوار، سواء سجلوا الدخول أم لا.</p>
       </div>
-      <a class="ads-back" href="./home.html">Return to site ↗</a>
+      <a class="ads-back" href="./home.html">العودة إلى الموقع ↗</a>
     </header>
 
-    <section id="ads-loading" class="ads-card"><p class="ads-status">Verifying advertising access…</p></section>
-    <section id="ads-denied" class="ads-card" hidden><h2>Access denied</h2><p class="ads-status">This private studio is available only to the dedicated IQZodiac advertising administrator.</p></section>
+    <section id="ads-loading" class="ads-card"><p class="ads-status">جارٍ التحقق من صلاحية إدارة الإعلانات…</p></section>
+    <section id="ads-denied" class="ads-card" hidden><h2>لا يمكن فتح الاستوديو</h2><p id="ads-denied-message" class="ads-status">هذا الاستوديو خاص بمسؤول إعلانات IQZodiac.</p></section>
 
     <section id="ads-content" class="ads-workspace" hidden>
       <article class="ads-card ads-editor-card">
-        <div class="ads-card-heading"><div><p class="ads-step">01 / CAMPAIGN</p><h2>Create or edit an advertisement</h2></div><span class="ads-secure-badge">Sandboxed HTML</span></div>
-        <p class="ads-card-note">Choose several sections and positions below. The same creative will be displayed in every selected combination.</p>
+        <div class="ads-card-heading"><div><p class="ads-step">الخطوة ١ · الإعلان</p><h2>إنشاء إعلان أو تعديله</h2></div><span class="ads-secure-badge">HTML معزول</span></div>
+        <p class="ads-card-note">الإعلان المنشور متاح لجميع الزوار في مواضع Home وReels المهيأة. المسودة تبقى مخفية. مناطق الإعلانات بين المنشورات والمقاطع لا تظهر إلا بعد وجود المحتوى المطلوب.</p>
         <form id="ad-form" class="ads-form">
           <input id="ad-id" type="hidden" />
-          <label class="ads-label">Campaign name<input id="ad-name" class="ads-input" maxlength="120" required placeholder="Summer campaign" /></label>
+          <label class="ads-label" for="ad-name">اسم الإعلان<input id="ad-name" class="ads-input" maxlength="120" required placeholder="مثال: حملة الصيف" /></label>
+          <label class="ads-label" for="ad-html">محتوى الإعلان (HTML)<textarea id="ad-html" class="ads-textarea" dir="ltr" spellcheck="false" maxlength="200000" required placeholder="<a href=&quot;https://example.com&quot; target=&quot;_blank&quot;><img src=&quot;https://example.com/banner.jpg&quot; alt=&quot;Campaign&quot;></a>"></textarea></label>
+          <p class="ads-helper ads-html-note">المعاينة والنشر يعملان داخل إطار معزول؛ لا تستخدم شيفرة تطلب الوصول إلى صفحة IQZodiac أو جلسة المستخدم.</p>
 
-          <fieldset class="ads-fieldset">
-            <legend><span class="ads-step">02</span> Site sections</legend>
-            <p class="ads-helper">Where should this campaign be eligible?</p>
-            <div class="ads-choice-grid ads-section-choices">
-              <label class="ads-choice ads-choice-wide"><input class="ad-section-choice" type="checkbox" value="all" /><span><strong>All eligible sections</strong><small>Home and Reels now; future ad-ready sections automatically.</small></span></label>
-              <label class="ads-choice"><input class="ad-section-choice" type="checkbox" value="home" /><span><strong>Home</strong><small>Feed and home layout</small></span></label>
-              <label class="ads-choice"><input class="ad-section-choice" type="checkbox" value="reels" /><span><strong>Reels</strong><small>Vertical video feed</small></span></label>
+          <details class="ads-advanced" id="ad-target-options">
+            <summary>خيارات العرض المتقدمة <span>(اختياري — الإعداد الافتراضي مناسب لمعظم الإعلانات)</span></summary>
+            <div class="ads-advanced-content">
+              <fieldset class="ads-fieldset">
+                <legend><span class="ads-step">٢</span> الصفحات المدعومة</legend>
+                <p class="ads-helper">الاختيار الافتراضي يشمل Home وReels. يمكنك حصر الحملة في قسم واحد.</p>
+                <div class="ads-choice-grid ads-section-choices">
+                  <label class="ads-choice ads-choice-wide"><input class="ad-section-choice" type="checkbox" value="all" checked /><span><strong>كل الصفحات المدعومة</strong><small>الرئيسية وReels حاليًا؛ لا تظهر الإعلانات في صفحات أخرى غير مهيأة.</small></span></label>
+                  <label class="ads-choice"><input class="ad-section-choice" type="checkbox" value="home" /><span><strong>الرئيسية</strong><small>Home والمنشورات</small></span></label>
+                  <label class="ads-choice"><input class="ad-section-choice" type="checkbox" value="reels" /><span><strong>Reels</strong><small>مقاطع الفيديو العمودية</small></span></label>
+                </div>
+              </fieldset>
+
+              <fieldset class="ads-fieldset">
+                <legend><span class="ads-step">٣</span> موضع الإعلان</legend>
+                <p class="ads-helper">افتراضيًا: رأس الصفحة، وهو متاح في Home وReels. المساحة الرئيسية وبين المنشورات في Home فقط، وبين Reels في Reels فقط؛ اختر موضعًا متاحًا لكل صفحة محددة.</p>
+                <div class="ads-choice-grid ads-placement-choices">
+                  <label class="ads-choice"><input class="ad-placement-choice" type="checkbox" value="header" checked /><span><strong>رأس الصفحة</strong><small>موضع ثابت في Home وReels</small></span></label>
+                  <label class="ads-choice"><input class="ad-placement-choice" type="checkbox" value="hero" /><span><strong>المساحة الرئيسية</strong><small>قسم الترحيب في الصفحة الرئيسية</small></span></label>
+                  <label class="ads-choice"><input class="ad-placement-choice" type="checkbox" value="feed_between" /><span><strong>بين المنشورات</strong><small>يظهر بعد توفر ٣ منشورات على الأقل</small></span></label>
+                  <label class="ads-choice"><input class="ad-placement-choice" type="checkbox" value="reels_between" /><span><strong>بين مقاطع Reels</strong><small>يظهر بعد توفر ٣ مقاطع على الأقل</small></span></label>
+                  <label class="ads-choice"><input class="ad-placement-choice" type="checkbox" value="footer" /><span><strong>أسفل الصفحة</strong><small>نهاية القسم المدعوم</small></span></label>
+                </div>
+              </fieldset>
+
+              <div class="ads-row">
+                <label class="ads-label" for="ad-height">ارتفاع الإعلان (بكسل)<input id="ad-height" class="ads-input" type="number" min="40" max="600" value="100" required /></label>
+                <label class="ads-label" for="ad-priority">أولوية العرض<input id="ad-priority" class="ads-input" type="number" min="-10000" max="10000" value="0" /></label>
+              </div>
             </div>
-          </fieldset>
+          </details>
 
-          <fieldset class="ads-fieldset">
-            <legend><span class="ads-step">03</span> Ad positions</legend>
-            <p class="ads-helper">Select one or more places. You can combine Header + Hero + Footer, for example.</p>
-            <div class="ads-choice-grid ads-placement-choices">
-              <label class="ads-choice"><input class="ad-placement-choice" type="checkbox" value="header" /><span><strong>Header</strong><small>Top of the section</small></span></label>
-              <label class="ads-choice"><input class="ad-placement-choice" type="checkbox" value="hero" /><span><strong>Hero</strong><small>Featured welcome area</small></span></label>
-              <label class="ads-choice"><input class="ad-placement-choice" type="checkbox" value="feed_between" /><span><strong>Between posts</strong><small>Inserted into the Home feed</small></span></label>
-              <label class="ads-choice"><input class="ad-placement-choice" type="checkbox" value="reels_between" /><span><strong>Between Reels</strong><small>Inserted into the Reels feed</small></span></label>
-              <label class="ads-choice"><input class="ad-placement-choice" type="checkbox" value="footer"><span><strong>Footer</strong><small>Bottom of the section</small></span></label>
-            </div>
-            <p id="ad-target-summary" class="ads-selection-summary" aria-live="polite">Choose at least one section and one position.</p>
-          </fieldset>
-
-          <div class="ads-row"><label class="ads-label">Height (px)<input id="ad-height" class="ads-input" type="number" min="40" max="600" value="100" required /></label><label class="ads-label">Priority<input id="ad-priority" class="ads-input" type="number" min="-10000" max="10000" value="0" /></label></div>
-          <label class="ads-label">HTML code<textarea id="ad-html" class="ads-textarea" required placeholder="<a href=&quot;https://example.com&quot; target=&quot;_blank&quot;><img src=&quot;https://example.com/banner.jpg&quot; alt=&quot;Campaign&quot;></a>"></textarea></label>
-          <label class="ads-check"><input id="ad-active" type="checkbox" /> Publish this advertisement</label>
-          <div class="ads-actions"><button id="ad-submit" class="ads-button primary" type="submit">Create advertisement</button><button id="ad-preview-button" class="ads-button" type="button">Preview</button><button id="ad-reset" class="ads-button" type="button">Clear</button></div>
+          <p id="ad-target-summary" class="ads-selection-summary" aria-live="polite">الافتراضي: كل الصفحات المدعومة (Home وReels) · رأس الصفحة.</p>
+          <div class="ads-publish-note"><strong>اختر الإجراء بوضوح:</strong><span>النشر يجعل الإعلان نشطًا للزوار. حفظ المسودة لا يعرضه على الموقع.</span></div>
+          <div class="ads-actions ads-publish-actions">
+            <button id="ad-publish" class="ads-button primary" type="submit" data-ad-action="publish">نشر الآن للزوار</button>
+            <button id="ad-draft" class="ads-button draft" type="submit" data-ad-action="draft">حفظ كمسودة</button>
+            <button id="ad-preview-button" class="ads-button" type="button">معاينة</button>
+            <button id="ad-reset" class="ads-button" type="button">إعلان جديد</button>
+          </div>
           <p id="ads-status" class="ads-status" aria-live="polite"></p>
-          <div id="ad-preview" class="ads-preview" aria-label="Advertisement preview"></div>
+          <div id="ad-preview" class="ads-preview" aria-label="معاينة الإعلان" hidden></div>
         </form>
       </article>
 
       <aside class="ads-side-column">
         <article class="ads-card ads-analytics-card">
-          <div class="ads-card-heading"><div><p class="ads-step">ANALYTICS</p><h2>Campaign performance</h2></div><button id="ads-refresh-analytics" class="ads-icon-button" type="button" title="Refresh analytics" aria-label="Refresh analytics">↻</button></div>
-          <p class="ads-card-note">Unique daily views and clicks are recorded for active advertisements. Only administrators can see these totals.</p>
-          <div class="ads-metrics"><div><strong id="ads-total-views">0</strong><span>Views</span></div><div><strong id="ads-total-clicks">0</strong><span>Clicks</span></div><div><strong id="ads-average-ctr">0%</strong><span>Average CTR</span></div></div>
-          <div id="ads-analytics-list" class="ads-analytics-list"><p class="ads-status">Loading analytics…</p></div>
+          <div class="ads-card-heading"><div><p class="ads-step">الإحصاءات</p><h2>أداء الحملات</h2></div><button id="ads-refresh-analytics" class="ads-icon-button" type="button" title="تحديث الإحصاءات" aria-label="تحديث الإحصاءات">↻</button></div>
+          <p class="ads-card-note">تُحسب المشاهدات والنقرات اليومية الفريدة للإعلانات النشطة. هذه الأرقام ظاهرة لمسؤول الإعلانات فقط.</p>
+          <div class="ads-metrics"><div><strong id="ads-total-views">0</strong><span>مشاهدة</span></div><div><strong id="ads-total-clicks">0</strong><span>نقرة</span></div><div><strong id="ads-average-ctr">0%</strong><span>معدل النقر</span></div></div>
+          <div id="ads-analytics-list" class="ads-analytics-list"><p class="ads-status">جارٍ تحميل الإحصاءات…</p></div>
         </article>
-        <article class="ads-card ads-guide-card"><p class="ads-step">QUICK GUIDE</p><h2>Build once. Place anywhere.</h2><ol><li><span>1</span><div><strong>Name the campaign</strong><small>Use a name your team will recognize.</small></div></li><li><span>2</span><div><strong>Select targets</strong><small>Multiple sections and positions are supported.</small></div></li><li><span>3</span><div><strong>Preview, then publish</strong><small>Drafts stay invisible to visitors.</small></div></li></ol></article>
-        <article class="ads-card"><div class="ads-card-heading"><div><p class="ads-step">INVENTORY</p><h2>Your advertisements</h2></div><span id="ads-count" class="ads-count">0</span></div><p class="ads-card-note">Active campaigns are filtered by their selected sections and positions. When several ads target the same place, the highest priority wins.</p><div id="ads-list" class="ads-list"></div></article>
+        <article class="ads-card ads-guide-card"><p class="ads-step">دليل سريع</p><h2>أنشئ، عاين، ثم اختر</h2><ol><li><span>١</span><div><strong>اكتب اسم الإعلان ومحتواه</strong><small>يُعرض HTML داخل إطار معزول.</small></div></li><li><span>٢</span><div><strong>استخدم الإعداد الافتراضي أو غيّره</strong><small>يمكن اختيار أقسام ومواضع متعددة.</small></div></li><li><span>٣</span><div><strong>انشر أو احفظ كمسودة</strong><small>المسودة لا تظهر للزوار؛ النشر ظاهر للجميع في الصفحات المدعومة.</small></div></li></ol></article>
+        <article class="ads-card"><div class="ads-card-heading"><div><p class="ads-step">الحملات</p><h2>إعلاناتك</h2></div><span id="ads-count" class="ads-count">0</span></div><p class="ads-card-note">عند استهداف أكثر من إعلان للموضع نفسه، يُعرض الإعلان صاحب الأولوية الأعلى.</p><div id="ads-list" class="ads-list"><p class="ads-status">جارٍ تحميل الإعلانات…</p></div></article>
       </aside>
     </section>
   </main>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-client.js"></script><script src="./ads-manager.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-client.js"></script><script src="./ads-manager.js?v=ads-studio-20261122"></script>
 </body>
 </html>
