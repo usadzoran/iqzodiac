@@ -34,3 +34,10 @@ Extend the existing model record additively with source, provider reference, pro
 ### Official evidence
 
 Clad's official developer page states that the service accepts one photo or eight short questions and exposes GLB meshes plus ISO 8559-1 measurements. The official OpenAPI document defines `POST /v1/body/from-photo` as multipart form data with `photo` and `height_cm`, returning an asynchronous `job_id`; `GET /v1/jobs/{job_id}` returns queued, running, completed, or failed status and the completed mesh, measurements, and opaque params. It also defines bearer authentication and a weekly photo quota. Source: https://clad.you/developers and https://api.clad.you/openapi.json.
+
+
+## Discover Vault
+
+Reuse the existing Discover page and navigation rather than creating a second Discover route. Add a compact Vault card with private image, video, and audio upload controls. Store only owner-scoped metadata in `vault_items` and originals in the non-public `iqzodiac-vault-private` bucket, with RLS and Storage policies requiring the authenticated user's folder.
+
+The browser uses WebAuthn platform user verification before revealing signed media URLs. On supported phones this invokes Face ID, fingerprint, or the operating-system device lock, which may be a PIN or pattern. The web platform does not expose a direct API for a site's own custom phone pattern. The server-side privacy boundary remains Supabase Auth, RLS, and private Storage; the biometric prompt is an additional local unlock gate.

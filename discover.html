@@ -8,6 +8,7 @@
   <title>Discover — IQZodiac</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./discover-vault.css" />
   <style>
     .discover-shell{width:min(100% - 32px,900px);margin:0 auto;padding:clamp(36px,8vh,90px) 0 150px}
     .discover-hero{max-width:680px;margin:0 auto 26px;text-align:center}
@@ -31,6 +32,7 @@
       <article class="discover-card"><div><p class="card-kicker">02 / Audio rooms</p><h2>Join a voice room</h2><p>Choose a category and join an open audio conversation.</p></div><a href="./audio-rooms.html">Open audio rooms ↗</a></article><article class="discover-card"><div><p class="card-kicker">03 / Live</p><h2>Watch live broadcasts</h2><p>Browse live sessions grouped by their category.</p></div><a href="./live.html">Open live broadcasts ↗</a></article>
       <article class="discover-card"><div><p class="card-kicker">04 / Self-discovery</p><h2>Find your compatible orbit</h2><p>Open the real member matches created from completed discovery profiles.</p><small class="assistant-discover-note">No sample profiles or invented compatibility results are shown.</small></div><a href="./match.html">Open Match ↗</a></article><article class="discover-card"><div><p class="card-kicker">05 / Watch</p><h2>Watch YouTube in your orbit</h2><p>Search real videos and play them through the official YouTube player without leaving IQZodiac.</p></div><a href="./youtube.html">Open YouTube ↗</a></article><article class="discover-card"><div><p class="card-kicker">06 / Cinema</p><h2>Explore films</h2><p>Browse the curated movie collection, filter by genre, and open each title on IMDb.</p></div><a href="./movies.html">Open movies ↗</a></article>
       <article class="discover-card"><div><p class="card-kicker">06 / Private space</p><h2>Message your matches</h2><p>Continue private conversations with WhatsApp-inspired message bubbles, attachments and disappearing-message controls.</p></div><a href="./messages.html">Open messages ↗</a></article>
+      <article class="discover-card vault-card" id="vault-card"><div class="vault-copy"><p class="card-kicker">07 / Private space</p><h2>Vault</h2><p>Keep personal photos, videos, and voice recordings away from public areas. Only your account can access the private storage.</p><span class="vault-note">On supported phones, Face ID, fingerprint, or the device screen lock is required. The browser cannot call a phone’s custom pattern directly.</span><span class="vault-status" id="vault-status">Your Vault is locked.</span></div><div id="vault-locked"><div class="vault-actions"><button class="vault-button" id="vault-unlock" type="button">Unlock with device security</button><button class="vault-button secondary" id="vault-setup" type="button">Set up device unlock</button></div></div><div id="vault-unlocked" hidden><div class="vault-actions"><label class="vault-file-label" for="vault-file-input">Add private media</label><input class="vault-file-input" id="vault-file-input" type="file" accept="image/*,video/*,audio/*" multiple><button class="vault-button secondary" id="vault-lock" type="button">Lock Vault</button></div><p class="vault-empty" id="vault-empty">No private files yet.</p><div class="vault-list" id="vault-list"></div></div></article>
     </section>
   </main>
   <footer class="footer"><span>© 2026 IQZodiac</span><span>Look inward. Move forward.</span><button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>
@@ -43,6 +45,6 @@
   </nav>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-client.js"></script><script src="./auth-guard.js"></script><script src="./auth-ui.js?v=profile-logout-20261117"></script>
     <script src="./i18n-data.js?v=20261022-global"></script><script src="./language.js?v=menu-reels-20261117"></script>
-    <script src="./nav-performance.js" defer></script>
+    <script src="./nav-performance.js" defer></script><script src="./discover-vault.js" defer></script>
   </body>
 </html>
