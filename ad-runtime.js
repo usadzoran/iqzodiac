@@ -105,7 +105,7 @@
     }
   };
 
-  const adDocument = (html, adId) => `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;padding:0;background:transparent;overflow:hidden}body{font-family:system-ui,sans-serif}</style></head><body>${html}<script>document.addEventListener('click',function(){parent.postMessage({type:'iqzodiac-ad-click',adId:${JSON.stringify(adId)}},'*')},true);<\/script></body></html>`;
+  const adDocument = (html, adId) => `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;padding:0;background:transparent;overflow:hidden}body{font-family:system-ui,sans-serif}</style></head><body>${html}<script>document.addEventListener('click',function(event){var link=event.target&&event.target.closest?event.target.closest('a[href]'):null;if(event.isTrusted&&link&&(!link.target||link.target==='_self')){try{var destination=new URL(link.href,document.baseURI);if(destination.protocol==='http:'||destination.protocol==='https:')link.target='_top'}catch(_){}}parent.postMessage({type:'iqzodiac-ad-click',adId:${JSON.stringify(adId)}},'*')},true);<\/script></body></html>`;
 
   const versionFor = (ad) => {
     const source = `${ad.id}|${ad.updated_at || ''}|${ad.name || ''}|${ad.height_px || ''}|${ad.html_code || ''}`;
@@ -120,7 +120,7 @@
     frame.title = ad.name || 'Advertisement';
     frame.loading = 'lazy';
     frame.referrerPolicy = 'no-referrer';
-    frame.sandbox.add('allow-scripts', 'allow-forms', 'allow-popups', 'allow-popups-to-escape-sandbox');
+    frame.sandbox.add('allow-scripts', 'allow-forms', 'allow-popups', 'allow-popups-to-escape-sandbox', 'allow-top-navigation-by-user-activation');
     frame.style.height = `${Math.max(40, Math.min(600, Number(ad.height_px) || 100))}px`;
     frame.srcdoc = adDocument(ad.html_code, ad.id);
     frame.dataset.adId = String(ad.id);
