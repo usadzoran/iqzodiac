@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow,noarchive" /><meta name="description" content="Private IQZodiac advertising manager." />
+  <title>Ads Manager — IQZodiac</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" /><link rel="stylesheet" href="./ads-manager.css" />
+</head>
+<body class="ads-page">
+  <div class="aurora aurora-one" aria-hidden="true"></div><div class="aurora aurora-two" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
+  <main class="ads-shell">
+    <header class="ads-header"><div><p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> PRIVATE ADS STUDIO</p><h1>Ads <span>Manager.</span></h1><p>Manage trusted HTML advertisements without opening the general Admin Control Center. Choose a placement, preview the code in an isolated sandbox, and publish or keep it as a draft.</p></div><a class="ads-back" href="./home.html">Return to site ↗</a></header>
+    <section id="ads-loading" class="ads-card"><p class="ads-status">Verifying advertising access…</p></section>
+    <section id="ads-denied" class="ads-card" hidden><h2>Access denied</h2><p class="ads-status">This private studio is available only to the dedicated IQZodiac advertising administrator.</p></section>
+    <section id="ads-content" class="ads-layout" hidden>
+      <article class="ads-card"><h2>Create or edit an advertisement</h2><p class="ads-card-note">HTML is rendered inside a sandboxed iframe. Scripts cannot access the IQZodiac page or its session.</p><form id="ad-form" class="ads-form"><input id="ad-id" type="hidden" /><label class="ads-label">Name<input id="ad-name" class="ads-input" maxlength="120" required placeholder="Summer campaign" /></label><div class="ads-row"><label class="ads-label">Placement<select id="ad-placement" class="ads-select"><option value="header">Header</option><option value="hero">Hero</option><option value="feed_between">Between posts</option><option value="reels_between">Between Reels</option><option value="footer">Footer</option></select></label><label class="ads-label">Height (px)<input id="ad-height" class="ads-input" type="number" min="40" max="600" value="100" required /></label></div><label class="ads-label">Priority<input id="ad-priority" class="ads-input" type="number" min="-10000" max="10000" value="0" /></label><label class="ads-label">HTML code<textarea id="ad-html" class="ads-textarea" required placeholder="<a href=\"https://example.com\" target=\"_blank\"><img src=\"https://example.com/banner.jpg\" alt=\"Campaign\"></a>"></textarea></label><label class="ads-check"><input id="ad-active" type="checkbox" /> Publish this advertisement</label><div class="ads-actions"><button id="ad-submit" class="ads-button primary" type="submit">Create advertisement</button><button id="ad-preview-button" class="ads-button" type="button">Preview</button><button id="ad-reset" class="ads-button" type="button">Clear</button></div><p id="ads-status" class="ads-status" aria-live="polite"></p><div id="ad-preview" class="ads-preview" aria-label="Advertisement preview"></div></form></article>
+      <article class="ads-card"><h2>Advertisement inventory</h2><p class="ads-card-note">Only the highest-priority active advertisement for each placement is shown to users.</p><div id="ads-list" class="ads-list"></div></article>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./supabase-client.js"></script><script src="./ads-manager.js"></script>
+</body>
+</html>

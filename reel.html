@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css?v=reel-notification-deeplinks-20261108" />
   <link rel="stylesheet" href="./reel.css?v=reel-glass-actions-20261117" />
+  <link rel="stylesheet" href="./ad-runtime.css" />
 </head>
 <body class="has-site-nav reel-page">
   <div class="aurora aurora-one" aria-hidden="true"></div><div class="aurora aurora-two" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
@@ -22,11 +23,14 @@
         <button type="button" id="open-reel-create" class="reel-create-button" aria-label="Create a Reel" title="Create a Reel"><span aria-hidden="true">＋</span></button>
       </div>
     </header>
+    <div class="site-ad-slot reel-ad-slot" data-ad-slot="header" hidden></div>
 
     <div id="reel-feed" class="reel-feed" role="feed" aria-label="Published Reels" tabindex="0">
       <p id="reel-feed-status" class="reel-feed-status" role="status" aria-live="polite">Loading Reels…</p>
       <div id="reel-load-sentinel" class="reel-load-sentinel" aria-hidden="true"></div>
+      <div class="site-ad-slot reel-ad-slot" data-ad-slot="reels_between" hidden></div>
     </div>
+    <div class="site-ad-slot reel-ad-slot" data-ad-slot="footer" hidden></div>
   </main>
 
   <dialog id="reel-create-dialog" class="reel-dialog reel-create-dialog" aria-labelledby="reel-create-title">
@@ -110,6 +114,6 @@
   <div class="toast" role="status" aria-live="polite" aria-atomic="true"><span class="toast-icon" aria-hidden="true">✦</span><span class="toast-message"></span></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script><script src="./supabase-client.js" defer></script><script src="./auth-guard.js" defer></script><script src="./auth-ui.js?v=profile-logout-20261117" defer></script>
-  <script src="./i18n-data.js?v=reel-fullscreen-pause-20261113" defer></script><script src="./language.js?v=menu-reels-20261117" defer></script><script src="./reel.js?v=reel-fast-feed-glass-actions-20261117" defer></script><script src="./nav-performance.js" defer></script>
+  <script src="./i18n-data.js?v=reel-fullscreen-pause-20261113" defer></script><script src="./language.js?v=menu-reels-20261117" defer></script><script src="./reel.js?v=reel-fast-feed-glass-actions-20261117" defer></script><script src="./nav-performance.js" defer></script><script src="./ad-runtime.js" defer></script>
 </body>
 </html>

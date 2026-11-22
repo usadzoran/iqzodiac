@@ -8,10 +8,17 @@
 - [x] Add height input, explicit Uploading/Processing/Completed/Failed states, and real measurement rendering to the existing Profile 3D Body card.
 - [ ] Add the user-provided Clad API key as the Supabase Edge Function Secret `CLAD_API_KEY`, then run a real authenticated upload with a user photo and verify the returned GLB, measurements, Storage asset, and privacy permissions.
 
-
 ## Discover Vault
 - [x] Add an additive private Vault card inside the existing Discover page for images, videos, and audio recordings.
 - [x] Store Vault metadata in an owner-only RLS table and files in a non-public Supabase Storage bucket scoped to the authenticated user.
 - [x] Require WebAuthn platform user verification before revealing Vault media; supported devices may use Face ID, fingerprint, device PIN, or device pattern through the operating system.
 - [x] Provide private upload, signed-url playback, lock, and delete controls without changing existing Discover destinations.
 - [ ] Run an authenticated device test on iOS/Android to verify Face ID/device-lock prompts, upload/playback, cross-account denial, and deletion.
+
+## Site Ads Manager
+- [x] Create a separate private Ads Manager page, outside the member UI and separate from the general Admin Control Center UI.
+- [x] Allow the advertising administrator to create, edit, preview, publish, draft, and delete HTML advertisements.
+- [x] Support Header, Hero, Between posts, Between Reels, and Footer placements with priority and display height controls.
+- [x] Store ad records under RLS and restrict write access to the existing server-side admin identity.
+- [x] Render published ads through sandboxed iframes so supplied HTML cannot access the IQZodiac page DOM or session.
+- [ ] Run a production smoke test with one draft and one active advertisement in each supported placement.

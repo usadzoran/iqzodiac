@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css?v=profile-tabs-20261112" />
+    <link rel="stylesheet" href="./ad-runtime.css" />
   </head>
   <body class="home-page has-site-nav">
     <div class="aurora aurora-one" aria-hidden="true"></div>
@@ -36,6 +37,7 @@
           <span class="nav-avatar home-avatar-small" data-current-user-initials aria-label="Signed in as pseudonymous member">OM</span>
         </nav>
       </header>
+      <div class="site-ad-slot" data-ad-slot="header" hidden></div>
 
       <div class="home-layout">
         <section class="feed-column" aria-labelledby="home-title">
@@ -47,6 +49,7 @@
             </div>
             <div class="welcome-orbit" aria-hidden="true"><span></span><i></i></div>
           </div>
+          <div class="site-ad-slot" data-ad-slot="hero" hidden></div>
 
           <section class="daily-spark" aria-labelledby="spark-title">
             <div class="spark-heading"><span class="spark-icon" aria-hidden="true">✦</span><div><p class="spark-kicker">A tiny prompt for today</p><h2 id="spark-title">What felt like a little win?</h2></div></div>
@@ -94,6 +97,7 @@
             <p class="match-empty">Loading the shared feed…</p>
           <p class="match-empty">Loading the shared feed…</p>
           </div>
+          <div class="site-ad-slot" data-ad-slot="feed_between" hidden></div>
         </section>
 
         <aside class="home-trends">
@@ -103,7 +107,7 @@
         </aside>
       </div>
 
-      <footer class="footer home-footer"><span>© 2026 IQZodiac</span><span class="footer-orbit" aria-hidden="true"><i></i><i></i><i></i></span><span>Look inward. Move forward.</span><button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>
+      <div class="site-ad-slot" data-ad-slot="footer" hidden></div><footer class="footer home-footer"><span>© 2026 IQZodiac</span><span class="footer-orbit" aria-hidden="true"><i></i><i></i><i></i></span><span>Look inward. Move forward.</span><button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>
     </main>
 
     <nav class="site-nav" aria-label="Main navigation">
@@ -118,6 +122,6 @@
     <script src="./i18n-data.js?v=20261022-global" defer></script>
   <script src="./language.js?v=menu-reels-20261117" defer></script>
     <script src="./home.js?v=post-save-20261112" defer></script>
-      <script src="./nav-performance.js" defer></script>
+      <script src="./nav-performance.js" defer></script><script src="./ad-runtime.js" defer></script>
   </body>
 </html>
