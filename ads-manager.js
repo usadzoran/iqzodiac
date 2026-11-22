@@ -50,7 +50,7 @@
     try {
       client = await window.IQZodiacSupabase.ready;
       const { data: session } = await client.auth.getSession();
-      if (!session.session) { window.location.replace('./login.html?next=./ads-manager.html'); return; }
+      if (!session.session) { window.location.replace('./login.html?next=./orbit-ads-studio-7f3a91c2.html'); return; }
       const { data: allowed, error } = await client.rpc('iqzodiac_is_admin');
       if (error || allowed !== true) { $('#ads-loading').hidden = true; $('#ads-denied').hidden = false; return; }
       $('#ads-loading').hidden = true; $('#ads-content').hidden = false;
