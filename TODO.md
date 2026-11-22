@@ -18,7 +18,7 @@
 ## Site Ads Manager
 - [x] Create a separate private Ads Manager page, outside the member UI and separate from the general Admin Control Center UI.
 - [x] Allow the advertising administrator to create, edit, preview, publish, draft, and delete HTML advertisements.
-- [x] Support Header, Hero, Between posts, Between Reels, and Footer placements with priority and display height controls.
+- [x] Support multiple site sections and multiple Header, Hero, Between posts, Between Reels, and Footer placements per advertisement, with priority and display height controls.
 - [x] Store ad records under RLS and restrict write access to the existing server-side admin identity.
 - [x] Render published ads through sandboxed iframes so supplied HTML cannot access the IQZodiac page DOM or session.
-- [ ] Run a production smoke test with one draft and one active advertisement in each supported placement.
+- [ ] Run a production smoke test with one draft and one active multi-section advertisement in each supported placement.
