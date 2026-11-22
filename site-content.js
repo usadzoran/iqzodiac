@@ -10,12 +10,12 @@
     mounted.add(root);
     root.innerHTML = `
       <nav class="content-tabs" aria-label="Content workspace sections">
-        <button class="content-tab-button is-active" type="button" data-content-tab="pages">Public pages</button>
+        <button class="content-tab-button is-active" type="button" data-content-tab="pages">Website sections</button>
         <button class="content-tab-button" type="button" data-content-tab="categories">Marketplace categories</button>
       </nav>
       <section class="content-panel is-active" data-content-panel="pages">
         <article class="admin-card admin-wide">
-          <div class="admin-section-heading"><div><h2>Public pages</h2><p>Plain-text bilingual content. Published pages appear in the visitor page directory.</p></div></div>
+          <div class="admin-section-heading"><div><h2>Website sections / pages</h2><p>Create a new section or select an existing one below to edit its bilingual content and publication status.</p></div></div>
           <form id="content-page-form" class="content-editor-form">
             <input type="hidden" id="content-page-id" />
             <label>English title<input id="content-page-title-en" class="admin-input" required maxlength="120" /></label>
@@ -25,7 +25,7 @@
             <label class="content-editor-wide">English content<textarea id="content-page-body-en" class="content-textarea" maxlength="30000" rows="8"></textarea></label>
             <label class="content-editor-wide">Arabic content<textarea id="content-page-body-ar" class="content-textarea" maxlength="30000" rows="8" dir="rtl"></textarea></label>
             <label class="admin-check"><input id="content-page-published" type="checkbox" /> Published and visible to visitors</label>
-            <div class="content-editor-actions"><button class="admin-button admin-button-primary" type="submit">Save page</button><button class="admin-button" id="content-page-reset" type="button">Clear form</button><span class="admin-status" id="content-page-status" aria-live="polite"></span></div>
+            <div class="content-editor-actions"><button class="admin-button admin-button-primary" type="submit">Create / save section</button><button class="admin-button" id="content-page-reset" type="button">Clear form</button><span class="admin-status" id="content-page-status" aria-live="polite"></span></div>
           </form>
           <div id="content-pages-table"><p class="admin-status">Loading pages…</p></div>
         </article>
@@ -66,7 +66,7 @@
       const { data, error } = await client.from('site_pages').select('id,slug,title_en,title_ar,is_published,sort_order,updated_at').order('sort_order').order('title_en').limit(300);
       if (error) { report(container, error, 'Pages could not be loaded.'); return; }
       pages = data || [];
-      if (!pages.length) { container.innerHTML = '<p class="admin-empty">No pages yet. Create the first public page above.</p>'; return; }
+      if (!pages.length) { container.innerHTML = '<p class="admin-empty">No website sections yet. Create the first section above.</p>'; return; }
       container.innerHTML = `<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>English title</th><th>Arabic title</th><th>Link</th><th>State</th><th>Order</th><th>Updated</th><th>Actions</th></tr></thead><tbody>${pages.map((page) => `<tr><td>${escapeHTML(page.title_en)}</td><td dir="rtl">${escapeHTML(page.title_ar)}</td><td><code>${escapeHTML(page.slug)}</code></td><td>${page.is_published ? 'Published' : 'Draft'}</td><td>${Number(page.sort_order)}</td><td class="muted">${escapeHTML(date(page.updated_at))}</td><td><div class="admin-actions"><button class="admin-action" type="button" data-page-edit="${escapeHTML(page.id)}">Edit</button><button class="admin-action" type="button" data-page-publish="${escapeHTML(page.id)}" data-published="${page.is_published}">${page.is_published ? 'Unpublish' : 'Publish'}</button>${root.dataset.siteAdmin === 'true' ? `<button class="admin-action admin-button-danger" type="button" data-page-delete="${escapeHTML(page.id)}">Delete</button>` : ''}</div></td></tr>`).join('')}</tbody></table></div>`;
     };
 
