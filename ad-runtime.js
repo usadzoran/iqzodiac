@@ -25,10 +25,75 @@
       return `${Date.now()}-${Math.random()}-iqzodiac`;
     }
   })();
+  const contentSlotAnchors = {
+    assistant: '.smart-assistant',
+    audio_rooms: '.rooms-category-cards',
+    daily: '.daily-grid',
+    discover: '.discover-grid',
+    home: '.home-layout',
+    landing: '.actions',
+    live: '.rooms-category-cards',
+    marketplace: '.marketplace-toolbar',
+    match: '.match-filters',
+    messages: '.messages-panel',
+    movies: '[aria-label="Movie collection"]',
+    profile: '.profile-activity-shell',
+    reel_profile: '.body3d-visitor-card, .reel-profile-collections',
+    reels: '#reel-feed',
+    rooms: '.spaces-grid',
+    vip: '.vip-card',
+    vip_live: '.vip-card',
+    wallet: '.balance-grid',
+    youtube: '#youtube-search-card'
+  };
   let clientPromise;
   let client;
   let ads = [];
   let refreshPromise;
+
+  const createSlot = (name) => {
+    const slot = document.createElement('div');
+    slot.className = 'site-ad-slot global-site-ad-slot';
+    slot.dataset.adSlot = name;
+    slot.hidden = true;
+    return slot;
+  };
+  const addAfter = (anchor, slot) => {
+    if (anchor?.parentNode) anchor.after(slot);
+    return slot;
+  };
+  const ensurePageSlots = () => {
+    const section = pageSection();
+    if (section === 'all') return;
+    const main = document.querySelector('main') || document.body;
+    const existing = (name) => document.querySelector(`[data-ad-slot="${name}"]`);
+
+    if (!existing('header')) {
+      const slot = createSlot('header');
+      const pageHeader = main.querySelector(':scope > header, :scope > nav');
+      if (pageHeader) addAfter(pageHeader, slot);
+      else main.prepend(slot);
+    }
+
+    if (!existing('hero')) {
+      const slot = createSlot('hero');
+      const selector = contentSlotAnchors[section];
+      const contentAnchor = selector ? main.querySelector(selector) : null;
+      if (contentAnchor) contentAnchor.before(slot);
+      else {
+        const firstSection = main.querySelector(':scope > section, :scope > article');
+        if (firstSection) firstSection.before(slot);
+        else main.append(slot);
+      }
+    }
+
+    if (!existing('footer')) {
+      const slot = createSlot('footer');
+      const footer = document.querySelector('footer.footer, main > footer');
+      if (footer?.parentNode) footer.before(slot);
+      else main.append(slot);
+    }
+  };
 
   const record = async (adId, eventType) => {
     try {
@@ -99,6 +164,7 @@
   };
 
   const renderAll = () => {
+    ensurePageSlots();
     const slots = [...document.querySelectorAll('[data-ad-slot]')];
     slots.filter((slot) => !['feed_between', 'reels_between'].includes(slot.dataset.adSlot)).forEach(render);
     const homeRoot = document.querySelector('#feed-list');
@@ -134,13 +200,12 @@
   });
 
   const init = async () => {
-    if (!document.querySelector('[data-ad-slot]') || !window.IQZodiacSupabase?.ready) return;
+    if (!document.body?.dataset.adSection || !window.IQZodiacSupabase?.ready) return;
     try {
+      ensurePageSlots();
       client = await window.IQZodiacSupabase.ready;
       clientPromise = Promise.resolve(client);
-      const homeRoot = document.querySelector('#feed-list');
-      const reelsRoot = document.querySelector('#reel-feed');
-      const observedRoot = homeRoot || reelsRoot;
+      const observedRoot = document.querySelector('main') || document.body;
       if (observedRoot && typeof MutationObserver === 'function') {
         const observer = new MutationObserver(renderAll);
         observer.observe(observedRoot, { childList: true, subtree: true });

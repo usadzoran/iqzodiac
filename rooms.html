@@ -10,8 +10,9 @@
   <style>
     .spaces-hub{width:min(900px,calc(100% - 32px));min-height:calc(100vh - 160px);margin:0 auto;padding:70px 0 120px}.spaces-hub h1{margin:10px 0;color:#eef1ff;font-size:clamp(32px,6vw,64px);letter-spacing:-.06em}.spaces-hub>p{max-width:620px;color:#9ba7c2;line-height:1.8}.spaces-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:36px}.space-card{display:flex;min-height:220px;flex-direction:column;justify-content:space-between;padding:26px;border:1px solid rgba(131,229,232,.22);border-radius:18px;background:linear-gradient(145deg,rgba(24,36,64,.95),rgba(12,19,38,.95));color:#eef1ff;text-decoration:none;transition:transform .2s ease,border-color .2s ease}.space-card:hover{transform:translateY(-4px);border-color:#83e5e8}.space-card small{color:#83e5e8;font:10px "DM Mono",monospace;letter-spacing:.12em}.space-card h2{margin:22px 0 8px;font-size:26px}.space-card p{margin:0;color:#9ba7c2;line-height:1.7;font-size:13px}.space-card strong{margin-top:22px;color:#83e5e8;font-size:12px}@media(max-width:640px){.spaces-hub{width:min(100% - 24px);padding-top:38px}.spaces-grid{grid-template-columns:1fr}}
   </style>
+  <link rel="stylesheet" href="./ad-runtime.css?v=ads-all-pages-20261122" />
 </head>
-<body class="has-site-nav">
+<body class="has-site-nav" data-ad-section="rooms">
   <main class="spaces-hub">
     <div class="rooms-kicker">IQZODIAC / LIVE SPACES</div>
     <h1>اختر مساحتك المباشرة</h1>
@@ -29,5 +30,9 @@
     <a href="./reel.html"><span class="nav-glyph" aria-hidden="true">◉</span><span>Reels</span></a>
     <a href="./profile.html"><span class="nav-glyph" aria-hidden="true">◍</span><span>الملف</span></a>
   </nav>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+
+  <script src="./supabase-client.js" defer></script>
+  <script src="./ad-runtime.js?v=ads-all-pages-20261122" defer></script>
 </body>
 </html>

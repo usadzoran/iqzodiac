@@ -18,11 +18,11 @@
 ## Site Ads Manager
 - [x] Create a separate private Ads Manager page, outside the member UI and separate from the general Admin Control Center UI.
 - [x] Allow the advertising administrator to create, edit, preview, publish, draft, and delete HTML advertisements.
-- [x] Support multiple site sections and multiple Header, Hero, Between posts, Between Reels, and Footer placements per advertisement, with priority and display height controls.
+- [x] Preserve legacy multi-target campaigns and allow new campaigns to choose one page (or all supported pages) and one compatible placement per campaign; keep height and priority controls available as optional advanced settings.
 - [x] Store ad records under RLS and restrict write access to the existing server-side admin identity.
 - [x] Render published ads through sandboxed iframes so supplied HTML cannot access the IQZodiac page DOM or session.
 - [x] Add protected per-ad analytics for unique daily views, clicks, and click-through rate, with event recording isolated from the ad iframe.
-- [x] Simplify the private studio in Arabic with safe defaults for all currently ad-enabled sections and a visible placement; separate “Publish to all visitors” from “Save draft,” and make targeting/height/priority optional advanced settings.
+- [x] Keep the private Ads Studio in English and offer clear dependent Page and Placement dropdowns, defaulting to all supported content/member pages and Header; save targeting to the existing `site_ads.sections`, `site_ads.placements`, and `site_ads.placement` fields and confirm success only after a persisted row is returned.
 - [x] Confirm save success only after Supabase returns the persisted ad row; preserve form contents and show an actionable error if insert/update fails or no row is returned.
-- [x] Ensure published active ads are readable by anonymous visitors and refreshed on already-open Home/Reels pages; keep drafts hidden and do not add synthetic test ads to production.
+- [x] Ensure published active ads are readable by anonymous visitors and render on all supported content/member pages at the selected header, main-content, or footer placement; retain Home post-feed and Reels between-video placements, refresh already-open pages, and keep drafts and out-of-window ads hidden.
 - [ ] With explicit user approval, verify a real ad using the user's content; do not create or publish test data in production.
