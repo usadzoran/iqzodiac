@@ -220,10 +220,6 @@ const server = http.createServer((request, response) => {
   });
 });
 
-if (require.main === module) {
-  server.listen(port, '0.0.0.0', () => {
-    console.log(`IQZodiac preview listening on port ${port}`);
-  });
-}
-
-module.exports = server;
+server.listen(port, '0.0.0.0', () => {
+  console.log(`IQZodiac preview listening on port ${port}`);
+});
