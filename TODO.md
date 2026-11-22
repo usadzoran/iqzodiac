@@ -26,3 +26,11 @@
 - [x] Confirm save success only after Supabase returns the persisted ad row; preserve form contents and show an actionable error if insert/update fails or no row is returned.
 - [x] Ensure published active ads are readable by anonymous visitors and render on all supported content/member pages at the selected header, main-content, or footer placement; retain Home post-feed and Reels between-video placements, refresh already-open pages, and keep drafts and out-of-window ads hidden.
 - [ ] With explicit user approval, verify a real ad using the user's content; do not create or publish test data in production.
+
+
+## صفحات الموقع ومحررو المحتوى
+- [x] من لوحة تحكم المسؤول، يمكن تعيين محرري محتوى لمستخدمين مسجلين عبر البريد المؤكد وإيقاف/إعادة تفعيل صلاحيتهم؛ هذا الدور مستقل عن مشرفي الغرف الصوتية والبث المباشر، ولا يمنح مسؤولية كاملة.
+- [x] يتيح محررو المحتوى مساحة خاصة لإضافة وتعديل الصفحات/الأقسام العامة ثنائية اللغة (العنوان والمحتوى والرابط والترتيب)، ونشرها أو إخفاءها؛ يرى الزوار المنشور فقط ويمكنهم الوصول إليه من دليل صفحات ظاهر في الموقع.
+- [x] يتيح محررو المحتوى إدارة تصنيفات Marketplace للمنتجات والخدمات (إنشاء وتعديل الأسماء والترتيب والإظهار/الإخفاء)، دون حذف سجلات التصنيفات أو امتلاك صلاحيات الأعضاء والمالية وميزات VIP أو إدارة المسؤولين.
+- [x] تفرض RLS والدوال الخادمية نطاق الصلاحيات؛ يُعرض محتوى الصفحات كنص آمن لا HTML غير موثوق، وتبقى أدوار مشرفي الغرف وVIP دون تغيير.
+- [x] تبقى واجهة إضافة التصنيفات من نوع Product/Service متاحة لمسؤولي الموقع، وتعمل إدارتها من لوحة محتوى المحررين دون التأثير في الإعلانات المرتبطة بها.

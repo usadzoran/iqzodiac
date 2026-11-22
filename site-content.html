@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <meta name="description" content="Manage public IQZodiac pages and marketplace categories." />
+  <title>IQZodiac Content Workspace</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css?v=profile-tabs-20261112" />
+  <link rel="stylesheet" href="./admin.css?v=admin-control-20261112" />
+  <link rel="stylesheet" href="./site-content.css?v=site-content-20261122" />
+</head>
+<body class="admin-page" data-site-content-page>
+  <div class="aurora aurora-one" aria-hidden="true"></div><div class="aurora aurora-two" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
+  <main class="admin-shell">
+    <header class="admin-header"><div><p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> IQZODIAC CONTENT WORKSPACE</p><h1>Site <span>content.</span></h1><p class="admin-header-note">Manage public pages and marketplace categories. This workspace does not manage members, finance, VIP, or live rooms.</p></div><a class="back-link" href="./home.html">Return to site ↗</a></header>
+    <section id="content-loading" class="admin-card"><p class="loading-pulse">Verifying content access…</p></section>
+    <section id="content-access-error" class="admin-error" hidden></section>
+    <section id="site-content-workspace" class="site-content-workspace" hidden></section>
+  </main>
+  <div id="content-toast" class="admin-toast" role="status" aria-live="polite" hidden></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-client.js"></script>
+  <script src="./site-content.js?v=site-content-20261122"></script>
+</body>
+</html>

@@ -45,3 +45,20 @@ The browser uses WebAuthn platform user verification before revealing signed med
 
 ## Site Ads Manager — simplified publishing
 Reuse the private Ads Studio, existing `site_ads` table and RLS, and sandboxed `ad-runtime.js`; do not create ad records for testing. Restore the studio to English with the IQZodiac midnight/cyan visual style and a short publishing path: choose one page (or all supported content/member pages) and one placement from clear dependent dropdowns, then publish or save a draft. Persist the selected page/placement through the existing `sections`, `placements`, and legacy `placement` columns, using only values accepted by the database constraints; add an additive migration for the supported page keys. Install header, main-content, and footer slots on supported content/member pages while retaining Home's post-feed and Reels' between-video positions. Keep drafts and out-of-window ads hidden, confirm persistence using a returned database row before clearing the form, distinguish a persisted ad from a failed list/analytics refresh, and refresh already-open pages on focus and periodically only while visible. Do not publish or insert synthetic production ads during validation.
+
+
+## إدارة الصفحات ومحرّري محتوى الموقع
+
+نفّذ مسارًا منفصلًا عن أدوار غرف البث والصوت وعن أدوار VIP: يعيّن مسؤول الموقع محرّري محتوى من حسابات مسجلة ومؤكدة البريد، بصلاحية محدودة إلى الصفحات العامة وتصنيفات Marketplace ومحتواها فقط. لا يحصل المحرر على صلاحيات مسؤول الموقع أو إدارة الأعضاء والمالية وميزات VIP أو صلاحيات الإشراف على محتوى الأعضاء. تُفرض الصلاحيات في PostgreSQL/RLS ودوال محدودة، لا بمجرد إخفاء عناصر الواجهة.
+
+أنشئ جدول صفحات عامة مترجمًا (EN/AR) بعناوين ومسارات slug ومحتوى نصي آمن للنشر/الإخفاء والترتيب. يعرض الموقع دليل صفحات وقالبًا عامًا يعتمد على Supabase، مع إخراج النص كنص عادي لتفادي XSS. اجمع إدارة الصفحات وتصنيفات Marketplace الحالية (المنتجات/الخدمات) في مساحة محتوى خاصة بالمحررين، وأضف في مركز المسؤول شاشة لتعيين المحررين وإبطال صلاحيتهم. يظل دور moderator الخاص بـVIP/الغرف كما هو دون ربطه بالمحررين.
+
+### بنية الملفات
+- `iqz-control-7f3a91c2.html`, `admin.js`, `admin.css`: تبويبات إدارة الصفحات والمحررين.
+- `site-content.html`, `site-content.js`, `site-content.css`: مساحة محتوى محدودة لمحرري الموقع.
+- `site-pages.html`, `site-pages.js`: دليل الزوار وعرض الصفحة العامة.
+- `home.html`: نقطة دخول ظاهرة إلى دليل الصفحات.
+- `supabase/migrations/20261122130000_site_content_management.sql`: جداول الصفحات والمحررين، RPC إدارية محدودة، وسياسات RLS وتصنيفات Marketplace.
+
+### تصميم الواجهة
+أعد استخدام تصميم IQZodiac الليلي ذي اللمسات السماوية بدل إدخال لغة بصرية جديدة. المبادئ: صلاحيات متدرجة، محتوى متعدد اللغة، نشر صريح، وإدخال نص آمن. تبقى شاشات الإدارة موجزة وجداولها عملية ومتوافقة مع الجوال. يظل الموقع الحالي ومسارات الغرف والصوت والبث دون تغيير.
