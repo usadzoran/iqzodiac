@@ -87,7 +87,9 @@
       if (!session?.session) return;
       const { data: isAdmin, error } = await client.rpc('iqzodiac_is_admin');
       if (error || isAdmin !== true) return;
-      await window.IQZodiacSiteContent.mount(client, document.querySelector('#site-content-workspace'));
+      const workspace = document.querySelector('#site-content-workspace');
+      workspace.dataset.siteAdmin = 'true';
+      await window.IQZodiacSiteContent.mount(client, workspace);
       bind();
       await Promise.all([loadModerators(), loadContentAudit()]);
     } catch (error) {

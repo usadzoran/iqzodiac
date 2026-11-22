@@ -67,7 +67,7 @@
       if (error) { report(container, error, 'Pages could not be loaded.'); return; }
       pages = data || [];
       if (!pages.length) { container.innerHTML = '<p class="admin-empty">No pages yet. Create the first public page above.</p>'; return; }
-      container.innerHTML = `<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>English title</th><th>Arabic title</th><th>Link</th><th>State</th><th>Order</th><th>Updated</th><th>Actions</th></tr></thead><tbody>${pages.map((page) => `<tr><td>${escapeHTML(page.title_en)}</td><td dir="rtl">${escapeHTML(page.title_ar)}</td><td><code>${escapeHTML(page.slug)}</code></td><td>${page.is_published ? 'Published' : 'Draft'}</td><td>${Number(page.sort_order)}</td><td class="muted">${escapeHTML(date(page.updated_at))}</td><td><div class="admin-actions"><button class="admin-action" type="button" data-page-edit="${escapeHTML(page.id)}">Edit</button><button class="admin-action" type="button" data-page-publish="${escapeHTML(page.id)}" data-published="${page.is_published}">${page.is_published ? 'Unpublish' : 'Publish'}</button></div></td></tr>`).join('')}</tbody></table></div>`;
+      container.innerHTML = `<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>English title</th><th>Arabic title</th><th>Link</th><th>State</th><th>Order</th><th>Updated</th><th>Actions</th></tr></thead><tbody>${pages.map((page) => `<tr><td>${escapeHTML(page.title_en)}</td><td dir="rtl">${escapeHTML(page.title_ar)}</td><td><code>${escapeHTML(page.slug)}</code></td><td>${page.is_published ? 'Published' : 'Draft'}</td><td>${Number(page.sort_order)}</td><td class="muted">${escapeHTML(date(page.updated_at))}</td><td><div class="admin-actions"><button class="admin-action" type="button" data-page-edit="${escapeHTML(page.id)}">Edit</button><button class="admin-action" type="button" data-page-publish="${escapeHTML(page.id)}" data-published="${page.is_published}">${page.is_published ? 'Unpublish' : 'Publish'}</button>${root.dataset.siteAdmin === 'true' ? `<button class="admin-action admin-button-danger" type="button" data-page-delete="${escapeHTML(page.id)}">Delete</button>` : ''}</div></td></tr>`).join('')}</tbody></table></div>`;
     };
 
     const resetPageForm = () => {
@@ -118,6 +118,18 @@
       root.querySelector('#content-page-published').checked = Boolean(page.is_published);
       root.querySelector('#content-page-form').scrollIntoView({ behavior:'smooth', block:'start' });
     };
+    const deletePage = async (button) => {
+      const page = pages.find((row) => row.id === button.dataset.pageDelete);
+      if (!page || !window.confirm(`Permanently delete “${page.title_en}”?`)) return;
+      button.disabled = true;
+      try {
+        const { error } = await client.from('site_pages').delete().eq('id', page.id);
+        if (error) throw error;
+        toast('Page deleted.');
+        await loadPages();
+      } catch (error) { toast(error.message || 'The page could not be deleted.'); button.disabled = false; }
+    };
+
     const setPagePublished = async (button) => {
       const id = button.dataset.pagePublish;
       const page = pages.find((row) => row.id === id);
@@ -189,6 +201,8 @@
       if (edit) { editPage(edit.dataset.pageEdit); return; }
       const publish = event.target.closest('[data-page-publish]');
       if (publish) { void setPagePublished(publish); return; }
+      const removePage = event.target.closest('[data-page-delete]');
+      if (removePage && root.dataset.siteAdmin === 'true') { void deletePage(removePage); return; }
       const category = event.target.closest('[data-category-save]');
       if (category) void saveCategory(category);
     });
