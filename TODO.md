@@ -21,4 +21,5 @@
 - [x] Support multiple site sections and multiple Header, Hero, Between posts, Between Reels, and Footer placements per advertisement, with priority and display height controls.
 - [x] Store ad records under RLS and restrict write access to the existing server-side admin identity.
 - [x] Render published ads through sandboxed iframes so supplied HTML cannot access the IQZodiac page DOM or session.
+- [x] Add protected per-ad analytics for unique daily views, clicks, and click-through rate, with event recording isolated from the ad iframe.
 - [ ] Run a production smoke test with one draft and one active multi-section advertisement in each supported placement.

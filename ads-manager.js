@@ -42,6 +42,20 @@
   const readForm = () => ({ name: $('#ad-name').value.trim(), sections: checkedValues(sectionChoices), placements: checkedValues(placementChoices), html_code: $('#ad-html').value, height_px: Number($('#ad-height').value), priority: Number($('#ad-priority').value), is_active: $('#ad-active').checked });
   const showPreview = () => { const value = readForm(); preview.replaceChildren(frame(value.html_code, value.height_px)); };
 
+  const loadAnalytics = async () => {
+    const target = $('#ads-analytics-list');
+    const { data, error } = await client.rpc('iqzodiac_site_ads_analytics');
+    if (error) throw error;
+    const rows = data || [];
+    const views = rows.reduce((sum, row) => sum + Number(row.views || 0), 0);
+    const clicks = rows.reduce((sum, row) => sum + Number(row.clicks || 0), 0);
+    $('#ads-total-views').textContent = views.toLocaleString();
+    $('#ads-total-clicks').textContent = clicks.toLocaleString();
+    $('#ads-average-ctr').textContent = `${views ? ((clicks / views) * 100).toFixed(2) : '0.00'}%`;
+    if (!rows.length) { target.innerHTML = '<p class="ads-status">No analytics yet. Publish an advertisement to start collecting data.</p>'; return; }
+    target.innerHTML = rows.map((row) => `<div class="ads-analytics-row"><div><strong>${escape(row.name)}</strong><small class="ads-pill ${row.is_active ? '' : 'off'}">${row.is_active ? 'Active' : 'Draft'}</small></div><div class="ads-analytics-values"><span><b>${Number(row.views || 0).toLocaleString()}</b> views</span><span><b>${Number(row.clicks || 0).toLocaleString()}</b> clicks</span><span><b>${Number(row.ctr || 0).toFixed(2)}%</b> CTR</span></div></div>`).join('');
+  };
+
   const load = async () => {
     const { data, error } = await client.from('site_ads').select('id,name,placement,placements,sections,html_code,height_px,priority,is_active,starts_at,ends_at,created_at').order('updated_at', { ascending: false }).limit(200);
     if (error) throw error;
@@ -67,7 +81,7 @@
       const payload = { ...value, placement: value.placements[0], html_code: value.html_code.trim() };
       const result = editingId ? await client.from('site_ads').update(payload).eq('id', editingId) : await client.from('site_ads').insert({ ...payload, created_by: (await client.auth.getUser()).data.user.id });
       if (result.error) throw result.error;
-      reset(); await load(); setStatus('Advertisement saved.');
+      reset(); await load(); await loadAnalytics(); setStatus('Advertisement saved.');
     } catch (error) { setStatus(error.message || 'Could not save advertisement.', true); } finally { submit.disabled = false; }
   };
 
@@ -85,8 +99,9 @@
       sectionChoices.forEach((choice) => choice.addEventListener('change', () => syncSectionChoices(choice)));
       placementChoices.forEach((choice) => choice.addEventListener('change', updateSummary));
       form.addEventListener('submit', save); $('#ad-preview-button').addEventListener('click', showPreview); $('#ad-reset').addEventListener('click', reset);
+      $('#ads-refresh-analytics').addEventListener('click', () => loadAnalytics().catch((error) => setStatus(error.message || 'Could not load analytics.', true)));
       list.addEventListener('click', (event) => { const editId = event.target.dataset.edit; const deleteId = event.target.dataset.delete; const ads = list._ads || []; if (editId) edit(ads.find((item) => item.id === editId)); if (deleteId) void remove(deleteId); });
-      updateSummary(); await load();
+      updateSummary(); await load(); await loadAnalytics();
     } catch (error) { $('#ads-loading').hidden = true; $('#ads-denied').hidden = false; setStatus('Ads Manager is temporarily unavailable.', true); }
   };
   void init();
