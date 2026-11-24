@@ -1269,6 +1269,7 @@ html.has-scroll-reveal .home-page [data-scroll-reveal].is-revealed { opacity: 1;
 /* Global responsive foundation: keeps every page usable from 320px phones to wide screens. */
 html { overflow-x: hidden; -webkit-text-size-adjust: 100%; }
 body { width: 100%; min-width: 0; overflow-x: hidden; }
+html.profile-document, body.profile-page { overflow-x: clip; }
 img, svg, video, canvas { max-width: 100%; }
 img { height: auto; }
 iframe { max-width: 100%; border: 0; }
@@ -1407,7 +1408,7 @@ table { display: block; max-width: 100%; overflow-x: auto; border-collapse: coll
 
 .profile-page .reel-collections-card { display: none; }
 /* Profile tabs: one focused section at a time, with a mobile-first scroll rail. */
-.profile-tab-nav{display:flex;gap:8px;margin:22px 0 18px;padding:5px;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:thin;border:1px solid rgba(132,229,232,.14);border-radius:18px;background:rgba(10,15,25,.72);box-shadow:0 12px 30px rgba(0,0,0,.12);-webkit-overflow-scrolling:touch}
+.profile-tab-nav{position:sticky;top:0;z-index:30;display:flex;gap:8px;margin:22px 0 18px;padding:5px;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:thin;border:1px solid rgba(132,229,232,.14);border-radius:18px;background:rgba(10,15,25,.72);box-shadow:0 12px 30px rgba(0,0,0,.12);-webkit-overflow-scrolling:touch}
 .profile-tab-nav .profile-tab{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:0 14px;border:0;border-radius:13px;background:transparent;color:var(--dim);font:700 10px "Manrope",sans-serif;letter-spacing:.02em;white-space:nowrap;cursor:pointer;transition:color .2s ease,background .2s ease,transform .2s ease}
 .profile-tab-nav .profile-tab>span:first-child{color:var(--cyan);font-size:14px}.profile-tab-nav .profile-tab:hover,.profile-tab-nav .profile-tab:focus-visible{color:#f3f7ff;background:rgba(255,255,255,.06);outline:none}.profile-tab-nav .profile-tab:focus-visible{box-shadow:0 0 0 2px rgba(131,229,232,.36)}.profile-tab-nav .profile-tab.is-active{color:#091418;background:var(--cyan);box-shadow:0 6px 18px rgba(131,229,232,.2)}.profile-tab-nav .profile-tab.is-active>span:first-child{color:#091418}.profile-tab-nav .profile-tab:active{transform:scale(.97)}
 .profile-tab-panels{min-width:0}.profile-tab-panels>.profile-tab-panel{min-width:0;padding:0;animation:profile-tab-enter .22s ease both}.profile-tab-panels>.profile-tab-panel[hidden]{display:none!important}.profile-tab-panel>.profile-card,.profile-tab-panel>.profile-grid,.profile-tab-panel>.profile-private-shortcuts{margin-top:0;margin-bottom:18px}.profile-tab-panel>.profile-grid{grid-template-columns:minmax(0,1fr)}.profile-tab-panel>.profile-card:last-child,.profile-tab-panel>.profile-grid:last-child{margin-bottom:0}@keyframes profile-tab-enter{from{opacity:.35;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
