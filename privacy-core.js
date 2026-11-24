@@ -178,15 +178,55 @@
         const { client, user } = await sessionUser();
         if (!client || !user) return base;
         const { data: profile } = await client.from('profiles').select('user_id,first_name,last_name,age,phone,country,city,birth_country,birth_city,residence_country,residence_city,preferred_language,display_name,handle,privacy').eq('user_id', user.id).maybeSingle();
-        const { data: discovery } = await client.from('discovery_profiles').select('zodiac_sign,personality_element,interests').eq('user_id', user.id).maybeSingle();
+        const { data: discovery } = await client.from('discovery_profiles').select('birth_date,zodiac_sign,personality_element,interests,discovery_status,discoverable,completed_at,questionnaire_version').eq('user_id', user.id).maybeSingle();
         const metadata = user.user_metadata || {};
-        const merged = { ...base, id: user.id, displayName: profile?.display_name || base.displayName, pseudonym: profile?.display_name || base.pseudonym, handle: profile?.handle || base.handle, firstName: profile?.first_name || metadata.first_name || base.firstName || '', lastName: profile?.last_name || metadata.last_name || base.lastName || '', age: profile?.age || metadata.age || base.age || null, phone: profile?.phone || metadata.phone || base.phone || '', country: profile?.residence_country || profile?.country || metadata.country || base.country || '', city: profile?.residence_city || profile?.city || metadata.city || base.city || '', birthCountry: profile?.birth_country || metadata.birth_country || base.birthCountry || '', birthCity: profile?.birth_city || metadata.birth_city || base.birthCity || '', residenceCountry: profile?.residence_country || profile?.country || metadata.residence_country || base.country || '', residenceCity: profile?.residence_city || profile?.city || metadata.residence_city || base.city || '', preferredLanguage: profile?.preferred_language || metadata.preferred_language || base.preferredLanguage || 'en', privacy: { ...base.privacy, ...(profile?.privacy || {}) }, zodiac: discovery?.zodiac_sign || base.zodiac, element: discovery?.personality_element || base.element, interests: discovery?.interests || base.interests };
+        const merged = { ...base, id: user.id, displayName: profile?.display_name || base.displayName, pseudonym: profile?.display_name || base.pseudonym, handle: profile?.handle || base.handle, firstName: profile?.first_name || metadata.first_name || base.firstName || '', lastName: profile?.last_name || metadata.last_name || base.lastName || '', age: profile?.age || metadata.age || base.age || null, phone: profile?.phone || metadata.phone || base.phone || '', country: profile?.residence_country || profile?.country || metadata.country || base.country || '', city: profile?.residence_city || profile?.city || metadata.city || base.city || '', birthCountry: profile?.birth_country || metadata.birth_country || base.birthCountry || '', birthCity: profile?.birth_city || metadata.birth_city || base.birthCity || '', residenceCountry: profile?.residence_country || profile?.country || metadata.residence_country || base.country || '', residenceCity: profile?.residence_city || profile?.city || metadata.residence_city || base.city || '', preferredLanguage: profile?.preferred_language || metadata.preferred_language || base.preferredLanguage || 'en', privacy: { ...base.privacy, ...(profile?.privacy || {}) }, birthDate: discovery?.birth_date || metadata.birth_date || base.birthDate || '', zodiac: discovery?.zodiac_sign || base.zodiac, element: discovery?.personality_element || base.element, interests: discovery?.interests || base.interests, discoveryStatus: discovery?.discovery_status || 'not_started', discoverable: discovery?.discoverable === true, completedAt: discovery?.completed_at || null, questionnaireVersion: discovery ? discovery.questionnaire_version : (base.questionnaireVersion || 'discover-v2') };
         write(keys.profile, merged);
         return merged;
       } catch (error) { console.warn('Profile could not be loaded from Supabase.', error); return base; }
     },
     async getCurrentPublicProfile() { return toPublicProfile(await this.getCurrentProfile()); },
     toPublicProfile,
+    async getDiscoverySnapshot() {
+      const { client, user } = await sessionUser();
+      if (!client || !user) return { signedIn: false, complete: false, missing: ['session'] };
+      const [{ data: profile, error: profileError }, { data: answerRows, error: answerError }] = await Promise.all([
+        client.from('discovery_profiles').select('birth_date,zodiac_sign,personality_element,interests,discoverable,discovery_status,completed_at,questionnaire_version').eq('user_id', user.id).maybeSingle(),
+        client.from('discovery_answers').select('question_id,answer_choice,answer_text,questionnaire_version').eq('user_id', user.id).eq('questionnaire_version', 'discover-v2').order('answered_at', { ascending: true }).limit(50),
+      ]);
+      if (profileError) throw profileError;
+      if (answerError) throw answerError;
+      const answers = answerRows || [];
+      const questionnaireVersion = profile?.questionnaire_version;
+      const supportedQuestionnaire = questionnaireVersion === 'discover-v2';
+      if (profile?.interests?.length && !answers.some((row) => row.question_id === 'interests' && String(row.answer_text || '').trim())) {
+        if (supportedQuestionnaire) {
+          const { error } = await client.from('discovery_answers').upsert({ user_id: user.id, questionnaire_version: questionnaireVersion, question_id: 'interests', answer_choice: null, answer_text: profile.interests.join(', '), answered_at: new Date().toISOString() }, { onConflict: 'user_id,questionnaire_version,question_id' });
+          if (error) throw error;
+        }
+      }
+      const questionIds = new Set(answers.filter((row) => /^q(?:[1-9]|1[0-2])$/.test(row.question_id) && [row.answer_choice, row.answer_text].some((value) => typeof value === 'string' && value.trim())).map((row) => row.question_id));
+      const interests = Array.isArray(profile?.interests) ? profile.interests.filter((item) => typeof item === 'string' && item.trim()) : [];
+      const missing = [];
+      if (!profile) missing.push('profile');
+      if (!supportedQuestionnaire) missing.push('questionnaire');
+      if (!supportedQuestionnaire || questionIds.size !== 12) missing.push('personality');
+      if (!interests.length) missing.push('interests');
+      if (!profile?.birth_date || !profile?.zodiac_sign) missing.push('birthdate');
+      if (!['fire', 'earth', 'water', 'air'].includes(profile?.personality_element)) missing.push('element');
+      if (profile?.discovery_status !== 'completed' || profile?.discoverable !== true || !profile?.completed_at) missing.push('completion');
+      return { signedIn: true, userId: user.id, profile, answers, questionCount: questionIds.size, interests, complete: missing.length === 0, missing };
+    },
+    async setMatchPresence(online = true) {
+      const client = await database();
+      if (!client) throw new Error('A signed-in account is required.');
+      const { data, error: sessionError } = await client.auth.getUser();
+      if (sessionError) throw sessionError;
+      if (!data.user) throw new Error('A signed-in account is required.');
+      const { error } = await client.rpc('match_presence_heartbeat', { p_online: Boolean(online) });
+      if (error) throw error;
+      return true;
+    },
     async updatePublicIdentity({ displayName, handle }) {
       const current = await this.getCurrentProfile();
       const safeDisplayName = String(displayName || current.displayName || current.pseudonym || 'Orbit Member').trim().replace(/[<>]/g, '').slice(0, 32) || 'Orbit Member';
@@ -303,15 +343,21 @@
       const { client, user } = await sessionUser();
       if (!client || !user) throw new Error('A signed-in account is required.');
       const element = String(patch.element || current.element || '').toLowerCase();
-      const { error } = await client.from('discovery_profiles').upsert({ user_id: user.id, zodiac_sign: patch.zodiac || current.zodiac || null, personality_element: ['fire', 'earth', 'water', 'air'].includes(element) ? element : null, interests: next.interests, discovery_status: 'in_progress', discoverable: false, updated_at: new Date().toISOString() });
+      const staysComplete = current.discoveryStatus === 'completed' && current.discoverable === true;
+      const questionnaireVersion = current.questionnaireVersion;
+      const { error } = await client.from('discovery_profiles').upsert({ user_id: user.id, birth_date: current.birthDate || null, zodiac_sign: patch.zodiac || current.zodiac || null, personality_element: ['fire', 'earth', 'water', 'air'].includes(element) ? element : null, interests: next.interests, discovery_status: staysComplete ? 'completed' : (current.discoveryStatus || 'in_progress'), discoverable: staysComplete, questionnaire_version: questionnaireVersion, completed_at: staysComplete ? current.completedAt : null, updated_at: new Date().toISOString() });
       if (error) throw error;
+      if (questionnaireVersion && Array.isArray(next.interests) && next.interests.some((item) => String(item || '').trim())) {
+        const { error: answerError } = await client.from('discovery_answers').upsert({ user_id: user.id, questionnaire_version: questionnaireVersion, question_id: 'interests', answer_choice: null, answer_text: next.interests.map((item) => String(item).trim()).filter(Boolean).join(', '), answered_at: new Date().toISOString() }, { onConflict: 'user_id,questionnaire_version,question_id' });
+        if (answerError) throw answerError;
+      }
       write(keys.profile, next);
       return next;
     },
     async listCandidates(filters = {}) {
       try {
         const client = await database();
-        if (!client) return [];
+        if (!client) throw new Error('Match database is not available.');
         const { data, error } = await client.rpc('search_compatible_profiles', {
           p_country: filters.country?.trim() || null,
           p_city: filters.city?.trim() || null,
@@ -320,19 +366,56 @@
           p_interest: filters.interest?.trim() || null,
         });
         if (error) throw error;
-        return Array.isArray(data) ? data.map((profile) => ({
+        const candidates = Array.isArray(data) ? data.map((profile) => ({
           id: profile.user_id,
           displayName: profile.display_name,
           pseudonym: profile.display_name,
           handle: profile.handle,
           publicHandle: profile.handle,
+          age: profile.age,
+          country: profile.country,
+          city: profile.city,
           interests: Array.isArray(profile.interests) ? profile.interests : [],
+          commonInterests: Array.isArray(profile.common_interests) ? profile.common_interests : [],
+          zodiac: profile.zodiac_sign || '',
+          element: profile.personality_element || '',
+          personalityMatches: Number(profile.personality_matches || 0),
+          personalityComparisons: Number(profile.personality_comparisons || 0),
+          isOnline: profile.is_online === true,
           compatibilityScore: profile.compatibility_score,
-          privacy: { ...privacyDefaults },
+          photosPublic: profile.photos_public === true,
+          privacy: { ...privacyDefaults, photosPublic: profile.photos_public === true },
         })) : [];
+        const membersWithPublicMedia = candidates.filter((profile) => profile.photosPublic).map((profile) => profile.id);
+        if (membersWithPublicMedia.length) {
+          try {
+            const { data: media, error: mediaError } = await client.from('profile_media').select('user_id,storage_path').in('user_id', membersWithPublicMedia).in('media_type', ['avatar', 'photo']).eq('gallery_section', 'public').eq('is_public', true).order('created_at', { ascending: false }).limit(Math.min(200, membersWithPublicMedia.length * 3));
+            if (mediaError) throw mediaError;
+            const rows = media || [];
+            const signedByPath = new Map();
+            for (let offset = 0; offset < rows.length; offset += 50) {
+              const batch = rows.slice(offset, offset + 50);
+              const { data: signedRows, error: signedError } = await client.storage.from('iqzodiac-media').createSignedUrls(batch.map((row) => row.storage_path), 900);
+              if (signedError) throw signedError;
+              (signedRows || []).forEach((item) => { if (item.signedUrl) signedByPath.set(item.path, item.signedUrl); });
+            }
+            const byUser = new Map();
+            rows.forEach((row) => {
+              const url = signedByPath.get(row.storage_path);
+              if (!url) return;
+              const list = byUser.get(row.user_id) || [];
+              if (list.length < 3) list.push(url);
+              byUser.set(row.user_id, list);
+            });
+            candidates.forEach((profile) => { profile.publicPhotos = byUser.get(profile.id) || []; });
+          } catch (mediaError) {
+            console.warn('Public Match photos could not be loaded.', mediaError);
+          }
+        }
+        return candidates;
       } catch (error) {
         console.warn('Unable to load real compatibility profiles.', error);
-        return [];
+        throw error;
       }
     },
     async getAccountAccess() { return { role: 'user', entitlements: { ...roleDefaults.entitlements } }; },
@@ -367,12 +450,18 @@
     async createCoinCheckout() { return { status: 'checkout_not_connected', message: 'Coin purchases are disabled; no payment order was created.' }; },
     async requestWithdrawal() { return { status: 'payout_not_connected', message: 'Payouts are disabled; no withdrawal request has been submitted.' }; },
     async recordLike(candidateId) {
-      try { const client = await database(); if (client) { const { data, error } = await client.rpc('record_match_like', { p_candidate_id: candidateId }); if (error) throw error; return { matched: Boolean(data), candidateId, createdAt: new Date().toISOString() }; } } catch (error) { console.warn('Match like could not be saved.', error); }
-      const likes = safeRead(keys.likes, {}); likes[candidateId] = true; write(keys.likes, likes); return this.getMatch(candidateId);
+      const client = await database();
+      if (!client) throw new Error('Match database is not available.');
+      const { data, error } = await client.rpc('record_match_like', { p_candidate_id: candidateId });
+      if (error) throw error;
+      return { matched: Boolean(data), candidateId, createdAt: new Date().toISOString() };
     },
     async recordSkip(candidateId) {
-      try { const client = await database(); if (client) { const { error } = await client.rpc('record_match_skip', { p_candidate_id: candidateId }); if (error) throw error; return { skipped: true, candidateId }; } } catch (error) { console.warn('Match skip could not be saved.', error); }
-      const skips = safeRead(keys.skips, {}); skips[candidateId] = true; write(keys.skips, skips); return { skipped: true, candidateId };
+      const client = await database();
+      if (!client) throw new Error('Match database is not available.');
+      const { error } = await client.rpc('record_match_skip', { p_candidate_id: candidateId });
+      if (error) throw error;
+      return { skipped: true, candidateId };
     },
     async getMatch(candidateId) { const matches = await this.getMatches(); return { matched: matches.some((item) => item.id === candidateId || item.otherUserId === candidateId), candidateId, createdAt: new Date().toISOString() }; },
     async getMatches() {

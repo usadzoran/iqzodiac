@@ -31,6 +31,8 @@
       interestsPlaceholder: 'For example: music, hiking, art…',
       birthdayPrompt: 'One last detail: enter your birth date so I can calculate your zodiac sign and save it to your account.',
       birthdayLabel: 'Date of birth',
+      elementPrompt: 'One quick detail is missing. Which personality element best reflects the way you answered?',
+      elementLabel: 'Personality element',
       continue: 'Show my result',
       required: 'Please answer this question before continuing.',
       progress: (n, total) => `Step ${n} of ${total}`,
@@ -49,7 +51,7 @@
       },
       names: { fire: 'Fire', earth: 'Earth', water: 'Water', air: 'Air' },
       completed: 'Your discovery profile is ready. Real member matches are next.',
-      reset: 'Start over',
+      reset: 'Reload saved answers',
       saved: 'Progress saved securely to your account',
       matches: 'Continue to Match',
       noResults: 'No completed member profiles match yet. We will not invent people or compatibility scores.',
@@ -77,6 +79,8 @@
       interestsPlaceholder: 'مثلًا: الموسيقى، المشي، الفن…',
       birthdayPrompt: 'تفصيل أخير: أدخل تاريخ ميلادك لأحسب برجك وأحفظه في حسابك.',
       birthdayLabel: 'تاريخ الميلاد',
+      elementPrompt: 'بقي تفصيل واحد فقط. أي عنصر يعكس إجاباتك وطريقتك أكثر؟',
+      elementLabel: 'عنصر الشخصية',
       continue: 'عرض نتيجتي',
       required: 'أجب عن هذا السؤال قبل المتابعة.',
       progress: (n, total) => `الخطوة ${n} من ${total}`,
@@ -95,7 +99,7 @@
       },
       names: { fire: 'ناري', earth: 'ترابي', water: 'مائي', air: 'هوائي' },
       completed: 'اكتمل ملف اكتشافك. سنعرض الآن الأعضاء الحقيقيين المناسبين.',
-      reset: 'ابدأ من جديد',
+      reset: 'استعادة الإجابات المحفوظة',
       saved: 'حُفظ التقدم بأمان في حسابك',
       matches: 'المتابعة إلى Match',
       noResults: 'لا توجد ملفات أعضاء مكتملة مناسبة بعد. لن نخترع أشخاصاً أو درجات توافق.',
@@ -127,7 +131,7 @@
   const ui = () => copy[currentLanguage()];
   const fromArabic = (text) => currentLanguage() === 'ar' ? text : (translations.arToEn[text] || text);
   const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
-  const emptyState = () => ({ questionIndex: 0, answers: [], interests: '', birthDate: '', stage: 'questions' });
+  const emptyState = () => ({ questionIndex: 0, answers: [], interests: '', birthDate: '', personalityElement: '', stage: 'questions' });
   let state = emptyState();
   const questionnaireVersion = 'discover-v2';
   const database = () => window.IQZodiacSupabase?.ready;
@@ -138,15 +142,16 @@
       const { data: sessionData } = await client.auth.getSession();
       const userId = sessionData.session?.user?.id;
       if (!userId) return;
-      const element = tally().element;
+      const element = tally().element || state.personalityElement || null;
       const zodiac = state.birthDate ? zodiacForDate(state.birthDate)?.[0] : null;
       const interests = state.interests.split(/[,،;؛\n]+/).map((item) => item.trim()).filter(Boolean);
+      const complete = questions.every((_, index) => Boolean(state.answers[index])) && interests.length > 0 && Boolean(state.birthDate) && Boolean(zodiac) && Boolean(element);
       const { error: profileError } = await client.from('discovery_profiles').upsert({
         user_id: userId, birth_date: state.birthDate || null, zodiac_sign: zodiac,
         personality_element: element, personality_summary: element ? ui().resultSummary[element] : null,
-        interests, discoverable: state.stage === 'done',
-        discovery_status: state.stage === 'done' ? 'completed' : 'in_progress',
-        questionnaire_version: questionnaireVersion, completed_at: state.stage === 'done' ? new Date().toISOString() : null,
+        interests, discoverable: complete,
+        discovery_status: complete ? 'completed' : 'in_progress',
+        questionnaire_version: questionnaireVersion, completed_at: complete ? new Date().toISOString() : null,
         updated_at: new Date().toISOString(),
       });
       if (profileError) throw profileError;
@@ -176,8 +181,8 @@
       const userId = sessionData.session?.user?.id;
       if (!userId) return;
       const [{ data: profile, error: profileError }, { data: answers, error: answersError }] = await Promise.all([
-        client.from('discovery_profiles').select('birth_date,discovery_status,interests').eq('user_id', userId).maybeSingle(),
-        client.from('discovery_answers').select('question_id,answer_choice,answer_text').eq('user_id', userId).eq('questionnaire_version', questionnaireVersion).order('answered_at', { ascending: true }),
+        client.from('discovery_profiles').select('birth_date,zodiac_sign,personality_element,discovery_status,discoverable,interests,questionnaire_version').eq('user_id', userId).maybeSingle(),
+        client.from('discovery_answers').select('question_id,answer_choice,answer_text').eq('user_id', userId).eq('questionnaire_version', questionnaireVersion).order('answered_at', { ascending: true }).limit(50),
       ]);
       if (profileError) throw profileError;
       if (answersError) throw answersError;
@@ -194,10 +199,13 @@
       state.questionIndex = firstMissing === -1 ? questions.length : firstMissing;
       state.interests = answerMap.get('interests')?.answer_text || (profile?.interests || []).join(', ');
       state.birthDate = profile?.birth_date || '';
-      if (profile?.discovery_status === 'completed' && state.birthDate) state.stage = 'done';
-      else if (state.questionIndex >= questions.length && state.interests) state.stage = 'birthdate';
-      else if (state.questionIndex >= questions.length) state.stage = 'interests';
-      else state.stage = 'questions';
+      state.personalityElement = profile?.personality_element || '';
+      if (firstMissing >= 0) state.stage = 'questions';
+      else if (!state.interests.trim()) state.stage = 'interests';
+      else if (!state.birthDate) state.stage = 'birthdate';
+      else if (!state.personalityElement && !tally().element) state.stage = 'element';
+      else { state.personalityElement = state.personalityElement || tally().element; state.stage = 'done'; }
+      if (state.stage === 'done' && (profile?.discovery_status !== 'completed' || profile?.discoverable !== true || profile?.questionnaire_version !== questionnaireVersion)) await persistToDatabase();
     } catch (error) {
       console.warn('Discovery progress could not be loaded from Supabase.', error);
     }
@@ -344,6 +352,7 @@
     if (state.stage === 'questions') return questionText(state.questionIndex);
     if (state.stage === 'interests') return ui().interestsPrompt;
     if (state.stage === 'birthdate') return ui().birthdayPrompt;
+    if (state.stage === 'element') return ui().elementPrompt;
     return '';
   };
   const updateVoiceControls = () => {
@@ -400,7 +409,6 @@
   };
   if (new URLSearchParams(window.location.search).get('welcome') === '1') {
     state.signupWelcome = true;
-    saveState();
     window.history.replaceState({}, '', window.location.pathname + window.location.hash);
   }
 
@@ -449,6 +457,14 @@
     const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
     return ranked[0][1] ? { element: ranked[0][0], scores } : { element: null, scores };
   };
+  const nextMissingStage = () => {
+    const firstMissing = state.answers.findIndex((answer) => !answer);
+    if (firstMissing >= 0) { state.questionIndex = firstMissing; return 'questions'; }
+    if (!state.interests.trim()) return 'interests';
+    if (!state.birthDate) return 'birthdate';
+    if (!tally().element && !state.personalityElement) return 'element';
+    return 'done';
+  };
   const appendQuestionHistory = () => {
     if (state.signupWelcome) addBubble('guide', ui().signupWelcome, 'assistant-bubble-surprise');
     addBubble('guide', ui().welcome);
@@ -460,25 +476,28 @@
     if (state.stage !== 'questions' && state.interests) {
       addBubble('guide', ui().interestsPrompt); addBubble('member', state.interests);
     }
-    if (state.stage === 'done') {
+    if (state.birthDate) {
       addBubble('guide', ui().birthdayPrompt);
       addBubble('member', new Intl.DateTimeFormat(currentLanguage() === 'ar' ? 'ar' : 'en', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(`${state.birthDate}T00:00:00Z`)));
+    }
+    if (state.stage === 'done') {
       return;
     }
     if (state.stage === 'birthdate') addBubble('guide', ui().birthdayPrompt);
     else if (state.stage === 'interests') addBubble('guide', ui().interestsPrompt);
+    else if (state.stage === 'element') addBubble('guide', ui().elementPrompt);
     else if (state.questionIndex < questions.length) addBubble('guide', questionText(state.questionIndex));
   };
   const renderResult = () => {
-    const language = currentLanguage(); const text = ui(); const { element } = tally(); const zodiac = zodiacForDate(state.birthDate);
+    const language = currentLanguage(); const text = ui(); const element = tally().element || state.personalityElement; const zodiac = zodiacForDate(state.birthDate);
     const savedInterests = state.interests.split(/[,،;؛\n]+/).map((item) => item.trim()).filter(Boolean);
     const elementText = element ? `${text.names[element]} — ${text.resultSummary[element]}` : text.noScore;
     resultBox.innerHTML = `<p class="card-kicker">${language === 'ar' ? 'نتيجة اكتشافك' : 'YOUR DISCOVERY RESULT'}</p><h2>${escapeHTML(text.resultTitle)}</h2><p class="assistant-result-note">${escapeHTML(text.resultNote)}</p><div class="assistant-result-grid"><article><small>${escapeHTML(text.element)}</small><strong>${escapeHTML(element ? text.names[element] : (language === 'ar' ? 'غير محدد' : 'Undetermined'))}</strong><p>${escapeHTML(elementText)}</p></article><article><small>${escapeHTML(text.zodiac)}</small><strong>${escapeHTML(zodiac ? zodiac[language === 'ar' ? 1 : 0] : '')}</strong><p>${escapeHTML(state.birthDate)}</p></article><article class="assistant-result-interests"><small>${escapeHTML(text.interests)}</small><strong>${escapeHTML(savedInterests.length ? savedInterests.join(' · ') : text.noInterests)}</strong></article></div><p class="assistant-match-note">${escapeHTML(text.noResults)}</p><a class="button button-secondary" href="./match.html">${escapeHTML(text.matches)} <span class="button-arrow">↗</span></a>`;
     resultBox.hidden = false;
   };
   const renderTurn = () => {
-    const text = ui(); const total = questions.length + 2;
-    const step = state.stage === 'questions' ? state.questionIndex + 1 : state.stage === 'interests' ? questions.length + 1 : questions.length + 2;
+    const text = ui(); const total = questions.length + 3;
+    const step = state.stage === 'questions' ? state.questionIndex + 1 : state.stage === 'interests' ? questions.length + 1 : state.stage === 'birthdate' ? questions.length + 2 : questions.length + 3;
     progress.textContent = state.stage === 'done' ? text.completed : text.progress(step, total);
     turn.replaceChildren(); resultBox.hidden = true;
     if (state.stage === 'done') { turn.hidden = true; renderResult(); return; }
@@ -498,12 +517,21 @@
     } else if (state.stage === 'interests') {
       const form = document.createElement('form'); form.className = 'assistant-answer-form';
       form.innerHTML = `<label for="interest-answer">${escapeHTML(text.interestsLabel)}</label><textarea id="interest-answer" rows="2" maxlength="500" required placeholder="${escapeHTML(text.interestsPlaceholder)}">${escapeHTML(state.interests)}</textarea><button class="button button-primary" type="submit">${escapeHTML(text.send)} <span class="button-arrow">↗</span></button><p class="assistant-validation" aria-live="polite"></p>`;
-      form.addEventListener('submit', (event) => { event.preventDefault(); if (advanceTimer !== null) return; const value = form.querySelector('textarea').value.trim(); if (!value) { form.querySelector('.assistant-validation').textContent = text.required; return; } state.interests = value; state.stage = 'birthdate'; saveState(); advanceWithThinking(); });
+      form.addEventListener('submit', (event) => { event.preventDefault(); if (advanceTimer !== null) return; const value = form.querySelector('textarea').value.trim(); if (!value) { form.querySelector('.assistant-validation').textContent = text.required; return; } state.interests = value; state.stage = nextMissingStage(); saveState(); advanceWithThinking(); });
       turn.append(form);
+    } else if (state.stage === 'element') {
+      const instruction = document.createElement('p'); instruction.className = 'assistant-turn-instruction'; instruction.textContent = text.elementPrompt; turn.append(instruction);
+      const options = document.createElement('div'); options.className = 'assistant-choice-list';
+      Object.entries(text.names).forEach(([element, label]) => {
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'assistant-choice'; button.textContent = label;
+        button.addEventListener('click', () => { if (advanceTimer !== null) return; state.personalityElement = element; state.stage = 'done'; saveState(); advanceWithThinking(); });
+        options.append(button);
+      });
+      turn.append(options);
     } else {
       const form = document.createElement('form'); form.className = 'assistant-answer-form assistant-birth-form';
       form.innerHTML = `<label for="birth-date">${escapeHTML(text.birthdayLabel)}</label><input id="birth-date" type="date" required max="${new Date().toISOString().slice(0, 10)}" value="${escapeHTML(state.birthDate)}" /><button class="button button-primary" type="submit">${escapeHTML(text.continue)} <span class="button-arrow">↗</span></button><p class="assistant-validation" aria-live="polite"></p>`;
-      form.addEventListener('submit', (event) => { event.preventDefault(); if (advanceTimer !== null) return; const value = form.querySelector('input').value; if (!value || value > new Date().toISOString().slice(0, 10)) { form.querySelector('.assistant-validation').textContent = text.required; return; } state.birthDate = value; state.stage = 'done'; saveState(); advanceWithThinking(); });
+      form.addEventListener('submit', (event) => { event.preventDefault(); if (advanceTimer !== null) return; const value = form.querySelector('input').value; if (!value || value > new Date().toISOString().slice(0, 10)) { form.querySelector('.assistant-validation').textContent = text.required; return; } state.birthDate = value; state.stage = nextMissingStage(); saveState(); advanceWithThinking(); });
       turn.append(form);
     }
   };
@@ -547,18 +575,9 @@
     if (advanceTimer !== null) { window.clearTimeout(advanceTimer); advanceTimer = null; }
     turn.inert = false;
     turn.removeAttribute('aria-busy');
-    const previousState = state;
     state = emptyState();
-    try {
-      const client = await database();
-      const { data: sessionData } = await client.auth.getSession();
-      const userId = sessionData.session?.user?.id;
-      if (userId) {
-        const { error } = await client.from('discovery_answers').delete().eq('user_id', userId).eq('questionnaire_version', questionnaireVersion);
-        if (error) throw error;
-      }
-    } catch (error) { console.warn('Discovery answers could not be reset.', error); state = previousState; }
-    await saveState(); render();
+    await hydrateFromDatabase();
+    render();
   });
   voiceToggle.addEventListener('click', () => {
     if (advanceTimer !== null) return;
@@ -584,6 +603,5 @@
     render();
   });
   showAvatarSmile();
-  render();
   hydrateFromDatabase().then(() => render());
 })();
