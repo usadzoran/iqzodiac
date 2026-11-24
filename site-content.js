@@ -21,6 +21,8 @@
             <label>English title<input id="content-page-title-en" class="admin-input" required maxlength="120" /></label>
             <label>Arabic title<input id="content-page-title-ar" class="admin-input" required maxlength="120" dir="rtl" /></label>
             <label>Page link (slug)<input id="content-page-slug" class="admin-input" required maxlength="80" pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="about-us" autocomplete="off" /></label>
+            <label>Content type<select id="content-page-type" class="admin-select"><option value="page">Standalone page</option><option value="section">Website section</option></select></label>
+            <label>Display location<select id="content-page-location" class="admin-select"><option value="pages">Public pages directory</option><option value="home">Home page</option><option value="discover">Discover page</option><option value="marketplace">Marketplace</option><option value="profile">Profile page</option></select></label>
             <label>Display order<input id="content-page-order" class="admin-input" type="number" min="0" max="1000000" value="100" required /></label>
             <label class="content-editor-wide">English content<textarea id="content-page-body-en" class="content-textarea" maxlength="30000" rows="8"></textarea></label>
             <label class="content-editor-wide">Arabic content<textarea id="content-page-body-ar" class="content-textarea" maxlength="30000" rows="8" dir="rtl"></textarea></label>
@@ -63,11 +65,11 @@
     const loadPages = async () => {
       const container = root.querySelector('#content-pages-table');
       container.innerHTML = '<p class="admin-status">Loading pages…</p>';
-      const { data, error } = await client.from('site_pages').select('id,slug,title_en,title_ar,is_published,sort_order,updated_at').order('sort_order').order('title_en').limit(300);
+      const { data, error } = await client.from('site_pages').select('id,slug,title_en,title_ar,content_type,display_location,is_published,sort_order,updated_at').order('sort_order').order('title_en').limit(300);
       if (error) { report(container, error, 'Pages could not be loaded.'); return; }
       pages = data || [];
       if (!pages.length) { container.innerHTML = '<p class="admin-empty">No website sections yet. Create the first section above.</p>'; return; }
-      container.innerHTML = `<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>English title</th><th>Arabic title</th><th>Link</th><th>State</th><th>Order</th><th>Updated</th><th>Actions</th></tr></thead><tbody>${pages.map((page) => `<tr><td>${escapeHTML(page.title_en)}</td><td dir="rtl">${escapeHTML(page.title_ar)}</td><td><code>${escapeHTML(page.slug)}</code></td><td>${page.is_published ? 'Published' : 'Draft'}</td><td>${Number(page.sort_order)}</td><td class="muted">${escapeHTML(date(page.updated_at))}</td><td><div class="admin-actions"><button class="admin-action" type="button" data-page-edit="${escapeHTML(page.id)}">Edit</button><button class="admin-action" type="button" data-page-publish="${escapeHTML(page.id)}" data-published="${page.is_published}">${page.is_published ? 'Unpublish' : 'Publish'}</button>${root.dataset.siteAdmin === 'true' ? `<button class="admin-action admin-button-danger" type="button" data-page-delete="${escapeHTML(page.id)}">Delete</button>` : ''}</div></td></tr>`).join('')}</tbody></table></div>`;
+      container.innerHTML = `<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>English title</th><th>Arabic title</th><th>Link</th><th>Type</th><th>Location</th><th>State</th><th>Order</th><th>Updated</th><th>Actions</th></tr></thead><tbody>${pages.map((page) => `<tr><td>${escapeHTML(page.title_en)}</td><td dir="rtl">${escapeHTML(page.title_ar)}</td><td><code>${escapeHTML(page.slug)}</code></td><td>${page.content_type === 'section' ? 'Section' : 'Page'}</td><td>${escapeHTML(page.display_location || 'pages')}</td><td>${page.is_published ? 'Published' : 'Draft'}</td><td>${Number(page.sort_order)}</td><td class="muted">${escapeHTML(date(page.updated_at))}</td><td><div class="admin-actions"><button class="admin-action" type="button" data-page-edit="${escapeHTML(page.id)}">Edit</button><button class="admin-action" type="button" data-page-publish="${escapeHTML(page.id)}" data-published="${page.is_published}">${page.is_published ? 'Unpublish' : 'Publish'}</button>${root.dataset.siteAdmin === 'true' ? `<button class="admin-action admin-button-danger" type="button" data-page-delete="${escapeHTML(page.id)}">Delete</button>` : ''}</div></td></tr>`).join('')}</tbody></table></div>`;
     };
 
     const resetPageForm = () => {
@@ -89,6 +91,8 @@
         body_ar: root.querySelector('#content-page-body-ar').value,
         is_published: root.querySelector('#content-page-published').checked,
         sort_order: Number(root.querySelector('#content-page-order').value),
+        content_type: root.querySelector('#content-page-type').value,
+        display_location: root.querySelector('#content-page-location').value,
       };
       if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(row.slug)) { toast('Use lowercase English letters, numbers, and single hyphens in the page link.'); return; }
       const button = form.querySelector('[type="submit"]');
@@ -115,6 +119,8 @@
       root.querySelector('#content-page-body-en').value = page.body_en || '';
       root.querySelector('#content-page-body-ar').value = page.body_ar || '';
       root.querySelector('#content-page-order').value = String(page.sort_order ?? 100);
+      root.querySelector('#content-page-type').value = page.content_type || 'page';
+      root.querySelector('#content-page-location').value = page.display_location || 'pages';
       root.querySelector('#content-page-published').checked = Boolean(page.is_published);
       root.querySelector('#content-page-form').scrollIntoView({ behavior:'smooth', block:'start' });
     };

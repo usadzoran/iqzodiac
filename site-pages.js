@@ -67,14 +67,14 @@
     try {
       const client = await window.IQZodiacSupabase.ready;
       if (slug) {
-        const { data, error } = await client.from('site_pages').select('slug,title_en,title_ar,body_en,body_ar').eq('slug', slug).eq('is_published', true).maybeSingle();
+        const { data, error } = await client.from('site_pages').select('slug,title_en,title_ar,body_en,body_ar,content_type').eq('content_type','page').eq('slug', slug).eq('is_published', true).maybeSingle();
         if (error) throw error;
         if (!data) { showNotFound(); return; }
         currentPage = data;
         renderCurrentPage();
         return;
       }
-      const { data, error } = await client.from('site_pages').select('slug,title_en,title_ar,body_en,body_ar,sort_order').eq('is_published', true).order('sort_order').order('title_en').limit(200);
+      const { data, error } = await client.from('site_pages').select('slug,title_en,title_ar,body_en,body_ar,sort_order').eq('content_type','page').eq('is_published', true).order('sort_order').order('title_en').limit(200);
       if (error) throw error;
       pageRows.push(...(data || []));
       localizeStaticCopy();
