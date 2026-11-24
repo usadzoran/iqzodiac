@@ -101,7 +101,7 @@
     try {
       const width = bitmap.width, height = bitmap.height;
       if (width < 720 || height < 1100) throw new Error('This image is too small for the photo set. Use an upright image at least 720 × 1100 pixels.');
-      const maxEdge = 2400;
+      const maxEdge = 2000;
       const scale = Math.min(1, maxEdge / Math.max(width, height));
       const canvas = document.createElement('canvas');
       canvas.width = Math.round(width * scale); canvas.height = Math.round(height * scale);
@@ -115,8 +115,21 @@
       if (quality.contrast < 18) issues.push('low image contrast');
       if (quality.sharpness < 7) issues.push('possible blur (rough estimate)');
       if (issues.length) throw new Error(`Image quality needs attention: ${issues.join(', ')}. Retake in even light and keep the camera steady.`);
-      const blob = await new Promise((resolve, reject) => canvas.toBlob((result) => result ? resolve(result) : reject(new Error('Could not prepare this image for upload.')), 'image/jpeg', .94));
-      if (blob.size > 25 * 1024 * 1024) throw new Error('The prepared photo exceeds the secure storage limit. Choose a smaller original.');
+      const maxPreparedBytes = 3 * 1024 * 1024;
+      let blob = null;
+      for (let attempt = 0; attempt < 8; attempt++) {
+        const jpegQuality = Math.max(.72, .86 - attempt * .025);
+        blob = await new Promise((resolve, reject) => canvas.toBlob((result) => result ? resolve(result) : reject(new Error('Could not prepare this image for upload.')), 'image/jpeg', jpegQuality));
+        if (blob.size <= maxPreparedBytes) break;
+        const currentEdge = Math.max(canvas.width, canvas.height);
+        if (currentEdge <= 1400) throw new Error('This photo could not be compressed below 3 MB. Choose a simpler or lower-detail image.');
+        const shrink = Math.max(.72, Math.min(.9, Math.sqrt(maxPreparedBytes / blob.size) * .94));
+        canvas.width = Math.max(1, Math.round(canvas.width * shrink));
+        canvas.height = Math.max(1, Math.round(canvas.height * shrink));
+        context.fillStyle = '#f4f4f0'; context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      }
+      if (!blob || blob.size > maxPreparedBytes) throw new Error('This photo is still too large after compression. Choose a smaller original.');
       return { blob, width: canvas.width, height: canvas.height, quality };
     } finally { bitmap.close(); }
   };

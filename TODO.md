@@ -6,7 +6,10 @@
 - [x] Add an authenticated server-only `body-model-reconstruct` Edge Function that reads `CLAD_API_KEY` from Supabase Edge Function environment variables, submits the photo to Clad, polls the returned job, validates the returned GLB, stores it privately, and persists returned measurements.
 - [x] Add additive model metadata for provider state, job/reference identifiers, params, measurements, height, and safe processing error codes; do not delete or recreate existing tables or files.
 - [x] Add height input, explicit Uploading/Processing/Completed/Failed states, and real measurement rendering to the existing Profile 3D Body card.
-- [ ] Add the user-provided Clad API key as the Supabase Edge Function Secret `CLAD_API_KEY`, then run a real authenticated upload with a user photo and verify the returned GLB, measurements, Storage asset, and privacy permissions.
+- [x] Render the six capture previews as compact, responsive cards on desktop and mobile; keep saved private photos as small thumbnails rather than full-size images.
+- [x] Resize prepared views to a maximum 2000-pixel edge and compress each JPEG to at most 3 MiB before upload; enforce the same cap at the client upload boundary.
+- [x] Verify the live `iqzodiac-body-private` bucket is private, accepts JPEG/GLB, has a 50 MiB per-object limit, and currently contains 0 objects; verify owner-scoped RLS and that `body-model-reconstruct` is deployed with JWT verification.
+- [ ] Verify that `CLAD_API_KEY` is configured as a Supabase Edge Function Secret (set it through a secure secret-entry path if missing), then perform an authenticated reconstruction only when authorized; do not use user/test photos for a production smoke test.
 
 ## Discover Vault
 - [x] Add an additive private Vault card inside the existing Discover page for images, videos, and audio recordings.

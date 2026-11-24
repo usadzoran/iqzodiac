@@ -54,7 +54,7 @@
 
     async uploadPhoto(modelId, angle, file) {
       const { client, user } = await signedInClient();
-      if (!angleKeys.includes(angle) || !(file instanceof Blob) || file.type !== 'image/jpeg' || file.size < 1 || file.size > 25 * 1024 * 1024) {
+      if (!angleKeys.includes(angle) || !(file instanceof Blob) || file.type !== 'image/jpeg' || file.size < 1 || file.size > 3 * 1024 * 1024) {
         throw new Error('The prepared photo is not valid for secure upload.');
       }
       const path = `${user.id}/${modelId}/${angle}.jpg`;
