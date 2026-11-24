@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Watch and share long-form videos on IQZodiac." />
+  <title>Videos — IQZodiac</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css?v=videos-long-form-20261124" />
+  <link rel="stylesheet" href="./videos.css?v=videos-long-form-20261124" />
+  <link rel="stylesheet" href="./ad-runtime.css?v=ads-all-pages-20261122" />
+</head>
+<body class="has-site-nav videos-page" data-ad-section="all">
+  <div class="aurora aurora-one" aria-hidden="true"></div><div class="aurora aurora-two" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
+  <main id="videos-app" class="videos-shell" data-i18n-skip>
+    <header class="videos-topbar">
+      <a class="videos-wordmark" href="./home.html"><span class="videos-wordmark-glyph" aria-hidden="true">▶</span><span>IQZodiac <b>Videos</b></span></a>
+      <div class="videos-topbar-actions">
+        <button type="button" class="videos-language-toggle" data-language-toggle aria-label="Switch language">عربي</button>
+        <button type="button" id="open-video-upload" class="videos-primary-button"><span aria-hidden="true">＋</span><span id="open-video-upload-label">Upload a video</span></button>
+      </div>
+    </header>
+    <div class="site-ad-slot videos-ad-slot" data-ad-slot="header" hidden></div>
+
+    <section class="videos-hero">
+      <div>
+        <p class="videos-eyebrow" id="videos-eyebrow">LONG-FORM · YOUR ORBIT</p>
+        <h1 id="videos-title">Stories that take their time.</h1>
+        <p id="videos-intro" class="videos-intro">Watch and share longer videos with the IQZodiac community. Published videos are visible to everyone.</p>
+      </div>
+      <div class="videos-hero-note"><span aria-hidden="true">◉</span><span id="videos-limit-note">Up to 50 MB per video · no six-minute Reels limit</span></div>
+    </section>
+    <div class="site-ad-slot videos-ad-slot" data-ad-slot="hero" hidden></div>
+
+    <section class="videos-content" aria-labelledby="videos-section-title">
+      <div class="videos-section-heading">
+        <div><p class="videos-eyebrow" id="videos-library-label">COMMUNITY LIBRARY</p><h2 id="videos-section-title">Explore videos</h2></div>
+        <button type="button" id="videos-refresh" class="videos-refresh-button" aria-label="Refresh videos" title="Refresh">↻</button>
+      </div>
+      <div id="video-category-filters" class="video-category-filters" aria-label="Filter videos by category"></div>
+      <p id="video-published-notice" class="video-published-notice" role="status" aria-live="polite" hidden></p>
+      <p id="videos-status" class="videos-status" role="status" aria-live="polite">Loading videos…</p>
+      <div id="videos-grid" class="videos-grid"></div>
+      <button type="button" id="videos-load-more" class="videos-secondary-button" hidden>Load more</button>
+    </section>
+
+    <div class="site-ad-slot videos-ad-slot" data-ad-slot="footer" hidden></div>
+  </main>
+
+  <dialog id="video-upload-dialog" class="video-upload-dialog" aria-labelledby="video-dialog-title">
+    <form id="video-upload-form" class="video-upload-form">
+      <header class="video-dialog-header">
+        <div><p id="video-dialog-kicker" class="videos-eyebrow">CREATE · 01</p><h2 id="video-dialog-title">Publish a video</h2></div>
+        <button type="button" id="close-video-dialog" class="video-dialog-close" aria-label="Close">×</button>
+      </header>
+      <p id="video-dialog-note" class="video-dialog-note">Choose an MP4 or WebM video up to 50 MB. There is no six-minute Reels duration limit. Please only upload content you own or have permission to share.</p>
+      <div class="video-local-preview" id="video-local-preview-wrap" hidden>
+        <video id="video-local-preview" controls playsinline preload="metadata"></video>
+        <p id="video-local-duration" aria-live="polite"></p>
+      </div>
+      <label class="video-form-label" for="video-title"><span id="video-title-label">Title</span><input id="video-title" name="title" maxlength="120" required autocomplete="off" /></label>
+      <label class="video-form-label" for="video-description"><span id="video-description-label">Description</span><textarea id="video-description" name="description" maxlength="2000" rows="4"></textarea></label>
+      <label class="video-form-label" for="video-category"><span id="video-category-label">Category (optional)</span><select id="video-category" name="category_id"><option value="">No category</option></select></label>
+      <div class="video-form-label">
+        <span id="video-file-heading">Video file</span>
+        <label class="video-file-picker" for="video-file"><span aria-hidden="true">＋</span><span><strong id="video-file-name">Choose MP4 or WebM</strong><small id="video-file-hint">Up to 50 MB per video · longer than Reels is allowed</small></span></label>
+        <input id="video-file" class="video-visually-hidden" type="file" accept="video/mp4,video/webm,.mp4,.webm" required />
+      </div>
+      <label class="video-rights-check"><input id="video-rights-confirmed" type="checkbox" required /><span id="video-rights-label">I own this video or have permission to publish it publicly.</span></label>
+      <p id="video-upload-status" class="video-upload-status" role="status" aria-live="polite"></p>
+      <a id="video-upload-login" class="video-login-link" href="./login.html?next=./videos.html" hidden>Sign in to publish</a>
+      <div class="video-dialog-actions"><button type="button" id="cancel-video-upload" class="videos-secondary-button">Cancel</button><button type="submit" id="publish-video" class="videos-primary-button"><span id="publish-video-label">Publish video</span><span aria-hidden="true">↗</span></button></div>
+    </form>
+  </dialog>
+
+  <nav class="site-nav" aria-label="Main navigation">
+    <a href="./home.html"><span class="nav-glyph" aria-hidden="true">⌂</span><span data-menu-key="home">Home</span></a>
+    <a href="./match.html"><span class="nav-glyph" aria-hidden="true">♡</span><span data-menu-key="match">Match</span></a>
+    <a href="./daily.html"><span class="nav-glyph" aria-hidden="true">◌</span><span data-menu-key="daily">Daily</span></a>
+    <a href="./discover.html"><span class="nav-glyph" aria-hidden="true">✦</span><span data-menu-key="discover">Discover</span></a>
+    <a href="./reel.html"><span class="nav-glyph" aria-hidden="true">◉</span><span data-menu-key="reel">Reels</span></a>
+    <a href="./videos.html" aria-current="page"><span class="nav-glyph" aria-hidden="true">▶</span><span data-menu-key="videos">Videos</span></a>
+    <a href="./profile.html"><span class="nav-glyph" aria-hidden="true">◍</span><span data-menu-key="profile">Profile</span></a>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="./supabase-client.js" defer></script>
+  <script src="./i18n-data.js?v=videos-long-form-20261124" defer></script>
+  <script src="./language.js?v=menu-videos-20261124" defer></script>
+  <script src="./videos.js?v=videos-long-form-20261124" defer></script>
+  <script src="./ad-runtime.js?v=ads-all-pages-20261122" defer></script>
+</body>
+</html>

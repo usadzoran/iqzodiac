@@ -47,3 +47,11 @@
 - [x] يختار المسؤول نوع المحتوى (صفحة مستقلة أو قسم) وموقع ظهور القسم (الرئيسية، Discover، Marketplace، الملف الشخصي، أو دليل الصفحات) مع عنوان EN/AR ومحتوى وترتيب وحالة نشر.
 - [x] تظهر الأقسام المنشورة كنص آمن في موقع العرض المحدد، وتبقى الصفحات المستقلة في دليل الصفحات العامة.
 - [x] يختار المسؤول نوع القائمة ومكانها (Footer، Header، Dropdown، User menu، Side menu)، ويدير اسم القائمة وروابطها وأسماء الروابط وترتيبها وإظهارها/إخفاءها وحذفها.
+
+## Long-form Videos
+- [x] Verify the existing production `videos` and `video_categories` schemas, public-read/published and owner-upload policies, and the private `iqzodiac-video-library` bucket before connecting the frontend; do not create test video or category rows in production.
+- [x] Add a separate Videos section where signed-in users can preview and publish MP4/WebM videos up to 50 MiB, with no six-minute Reels duration cap, and all site visitors can watch published videos.
+- [x] Add user-entered title, description, optional admin-created category, and explicit rights confirmation to video publishing; respect the existing database and storage policy constraints.
+- [x] Add a protected Videos tab to the Admin Control Center that lets the administrator create bilingual video categories and show/hide them for upload and feed filters.
+- [x] Add a Videos destination to the site navigation and translate its label in English and Arabic; keep the new section separate from Reels.
+- [x] Validate scripts, forms, RLS-compatible payload fields and limits, category filtering, local preview, and player code paths through local checks and read-only review; do not write production test data.
