@@ -26,7 +26,6 @@
     }
   })();
   const contentSlotAnchors = {
-    assistant: '.smart-assistant',
     audio_rooms: '.rooms-category-cards',
     daily: '.daily-grid',
     discover: '.discover-grid',

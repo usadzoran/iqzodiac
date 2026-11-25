@@ -159,7 +159,7 @@ form.addEventListener('submit', async (event) => {
       window.setTimeout(() => window.location.assign('./login.html?confirmed=1'), 1800);
       return;
     }
-    window.location.assign('./assistant.html?welcome=1');
+    window.location.assign('./discovery-profile.html?welcome=1');
   } catch (error) {
     showToast(authMessage(error));
     button.disabled = false;

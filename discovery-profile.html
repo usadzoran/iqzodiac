@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Set up your IQZodiac discovery profile with guided personality questions, interests, and zodiac details." />
+  <title>Discovery Profile — IQZodiac</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css?v=discovery-profile-20261125" />
+  <link rel="stylesheet" href="./discovery-profile.css?v=discovery-profile-20261125" />
+  <link rel="stylesheet" href="./ad-runtime.css?v=ads-all-pages-20261122" />
+  <link rel="stylesheet" href="./site-menus.css?v=menu-types-20261124" />
+</head>
+<body class="has-site-nav discovery-page" data-ad-section="discover">
+  <div class="aurora aurora-one" aria-hidden="true"></div>
+  <div class="aurora aurora-two" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <main class="discovery-shell">
+    <header class="topbar discovery-topbar">
+      <a class="mini-mark" href="./home.html" aria-label="IQZodiac home"><span class="mini-mark-orbit" aria-hidden="true"></span><span>IQZ</span></a>
+      <div class="discovery-heading"><p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> YOUR DISCOVERY PROFILE</p><h1>Profile <span>setup.</span></h1></div>
+      <a class="back-link" href="./discover.html">Discover <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <section class="discovery-intro">
+      <div>
+        <p class="card-kicker">PERSONALITY · INTERESTS · ZODIAC</p>
+        <h2>Set up your<br /><em>discovery profile.</em></h2>
+        <p>Answer a short set of guided questions to save your personality patterns, interests and zodiac sign to your IQZodiac profile. Your saved profile helps Match find real members who share your interests.</p>
+      </div>
+      <div class="discovery-orbit" aria-hidden="true"><span>✦</span><i></i><b></b></div>
+    </section>
+
+    <section class="discovery-demo-notice" aria-label="Profile save status">
+      <span class="demo-pulse" aria-hidden="true"></span>
+      <div><strong id="discovery-demo-title">Discovery profile connected</strong><p id="discovery-demo-note">Your answers are saved to your private discovery profile and remain available on your account.</p></div>
+      <span class="discovery-status-tag"><i aria-hidden="true"></i><span id="discovery-device-label">SAVED TO YOUR ACCOUNT</span></span>
+    </section>
+
+    <section class="discovery-chat" aria-label="Discovery profile setup">
+      <header class="discovery-chat-head">
+        <div class="discovery-mark" aria-hidden="true">✦</div>
+        <div><strong>Discovery profile</strong><small id="chat-progress">Ready to begin</small></div>
+        <span class="discovery-local-badge">PROFILE SETUP</span>
+        <div class="discovery-voice-controls">
+          <button id="discovery-voice-toggle" class="discovery-voice-toggle" type="button" aria-pressed="false"><span aria-hidden="true">◖))</span><span id="discovery-voice-label">Hear questions</span></button>
+          <button id="discovery-voice-replay" class="discovery-voice-replay" type="button" aria-label="Repeat current question" title="Repeat current question">↻</button>
+          <span id="discovery-voice-status" class="discovery-voice-status" aria-live="polite"></span>
+        </div>
+      </header>
+      <div id="chat-log" class="discovery-chat-log" role="log" aria-live="polite" aria-relevant="additions text"></div>
+      <section id="chat-turn" class="discovery-turn" aria-live="polite"></section>
+      <section id="discovery-result" class="discovery-result" hidden aria-live="polite"></section>
+      <div class="discovery-chat-foot"><p>Your progress is saved to your profile and can continue on another device after you sign in. You can restart the setup whenever you like.</p><button id="restart-discovery" class="discovery-reset" type="button">Start again</button></div>
+    </section>
+
+    <footer class="footer discovery-footer"><span>© 2026 IQZodiac</span><span class="footer-orbit" aria-hidden="true"><i></i><i></i><i></i></span><span>Look inward. Move forward.</span><button type="button" class="language-toggle" data-language-toggle aria-label="Switch language">عربي</button></footer>
+  </main>
+  <nav class="site-nav" aria-label="Main navigation">
+    <a href="./home.html"><span class="nav-glyph" aria-hidden="true">⌂</span><span data-menu-key="home">Home</span></a>
+    <a href="./match.html"><span class="nav-glyph" aria-hidden="true">♡</span><span data-menu-key="match">Match</span></a>
+    <a href="./daily.html"><span class="nav-glyph" aria-hidden="true">◌</span><span data-menu-key="daily">Daily</span></a>
+    <a href="./discover.html"><span class="nav-glyph" aria-hidden="true">✦</span><span data-menu-key="discover">Discover</span></a>
+    <a href="./marketplace.html"><span class="nav-glyph" aria-hidden="true">◇</span><span>Market</span></a>
+    <a href="./reel.html"><span class="nav-glyph" aria-hidden="true">◉</span><span data-menu-key="reel">Reels</span></a>
+    <a href="./videos.html"><span class="nav-glyph" aria-hidden="true">▶</span><span data-menu-key="videos">Videos</span></a>
+    <a href="./profile.html"><span class="nav-glyph" aria-hidden="true">◍</span><span data-menu-key="profile">Profile</span></a>
+  </nav>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-client.js?v=profile-apikey-20261125"></script>
+  <script src="./auth-guard.js"></script>
+  <script src="./auth-ui.js?v=profile-logout-20261117"></script>
+  <script src="./i18n-data.js?v=20261022-global"></script>
+  <script src="./language.js?v=menu-videos-20261124"></script>
+  <script src="./discovery-profile.js?v=discovery-profile-20261125"></script>
+  <script src="./nav-performance.js" defer></script>
+  <script src="./ad-runtime.js?v=ads-click-redirect-20261122" defer></script>
+  <script src="./site-menus.js?v=site-structure-20261122" defer></script>
+</body>
+</html>

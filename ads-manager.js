@@ -20,7 +20,6 @@
     { value: 'live', label: 'Live rooms' },
     { value: 'audio_rooms', label: 'Audio rooms' },
     { value: 'rooms', label: 'Spaces hub' },
-    { value: 'assistant', label: 'AI Assistant' },
     { value: 'messages', label: 'Messages' },
     { value: 'match', label: 'Match' },
     { value: 'movies', label: 'Movies' },

@@ -454,53 +454,8 @@ filters.forEach((button) => {
     if (button.dataset.filter === 'following' && followedPeople.size === 0) showToast('Follow someone to build your own feed.');
   });
 });
-document.querySelectorAll('[data-prompt]').forEach((button) => {
-  button.addEventListener('click', () => {
-    const textarea = document.querySelector('#post-text');
-    textarea.value = button.dataset.prompt;
-    textarea.focus();
-    document.querySelector('.composer-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
-});
 const dateNode = document.querySelector('#today-date');
 if (dateNode) dateNode.textContent = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date());
-
-const moodButtons = [...document.querySelectorAll('[data-mood]')];
-const moodReflection = document.querySelector('#mood-reflection');
-const moodMessage = document.querySelector('#mood-message');
-const moodCopy = {
-  bright: 'Let yourself enjoy the light. What is one thing you want to carry into the rest of your day?',
-  steady: 'Steady is its own kind of strength. You can take today one moment at a time.',
-  tender: 'There is room for softness here. What would feel kind to you right now?',
-  low: 'You don’t have to turn the day around all at once. One small, gentle thing is enough.',
-};
-const todayKey = new Date().toLocaleDateString('en-CA');
-let selectedMood = null;
-const selectMood = (mood) => {
-  selectedMood = mood;
-  moodButtons.forEach((button) => {
-    const selected = button.dataset.mood === mood;
-    button.classList.toggle('is-selected', selected);
-    button.setAttribute('aria-pressed', String(selected));
-  });
-  moodMessage.textContent = moodCopy[mood];
-  moodReflection.hidden = false;
-  void (async () => {
-    const client = await database();
-    if (!client || !authenticatedUserId) return;
-    const { error } = await client.from('daily_moods').upsert({ user_id: authenticatedUserId, mood_date: todayKey, mood, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mood_date' });
-    if (error) showToast('Mood check-in could not be saved.');
-  })();
-};
-moodButtons.forEach((button) => button.addEventListener('click', () => selectMood(button.dataset.mood)));
-if (moodCopy[selectedMood]) selectMood(selectedMood);
-document.querySelector('#mood-write').addEventListener('click', () => {
-  if (!selectedMood) return;
-  const textarea = document.querySelector('#post-text');
-  textarea.value = `Today I’m feeling ${selectedMood === 'low' ? 'a little low' : selectedMood}, and I’m giving myself permission to take it one moment at a time.`;
-  textarea.focus();
-  document.querySelector('.composer-card').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
-});
 
 // Reveal home sections as they enter view; keep the page fully visible if motion is reduced.
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -508,8 +463,6 @@ if ('IntersectionObserver' in window && !reduceMotion) {
   document.documentElement.classList.add('has-scroll-reveal');
   const revealTargets = [
     document.querySelector('.home-welcome-bar'),
-    document.querySelector('.daily-spark'),
-    document.querySelector('.mood-checkin'),
     document.querySelector('.feed-heading'),
     document.querySelector('.composer-card'),
     document.querySelector('.feed-filter'),
@@ -629,9 +582,6 @@ if ('IntersectionObserver' in window && !reduceMotion) {
       document.querySelectorAll('#feed-list .post-card').forEach((post) => renderComments(post, comments.filter((comment) => comment.post_id === post.dataset.postId)));
     }
     if (notificationPostId) requestAnimationFrame(focusNotificationTarget);
-    const today = new Date().toLocaleDateString('en-CA');
-    const { data: mood } = await client.from('daily_moods').select('mood').eq('mood_date', today).maybeSingle();
-    if (mood?.mood && moodCopy[mood.mood]) selectMood(mood.mood);
     const publishButton = document.querySelector('#publish-post');
     const cleanButton = publishButton.cloneNode(true); publishButton.replaceWith(cleanButton);
     const mediaInput = document.querySelector('#post-media-input');

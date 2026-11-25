@@ -27,7 +27,7 @@ const routeFiles = {
   '/login': 'login.html',
   '/iqz-admin-login': 'iqz-admin-login.html',
   '/discover': 'discover.html',
-  '/assistant': 'assistant.html',
+  '/discovery-profile': 'discovery-profile.html',
   '/rooms': 'live.html',
   '/audio-rooms': 'audio-rooms.html',
   '/live': 'live.html',

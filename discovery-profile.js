@@ -18,20 +18,20 @@
 
   const copy = {
     en: {
-      welcome: 'Welcome to IQZodiac! Your answers help us understand your interests and the way you think, so we can guide you toward real members who share them. I’ll be with you at every step.',
-      signupWelcome: 'Plot twist: you survived the signup form! Welcome to IQZodiac. Answer a few questions so we can explore the community you may feel at home in—and the kind of person you’re hoping to meet.',
-      greeting: 'Let’s start with how you tend to approach things.',
+      welcome: 'Welcome to IQZodiac. Your answers shape a discovery profile that can help you meet members with shared interests.',
+      signupWelcome: 'Your account is ready. Complete this short profile setup to save your interests, personality pattern and zodiac sign.',
+      greeting: 'Start by choosing the response that best describes how you approach things.',
       typed: 'Your answer',
       choose: 'Choose an answer, or write your own below.',
       writeLabel: 'Your own answer',
       writePlaceholder: 'Type your answer…',
-      send: 'Send answer',
+      send: 'Save answer',
       interestsPrompt: 'What interests or activities do you enjoy most? You can list a few, separated by commas.',
       interestsLabel: 'Interests',
       interestsPlaceholder: 'For example: music, hiking, art…',
-      birthdayPrompt: 'One last detail: enter your birth date so I can calculate your zodiac sign and save it to your account.',
+      birthdayPrompt: 'Enter your birth date to calculate and save your zodiac sign to your profile.',
       birthdayLabel: 'Date of birth',
-      elementPrompt: 'One quick detail is missing. Which personality element best reflects the way you answered?',
+      elementPrompt: 'Choose the personality element that best reflects your selected answers.',
       elementLabel: 'Personality element',
       continue: 'Show my result',
       required: 'Please answer this question before continuing.',
@@ -51,35 +51,35 @@
       },
       names: { fire: 'Fire', earth: 'Earth', water: 'Water', air: 'Air' },
       completed: 'Your discovery profile is ready. Real member matches are next.',
-      reset: 'Reload saved answers',
+      reset: 'Reset answers',
       saved: 'Progress saved securely to your account',
       matches: 'Continue to Match',
       noResults: 'No completed member profiles match yet. We will not invent people or compatibility scores.',
       voiceEnable: 'Hear questions',
       voiceDisable: 'Mute voice',
       voiceReplay: 'Repeat current question',
-      voiceOn: 'Voice on — prompts use a warm, gently paced browser voice when available.',
+      voiceOn: 'Voice playback reads the questions using a browser voice when available.',
       voiceOff: 'Voice is off.',
       voiceUnavailable: 'Voice playback is unavailable in this browser.',
-      demoTitle: 'Connected discovery profile',
+      demoTitle: 'Discovery profile connected',
       demoNote: 'Your answers are stored in your private Supabase discovery profile and remain available on your account.',
       deviceOnly: 'SAVED TO YOUR ACCOUNT',
     },
     ar: {
-      welcome: 'أهلًا بك في IQZodiac! ستساعدنا إجاباتك على فهم اهتماماتك وطريقة تفكيرك، لنرشدك إلى أعضاء حقيقيين يشاركونك الاهتمامات وطريقة التفكير. سأرافقك خطوة بخطوة.',
-      signupWelcome: 'مفاجأة: نجوت من استمارة التسجيل! أهلًا بك في IQZodiac. أجب عن بضعة أسئلة لنكتشف المجتمع الذي قد تشعر أنك تنتمي إليه، ونقترب من الشخص الذي تبحث عنه.',
-      greeting: 'لنبدأ بطريقة تعاملك عادةً مع الأمور.',
+      welcome: 'مرحبًا بك في IQZodiac. تساعد إجاباتك في بناء ملف اكتشاف يسهّل العثور على أعضاء يشاركونك اهتماماتك.',
+      signupWelcome: 'اكتمل إنشاء حسابك. أكمل إعداد الملف لحفظ اهتماماتك ونمط شخصيتك وبرجك.',
+      greeting: 'ابدأ باختيار الإجابة التي تصف طريقتك في التعامل مع الأمور.',
       typed: 'إجابتك',
       choose: 'اختر إجابة أو اكتب إجابتك بنفسك أدناه.',
       writeLabel: 'إجابتك الخاصة',
       writePlaceholder: 'اكتب إجابتك…',
-      send: 'إرسال الإجابة',
+      send: 'حفظ الإجابة',
       interestsPrompt: 'ما الاهتمامات أو الأنشطة التي تستمتع بها؟ يمكنك كتابة بعضها وفصلها بفواصل.',
       interestsLabel: 'الاهتمامات',
       interestsPlaceholder: 'مثلًا: الموسيقى، المشي، الفن…',
-      birthdayPrompt: 'تفصيل أخير: أدخل تاريخ ميلادك لأحسب برجك وأحفظه في حسابك.',
+      birthdayPrompt: 'أدخل تاريخ ميلادك لحساب برجك وحفظه في ملفك.',
       birthdayLabel: 'تاريخ الميلاد',
-      elementPrompt: 'بقي تفصيل واحد فقط. أي عنصر يعكس إجاباتك وطريقتك أكثر؟',
+      elementPrompt: 'اختر عنصر الشخصية الذي يعكس إجاباتك المحددة أكثر.',
       elementLabel: 'عنصر الشخصية',
       continue: 'عرض نتيجتي',
       required: 'أجب عن هذا السؤال قبل المتابعة.',
@@ -99,17 +99,17 @@
       },
       names: { fire: 'ناري', earth: 'ترابي', water: 'مائي', air: 'هوائي' },
       completed: 'اكتمل ملف اكتشافك. سنعرض الآن الأعضاء الحقيقيين المناسبين.',
-      reset: 'استعادة الإجابات المحفوظة',
+      reset: 'إعادة ضبط الإجابات',
       saved: 'حُفظ التقدم بأمان في حسابك',
       matches: 'المتابعة إلى Match',
       noResults: 'لا توجد ملفات أعضاء مكتملة مناسبة بعد. لن نخترع أشخاصاً أو درجات توافق.',
       voiceEnable: 'استمع إلى الأسئلة',
       voiceDisable: 'إيقاف الصوت',
       voiceReplay: 'إعادة السؤال الحالي',
-      voiceOn: 'الصوت يعمل — تُنطق الأسئلة بنبرة دافئة وهادئة قليلًا متى توفرت.',
+      voiceOn: 'تُقرأ الأسئلة بصوت المتصفح عند توفر هذه الميزة.',
       voiceOff: 'الصوت متوقف.',
       voiceUnavailable: 'ميزة الصوت غير متاحة في هذا المتصفح.',
-      demoTitle: 'ملف الاكتشاف متصل',
+      demoTitle: 'ملف الاكتشاف محفوظ',
       demoNote: 'تُحفظ إجاباتك في ملف اكتشافك الخاص داخل Supabase وتبقى متاحة في حسابك.',
       deviceOnly: 'محفوظ في حسابك',
     },
@@ -120,12 +120,10 @@
   const resultBox = document.querySelector('#discovery-result');
   const progress = document.querySelector('#chat-progress');
   const resetButton = document.querySelector('#restart-discovery');
-  const voiceToggle = document.querySelector('#assistant-voice-toggle');
-  const voiceLabel = document.querySelector('#assistant-voice-label');
-  const voiceReplay = document.querySelector('#assistant-voice-replay');
-  const voiceStatus = document.querySelector('#assistant-voice-status');
-  const avatarStage = document.querySelector('#assistant-avatar');
-  const avatarVideo = document.querySelector('#assistant-avatar-video');
+  const voiceToggle = document.querySelector('#discovery-voice-toggle');
+  const voiceLabel = document.querySelector('#discovery-voice-label');
+  const voiceReplay = document.querySelector('#discovery-voice-replay');
+  const voiceStatus = document.querySelector('#discovery-voice-status');
   const translations = window.IQZodiacTranslations || { arToEn: {} };
   const currentLanguage = () => document.documentElement.lang === 'ar' ? 'ar' : 'en';
   const ui = () => copy[currentLanguage()];
@@ -164,12 +162,12 @@
         const { error: answersError } = await client.from('discovery_answers').upsert(answerRows, { onConflict: 'user_id,questionnaire_version,question_id' });
         if (answersError) throw answersError;
       }
-      const saveNote = document.querySelector('#assistant-demo-note');
+      const saveNote = document.querySelector('#discovery-demo-note');
       if (saveNote) saveNote.dataset.saveState = 'saved';
       return true;
     } catch (error) {
       console.warn('Discovery progress could not be synced to Supabase.', error);
-      const saveNote = document.querySelector('#assistant-demo-note');
+      const saveNote = document.querySelector('#discovery-demo-note');
       if (saveNote) saveNote.dataset.saveState = 'error';
       return false;
     }
@@ -210,144 +208,10 @@
       console.warn('Discovery progress could not be loaded from Supabase.', error);
     }
   };
-  const isNewConversation = () => state.stage === 'questions' && state.questionIndex === 0 && state.answers.length === 0;
+  const isNewProfileSetup = () => state.stage === 'questions' && state.questionIndex === 0 && state.answers.length === 0;
   const speechAvailable = typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance === 'function';
   let voiceEnabled = speechAvailable;
   let activeUtterance = null;
-  let pendingAvatarTime = null;
-  let lastAvatarBoundary = null;
-  const avatarExpressionClasses = ['is-speaking', 'is-smiling', 'is-thinking', 'is-welcoming'];
-  const setAvatarExpression = (expression) => {
-    if (!avatarStage) return;
-    avatarStage.classList.remove(...avatarExpressionClasses);
-    avatarStage.classList.add(`is-${expression}`);
-  };
-  const smileFrameTime = () => 0;
-  const showAvatarSmile = () => {
-    if (!avatarStage) return;
-    setAvatarExpression('smiling');
-    lastAvatarBoundary = null;
-    if (!avatarVideo) return;
-    avatarVideo.loop = true;
-    avatarVideo.playbackRate = 1;
-    avatarVideo.pause();
-    if (avatarVideo.readyState >= 1 && Math.abs(avatarVideo.currentTime - smileFrameTime()) > 0.06) {
-      try { avatarVideo.currentTime = smileFrameTime(); } catch { /* Keep the matching portrait visible if seeking is unavailable. */ }
-    }
-  };
-  const showAvatarWelcome = () => {
-    setAvatarExpression('welcoming');
-    lastAvatarBoundary = null;
-    if (!avatarVideo) return;
-    avatarVideo.loop = true;
-    avatarVideo.playbackRate = 1;
-    avatarVideo.pause();
-    if (avatarVideo.readyState >= 1 && avatarVideo.currentTime > 0.06) {
-      try { avatarVideo.currentTime = smileFrameTime(); } catch { /* Keep the matching portrait visible if seeking is unavailable. */ }
-    }
-  };
-  const showAvatarThinking = () => {
-    activeUtterance = null;
-    pendingAvatarTime = null;
-    lastAvatarBoundary = null;
-    if (speechAvailable) window.speechSynthesis.cancel();
-    setAvatarExpression('thinking');
-    if (!avatarVideo) return;
-    avatarVideo.loop = true;
-    avatarVideo.playbackRate = 1;
-    avatarVideo.pause();
-    try { avatarVideo.currentTime = smileFrameTime(); } catch { /* The generated thinking portrait remains visible. */ }
-  };
-  const setAvatarSpeaking = (speaking) => {
-    if (!avatarStage || !avatarVideo) return;
-    setAvatarExpression(speaking ? 'speaking' : 'smiling');
-    if (speaking) {
-      avatarVideo.loop = false;
-      const playback = avatarVideo.play();
-      if (playback && typeof playback.then === 'function') {
-        playback.then(() => avatarStage.classList.remove('is-video-unavailable'))
-          .catch(() => avatarStage.classList.add('is-video-unavailable'));
-      } else {
-        avatarStage.classList.remove('is-video-unavailable');
-      }
-      return;
-    }
-    pendingAvatarTime = null;
-    lastAvatarBoundary = null;
-    avatarVideo.loop = true;
-    avatarVideo.playbackRate = 1;
-    avatarVideo.pause();
-    if (avatarVideo.readyState >= 1) {
-      try { avatarVideo.currentTime = smileFrameTime(); } catch { /* Keep the matching portrait visible if seeking is unavailable. */ }
-    }
-  };
-  avatarVideo?.addEventListener('loadeddata', () => {
-    if (pendingAvatarTime === null || !activeUtterance) return;
-    const target = pendingAvatarTime;
-    pendingAvatarTime = null;
-    try { avatarVideo.currentTime = target; } catch { pendingAvatarTime = target; }
-  });
-  avatarVideo?.addEventListener('loadedmetadata', () => {
-    if (!activeUtterance && avatarStage?.classList.contains('is-smiling')) showAvatarSmile();
-  });
-  avatarVideo?.addEventListener('error', () => avatarStage?.classList.add('is-video-unavailable'));
-  // Map each sentence's word progress to one pass of the short clip instead of looping on elapsed time.
-  const syncAvatarToSpeech = (utterance, event) => {
-    if (activeUtterance !== utterance || !avatarVideo) return;
-    const elapsed = Number(event?.elapsedTime);
-    const duration = avatarVideo.duration;
-    const text = String(utterance.text || '');
-    const textLength = text.length;
-    if (!Number.isFinite(duration) || duration <= 0 || avatarVideo.readyState < 1 || !textLength) return;
-    const charIndex = Number(event?.charIndex);
-    const hasNewWordIndex = Number.isFinite(charIndex) && charIndex >= 0 && (!lastAvatarBoundary || charIndex > lastAvatarBoundary.charIndex);
-    let sentenceStart = lastAvatarBoundary?.sentenceStart ?? 0;
-    let sentenceEnd = textLength;
-    if (Number.isFinite(charIndex)) {
-      sentenceStart = 0;
-      const sentenceBreaks = /[.!?؟]/g;
-      let punctuation;
-      while ((punctuation = sentenceBreaks.exec(text))) {
-        if (punctuation.index < charIndex) sentenceStart = punctuation.index + 1;
-        else { sentenceEnd = punctuation.index; break; }
-      }
-    }
-    const sentenceLength = Math.max(1, sentenceEnd - sentenceStart);
-    const sentenceChanged = !lastAvatarBoundary || lastAvatarBoundary.sentenceStart !== sentenceStart;
-    const sentenceElapsedStart = sentenceChanged
-      ? (Number.isFinite(elapsed) ? elapsed : 0)
-      : lastAvatarBoundary.sentenceElapsedStart;
-    const estimatedSpeechDuration = Math.max(1, sentenceLength / 14);
-    const progress = hasNewWordIndex
-      ? Math.min(1, Math.max(0, (charIndex - sentenceStart) / sentenceLength))
-      : Math.min(1, Math.max(0, Number.isFinite(elapsed) ? (elapsed - sentenceElapsedStart) / estimatedSpeechDuration : 0));
-    const target = Math.min(Math.max(0, duration - 0.04), progress * duration);
-    if (sentenceChanged) avatarVideo.playbackRate = 1;
-    else if (lastAvatarBoundary && Number.isFinite(elapsed) && elapsed > lastAvatarBoundary.elapsed && target > lastAvatarBoundary.target) {
-      const rate = (target - lastAvatarBoundary.target) / (elapsed - lastAvatarBoundary.elapsed);
-      avatarVideo.playbackRate = Math.max(0.25, Math.min(1.35, rate));
-    }
-    lastAvatarBoundary = {
-      charIndex: Number.isFinite(charIndex) ? charIndex : (lastAvatarBoundary?.charIndex ?? -1),
-      elapsed: Number.isFinite(elapsed) ? elapsed : (lastAvatarBoundary?.elapsed ?? 0),
-      target,
-      sentenceStart,
-      sentenceElapsedStart,
-    };
-    if (avatarVideo.readyState < 2) {
-      pendingAvatarTime = target;
-      try { avatarVideo.currentTime = target; } catch { /* Apply the latest word position after media data arrives. */ }
-      return;
-    }
-    if (Math.abs(target - avatarVideo.currentTime) > 0.16) {
-      try { avatarVideo.currentTime = target; } catch { /* Wait for the next spoken-word boundary. */ }
-    }
-    pendingAvatarTime = null;
-    if (avatarVideo.paused) {
-      const playback = avatarVideo.play();
-      if (playback && typeof playback.catch === 'function') playback.catch(() => avatarStage?.classList.add('is-video-unavailable'));
-    }
-  };
   const currentPrompt = () => {
     if (state.stage === 'questions') return questionText(state.questionIndex);
     if (state.stage === 'interests') return ui().interestsPrompt;
@@ -366,12 +230,11 @@
     voiceStatus.textContent = speechAvailable ? (voiceEnabled ? ui().voiceOn : ui().voiceOff) : ui().voiceUnavailable;
   };
   const speakCurrentPrompt = () => {
-    const firstTurn = isNewConversation();
-    const prompt = firstTurn ? `${ui().welcome} ${ui().greeting} ${currentPrompt()}` : currentPrompt();
+    const firstQuestion = isNewProfileSetup();
+    const prompt = firstQuestion ? `${ui().welcome} ${ui().greeting} ${currentPrompt()}` : currentPrompt();
     if (!speechAvailable || !voiceEnabled || !prompt) return;
     activeUtterance = null;
     window.speechSynthesis.cancel();
-    if (firstTurn) showAvatarWelcome(); else showAvatarSmile();
     const language = currentLanguage();
     const utterance = new window.SpeechSynthesisUtterance(prompt);
     utterance.lang = language === 'ar' ? 'ar' : 'en-US';
@@ -384,19 +247,8 @@
     if (warmVoice || matchingVoices[0]) utterance.voice = warmVoice || matchingVoices[0];
     activeUtterance = utterance;
     const finishSpeaking = () => {
-      if (activeUtterance !== utterance) return;
-      activeUtterance = null;
-      pendingAvatarTime = null;
-      setAvatarSpeaking(false);
+      if (activeUtterance === utterance) activeUtterance = null;
     };
-    utterance.onstart = () => {
-      if (activeUtterance !== utterance) return;
-      lastAvatarBoundary = null;
-      try { avatarVideo.currentTime = 0; } catch { /* The video may not have loaded yet. */ }
-      avatarVideo.playbackRate = 1;
-      setAvatarSpeaking(true);
-    };
-    utterance.onboundary = (event) => syncAvatarToSpeech(utterance, event);
     utterance.onend = finishSpeaking;
     utterance.onerror = () => { finishSpeaking(); voiceStatus.textContent = ui().voiceUnavailable; };
     window.speechSynthesis.speak(utterance);
@@ -415,7 +267,7 @@
   const addBubble = (speaker, text, extraClass = '') => {
     if (speaker === 'guide') return;
     const bubble = document.createElement('div');
-    bubble.className = `assistant-bubble assistant-bubble-${speaker} ${extraClass}`.trim();
+    bubble.className = `discovery-bubble discovery-bubble-${speaker} ${extraClass}`.trim();
     bubble.textContent = text;
     log.append(bubble);
   };
@@ -466,7 +318,7 @@
     return 'done';
   };
   const appendQuestionHistory = () => {
-    if (state.signupWelcome) addBubble('guide', ui().signupWelcome, 'assistant-bubble-surprise');
+    if (state.signupWelcome) addBubble('guide', ui().signupWelcome, 'discovery-bubble-surprise');
     addBubble('guide', ui().welcome);
     for (let i = 0; i < Math.min(state.questionIndex, questions.length); i += 1) {
       addBubble('guide', questionText(i));
@@ -492,7 +344,7 @@
     const language = currentLanguage(); const text = ui(); const element = tally().element || state.personalityElement; const zodiac = zodiacForDate(state.birthDate);
     const savedInterests = state.interests.split(/[,،;؛\n]+/).map((item) => item.trim()).filter(Boolean);
     const elementText = element ? `${text.names[element]} — ${text.resultSummary[element]}` : text.noScore;
-    resultBox.innerHTML = `<p class="card-kicker">${language === 'ar' ? 'نتيجة اكتشافك' : 'YOUR DISCOVERY RESULT'}</p><h2>${escapeHTML(text.resultTitle)}</h2><p class="assistant-result-note">${escapeHTML(text.resultNote)}</p><div class="assistant-result-grid"><article><small>${escapeHTML(text.element)}</small><strong>${escapeHTML(element ? text.names[element] : (language === 'ar' ? 'غير محدد' : 'Undetermined'))}</strong><p>${escapeHTML(elementText)}</p></article><article><small>${escapeHTML(text.zodiac)}</small><strong>${escapeHTML(zodiac ? zodiac[language === 'ar' ? 1 : 0] : '')}</strong><p>${escapeHTML(state.birthDate)}</p></article><article class="assistant-result-interests"><small>${escapeHTML(text.interests)}</small><strong>${escapeHTML(savedInterests.length ? savedInterests.join(' · ') : text.noInterests)}</strong></article></div><p class="assistant-match-note">${escapeHTML(text.noResults)}</p><a class="button button-secondary" href="./match.html">${escapeHTML(text.matches)} <span class="button-arrow">↗</span></a>`;
+    resultBox.innerHTML = `<p class="card-kicker">${language === 'ar' ? 'نتيجة اكتشافك' : 'YOUR DISCOVERY RESULT'}</p><h2>${escapeHTML(text.resultTitle)}</h2><p class="discovery-result-note">${escapeHTML(text.resultNote)}</p><div class="discovery-result-grid"><article><small>${escapeHTML(text.element)}</small><strong>${escapeHTML(element ? text.names[element] : (language === 'ar' ? 'غير محدد' : 'Undetermined'))}</strong><p>${escapeHTML(elementText)}</p></article><article><small>${escapeHTML(text.zodiac)}</small><strong>${escapeHTML(zodiac ? zodiac[language === 'ar' ? 1 : 0] : '')}</strong><p>${escapeHTML(state.birthDate)}</p></article><article class="discovery-result-interests"><small>${escapeHTML(text.interests)}</small><strong>${escapeHTML(savedInterests.length ? savedInterests.join(' · ') : text.noInterests)}</strong></article></div><p class="discovery-match-note">${escapeHTML(text.noResults)}</p><a class="button button-secondary" href="./match.html">${escapeHTML(text.matches)} <span class="button-arrow">↗</span></a>`;
     resultBox.hidden = false;
   };
   const renderTurn = () => {
@@ -504,43 +356,42 @@
     turn.hidden = false;
     if (state.stage === 'questions') {
       const question = questions[state.questionIndex];
-      const instruction = document.createElement('p'); instruction.className = 'assistant-turn-instruction'; instruction.textContent = text.choose; turn.append(instruction);
-      const options = document.createElement('div'); options.className = 'assistant-choice-list';
+      const instruction = document.createElement('p'); instruction.className = 'discovery-turn-instruction'; instruction.textContent = text.choose; turn.append(instruction);
+      const options = document.createElement('div'); options.className = 'discovery-choice-list';
       question.a.forEach(([arabic, element]) => {
-        const button = document.createElement('button'); button.type = 'button'; button.className = 'assistant-choice'; button.textContent = answerText(arabic); button.addEventListener('click', () => submitQuestion({ choice: arabic, element })); options.append(button);
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'discovery-choice'; button.textContent = answerText(arabic); button.addEventListener('click', () => submitQuestion({ choice: arabic, element })); options.append(button);
       });
       turn.append(options);
-      const form = document.createElement('form'); form.className = 'assistant-answer-form';
-      form.innerHTML = `<label for="free-answer">${escapeHTML(text.writeLabel)}</label><textarea id="free-answer" rows="2" maxlength="500" placeholder="${escapeHTML(text.writePlaceholder)}"></textarea><button class="button button-primary" type="submit">${escapeHTML(text.send)} <span class="button-arrow">↗</span></button><p class="assistant-validation" aria-live="polite"></p>`;
-      form.addEventListener('submit', (event) => { event.preventDefault(); const value = form.querySelector('textarea').value.trim(); if (!value) { form.querySelector('.assistant-validation').textContent = text.required; return; } submitQuestion({ text: value }); });
+      const form = document.createElement('form'); form.className = 'discovery-answer-form';
+      form.innerHTML = `<label for="free-answer">${escapeHTML(text.writeLabel)}</label><textarea id="free-answer" rows="2" maxlength="500" placeholder="${escapeHTML(text.writePlaceholder)}"></textarea><button class="button button-primary" type="submit">${escapeHTML(text.send)} <span class="button-arrow">↗</span></button><p class="discovery-validation" aria-live="polite"></p>`;
+      form.addEventListener('submit', (event) => { event.preventDefault(); const value = form.querySelector('textarea').value.trim(); if (!value) { form.querySelector('.discovery-validation').textContent = text.required; return; } submitQuestion({ text: value }); });
       turn.append(form);
     } else if (state.stage === 'interests') {
-      const form = document.createElement('form'); form.className = 'assistant-answer-form';
-      form.innerHTML = `<label for="interest-answer">${escapeHTML(text.interestsLabel)}</label><textarea id="interest-answer" rows="2" maxlength="500" required placeholder="${escapeHTML(text.interestsPlaceholder)}">${escapeHTML(state.interests)}</textarea><button class="button button-primary" type="submit">${escapeHTML(text.send)} <span class="button-arrow">↗</span></button><p class="assistant-validation" aria-live="polite"></p>`;
-      form.addEventListener('submit', (event) => { event.preventDefault(); if (advanceTimer !== null) return; const value = form.querySelector('textarea').value.trim(); if (!value) { form.querySelector('.assistant-validation').textContent = text.required; return; } state.interests = value; state.stage = nextMissingStage(); saveState(); advanceWithThinking(); });
+      const form = document.createElement('form'); form.className = 'discovery-answer-form';
+      form.innerHTML = `<label for="interest-answer">${escapeHTML(text.interestsLabel)}</label><textarea id="interest-answer" rows="2" maxlength="500" required placeholder="${escapeHTML(text.interestsPlaceholder)}">${escapeHTML(state.interests)}</textarea><button class="button button-primary" type="submit">${escapeHTML(text.send)} <span class="button-arrow">↗</span></button><p class="discovery-validation" aria-live="polite"></p>`;
+      form.addEventListener('submit', (event) => { event.preventDefault(); if (advanceTimer !== null) return; const value = form.querySelector('textarea').value.trim(); if (!value) { form.querySelector('.discovery-validation').textContent = text.required; return; } state.interests = value; state.stage = nextMissingStage(); saveState(); advanceToNextStep(); });
       turn.append(form);
     } else if (state.stage === 'element') {
-      const instruction = document.createElement('p'); instruction.className = 'assistant-turn-instruction'; instruction.textContent = text.elementPrompt; turn.append(instruction);
-      const options = document.createElement('div'); options.className = 'assistant-choice-list';
+      const instruction = document.createElement('p'); instruction.className = 'discovery-turn-instruction'; instruction.textContent = text.elementPrompt; turn.append(instruction);
+      const options = document.createElement('div'); options.className = 'discovery-choice-list';
       Object.entries(text.names).forEach(([element, label]) => {
-        const button = document.createElement('button'); button.type = 'button'; button.className = 'assistant-choice'; button.textContent = label;
-        button.addEventListener('click', () => { if (advanceTimer !== null) return; state.personalityElement = element; state.stage = 'done'; saveState(); advanceWithThinking(); });
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'discovery-choice'; button.textContent = label;
+        button.addEventListener('click', () => { if (advanceTimer !== null) return; state.personalityElement = element; state.stage = 'done'; saveState(); advanceToNextStep(); });
         options.append(button);
       });
       turn.append(options);
     } else {
-      const form = document.createElement('form'); form.className = 'assistant-answer-form assistant-birth-form';
-      form.innerHTML = `<label for="birth-date">${escapeHTML(text.birthdayLabel)}</label><input id="birth-date" type="date" required max="${new Date().toISOString().slice(0, 10)}" value="${escapeHTML(state.birthDate)}" /><button class="button button-primary" type="submit">${escapeHTML(text.continue)} <span class="button-arrow">↗</span></button><p class="assistant-validation" aria-live="polite"></p>`;
-      form.addEventListener('submit', (event) => { event.preventDefault(); if (advanceTimer !== null) return; const value = form.querySelector('input').value; if (!value || value > new Date().toISOString().slice(0, 10)) { form.querySelector('.assistant-validation').textContent = text.required; return; } state.birthDate = value; state.stage = nextMissingStage(); saveState(); advanceWithThinking(); });
+      const form = document.createElement('form'); form.className = 'discovery-answer-form discovery-birth-form';
+      form.innerHTML = `<label for="birth-date">${escapeHTML(text.birthdayLabel)}</label><input id="birth-date" type="date" required max="${new Date().toISOString().slice(0, 10)}" value="${escapeHTML(state.birthDate)}" /><button class="button button-primary" type="submit">${escapeHTML(text.continue)} <span class="button-arrow">↗</span></button><p class="discovery-validation" aria-live="polite"></p>`;
+      form.addEventListener('submit', (event) => { event.preventDefault(); if (advanceTimer !== null) return; const value = form.querySelector('input').value; if (!value || value > new Date().toISOString().slice(0, 10)) { form.querySelector('.discovery-validation').textContent = text.required; return; } state.birthDate = value; state.stage = nextMissingStage(); saveState(); advanceToNextStep(); });
       turn.append(form);
     }
   };
-  const advanceWithThinking = () => {
+  const advanceToNextStep = () => {
     if (advanceTimer !== null) return;
     turn.inert = true;
     turn.setAttribute('aria-busy', 'true');
-    showAvatarThinking();
-    advanceTimer = window.setTimeout(() => {
+        advanceTimer = window.setTimeout(() => {
       advanceTimer = null;
       turn.inert = false;
       turn.removeAttribute('aria-busy');
@@ -551,16 +402,15 @@
     turn.inert = false;
     turn.removeAttribute('aria-busy');
     log.replaceChildren(); appendQuestionHistory(); renderTurn();
-    document.querySelector('.assistant-chat-foot p').textContent = `${ui().saved}. ${currentLanguage() === 'ar' ? 'يمكنك متابعة المحادثة من أي جهاز بعد تسجيل الدخول.' : 'You can continue from any device after signing in.'}`;
+    document.querySelector('.discovery-chat-foot p').textContent = `${ui().saved}. ${currentLanguage() === 'ar' ? 'يمكنك متابعة إعداد الملف من أي جهاز بعد تسجيل الدخول.' : 'You can continue setting up your profile on another device after signing in.'}`;
     document.querySelector('#restart-discovery').textContent = ui().reset;
-    document.querySelector('#assistant-demo-title').textContent = ui().demoTitle;
-    const saveNote = document.querySelector('#assistant-demo-note');
+    document.querySelector('#discovery-demo-title').textContent = ui().demoTitle;
+    const saveNote = document.querySelector('#discovery-demo-note');
     saveNote.textContent = ui().demoNote;
     if (saveNote.dataset.saveState === 'error') saveNote.textContent = currentLanguage() === 'ar' ? 'تعذر حفظ التقدم. تحقق من الاتصال ثم أعد المحاولة.' : 'Progress could not be saved. Check your connection and try again.';
     if (saveNote.dataset.saveState === 'saved') saveNote.textContent = ui().saved;
-    document.querySelector('#assistant-device-label').textContent = ui().deviceOnly;
+    document.querySelector('#discovery-device-label').textContent = ui().deviceOnly;
     updateVoiceControls();
-    if (isNewConversation()) showAvatarWelcome(); else showAvatarSmile();
     if (voiceEnabled) speakCurrentPrompt();
     log.scrollTop = log.scrollHeight;
   };
@@ -569,7 +419,7 @@
     state.answers[state.questionIndex] = answer;
     state.questionIndex += 1;
     if (state.questionIndex >= questions.length) state.stage = 'interests';
-    saveState(); advanceWithThinking();
+    saveState(); advanceToNextStep();
   };
   resetButton.addEventListener('click', async () => {
     if (advanceTimer !== null) { window.clearTimeout(advanceTimer); advanceTimer = null; }
@@ -587,7 +437,6 @@
     else {
       activeUtterance = null;
       window.speechSynthesis.cancel();
-      setAvatarSpeaking(false);
     }
   });
   voiceReplay.addEventListener('click', () => {
@@ -602,6 +451,5 @@
     renderedLanguage = currentLanguage();
     render();
   });
-  showAvatarSmile();
   hydrateFromDatabase().then(() => render());
 })();

@@ -187,7 +187,7 @@
       if (!snapshot.complete) {
         const missing = snapshot.missing.map((key) => text('missing')[key]).filter(Boolean);
         const message = missing.length ? `${text('setupBody')} ${language() === 'ar' ? 'المطلوب الآن: ' : 'Still needed: '}${missing.join(language() === 'ar' ? '، ' : ', ')}.` : text('setupBody');
-        const link = `<a class="button button-secondary" href="./assistant.html?resume=1">${escapeHTML(text('resume'))} <span class="button-arrow">↗</span></a>`;
+        const link = `<a class="button button-secondary" href="./discovery-profile.html?resume=1">${escapeHTML(text('resume'))} <span class="button-arrow">↗</span></a>`;
         setCardNotice(text('setupTitle'), message, link);
         queueLabel.textContent = text('setupKicker').toUpperCase(); queueCount.textContent = '—';
         return;
