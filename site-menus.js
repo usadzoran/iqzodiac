@@ -37,7 +37,7 @@
   const clearManagedMenus = () => {
     document.querySelectorAll('[data-managed-site-menu-id]').forEach((node) => node.remove());
     const footerWrap = document.querySelector('footer .managed-site-menus');
-    if (footerWrap) footerWrap.replaceChildren();
+    if (footerWrap) footerWrap.remove();
     const sidePanel = document.querySelector('.managed-side-panel');
     if (sidePanel) sidePanel.replaceChildren();
   };
@@ -121,12 +121,15 @@
 
   const render = () => {
     clearManagedMenus();
+    const renderedMenus = [];
     for (const menu of menus) {
       const menuItems = items.filter((item) => item.menu_id === menu.id && item.is_active);
+      if (!menuItems.length) continue;
       renderOne(menu, menuItems);
+      renderedMenus.push(menu);
     }
     const dock = document.querySelector('.managed-side-menu');
-    if (dock) dock.hidden = !menus.some((menu) => menu.location === 'side');
+    if (dock) dock.hidden = !renderedMenus.some((menu) => menu.location === 'side');
   };
 
   const refresh = async () => {
