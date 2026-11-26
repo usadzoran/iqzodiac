@@ -192,8 +192,6 @@
         queueLabel.textContent = text('setupKicker').toUpperCase(); queueCount.textContent = '—';
         return;
       }
-      const wallet = await adapter.getWallet();
-      document.querySelector('#quick-coins').textContent = Number(wallet.coins || 0).toLocaleString();
       await loadCandidates();
       await renderMatches();
     } catch (error) {

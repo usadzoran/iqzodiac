@@ -132,6 +132,93 @@ const uploadCommentMedia = async (client, file) => {
   return { media_type: type, media_path: path, media_mime: file.type, media_size_bytes: file.size };
 };
 
+const setupCommentMediaControls = (form, { mediaInput, preview, mediaButton, recordButton }) => {
+  let selectedFile = null;
+  const clear = () => {
+    if (form._mediaPreviewUrl) URL.revokeObjectURL(form._mediaPreviewUrl);
+    form._mediaPreviewUrl = '';
+    selectedFile = null;
+    mediaInput.value = '';
+    preview.replaceChildren();
+    preview.hidden = true;
+  };
+  const setFile = (file) => {
+    const type = commentMediaType(file);
+    if (!type || !commentMediaTypes.has(type)) {
+      clear();
+      showToast(feedText('Choose an image, video, or audio file.', 'اختر صورة أو فيديو أو ملفًا صوتيًا.'));
+      return;
+    }
+    if (!file.size || file.size > commentMediaSizeLimit(type)) {
+      clear();
+      showToast(feedText('The selected file is too large.', 'الملف المحدد كبير جدًا.'));
+      return;
+    }
+    clear();
+    selectedFile = file;
+    const node = type === 'video' ? document.createElement('video') : type === 'audio' ? document.createElement('audio') : document.createElement('img');
+    form._mediaPreviewUrl = URL.createObjectURL(file);
+    node.src = form._mediaPreviewUrl;
+    node.controls = type !== 'image';
+    node.className = 'comment-preview-media';
+    if (type === 'image') node.alt = feedText('Selected image preview', 'معاينة الصورة المختارة');
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.className = 'comment-media-remove';
+    removeButton.textContent = '×';
+    removeButton.setAttribute('aria-label', feedText('Remove attachment', 'إزالة المرفق'));
+    removeButton.addEventListener('click', clear);
+    preview.replaceChildren(node, removeButton);
+    preview.hidden = false;
+  };
+  mediaButton.addEventListener('click', () => mediaInput.click());
+  mediaInput.addEventListener('change', () => { const [file] = mediaInput.files || []; if (file) setFile(file); });
+  recordButton.addEventListener('click', async () => {
+    if (form._recording) { form._recorder?.stop(); return; }
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+      showToast(feedText('Voice recording is not supported in this browser.', 'تسجيل الصوت غير مدعوم في هذا المتصفح.'));
+      return;
+    }
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const chunks = [];
+      const recorder = new MediaRecorder(stream);
+      form._recording = true;
+      form._recorder = recorder;
+      recordButton.textContent = '■';
+      recordButton.classList.add('is-recording');
+      recordButton.setAttribute('aria-pressed', 'true');
+      recordButton.setAttribute('aria-label', feedText('Stop voice recording', 'إيقاف التسجيل الصوتي'));
+      recorder.ondataavailable = (event) => { if (event.data.size) chunks.push(event.data); };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        form._recording = false;
+        form._recorder = null;
+        recordButton.textContent = '●';
+        recordButton.classList.remove('is-recording');
+        recordButton.setAttribute('aria-pressed', 'false');
+        recordButton.setAttribute('aria-label', feedText('Record voice comment', 'تسجيل تعليق صوتي'));
+        const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+        if (!blob.size) { showToast(feedText('No audio was recorded.', 'لم يتم تسجيل أي صوت.')); return; }
+        const extension = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm';
+        setFile(new File([blob], `voice-${Date.now()}.${extension}`, { type: blob.type }));
+      };
+      recorder.start();
+    } catch {
+      stream?.getTracks().forEach((track) => track.stop());
+      form._recording = false;
+      form._recorder = null;
+      recordButton.textContent = '●';
+      recordButton.classList.remove('is-recording');
+      recordButton.setAttribute('aria-pressed', 'false');
+      recordButton.setAttribute('aria-label', feedText('Record voice comment', 'تسجيل تعليق صوتي'));
+      showToast(feedText('Microphone access was denied or recording failed.', 'تم رفض الميكروفون أو فشل التسجيل.'));
+    }
+  });
+  return { get file() { return selectedFile; }, clear };
+};
+
 const commentAttachmentNode = (comment) => {
   if (!comment.media_url || !comment.media_type) return null;
   if (comment.media_type === 'image') {
@@ -162,30 +249,16 @@ const createCommentElement = (comment, post, childrenByParent = {}, submitReply 
   replyForm.innerHTML = `<input type="text" maxlength="180" placeholder="${feedText('Write a reply...', 'اكتب ردًا...')}" aria-label="${feedText('Write a reply', 'اكتب ردًا')}" /><div class="mention-suggestions" role="listbox" hidden></div><input class="comment-media-input" type="file" accept="image/*,video/*,audio/*" hidden /><button class="comment-media-button" type="button" aria-label="${feedText('Attach image, video or audio', 'إرفاق صورة أو فيديو أو صوت')}">＋</button><button class="comment-record-button" type="button" aria-label="${feedText('Record voice reply', 'تسجيل رد صوتي')}">●</button><button type="submit" aria-label="${feedText('Post reply', 'نشر الرد')}">↗</button><div class="comment-media-preview" hidden></div>`;
   const input = replyForm.querySelector('input[type="text"]'); const mentionMenu = replyForm.querySelector('.mention-suggestions'); setupMentionAutocomplete(input, mentionMenu); const mediaInput = replyForm.querySelector('.comment-media-input'); const preview = replyForm.querySelector('.comment-media-preview'); const mediaButton = replyForm.querySelector('.comment-media-button'); const recordButton = replyForm.querySelector('.comment-record-button');
   const replySubmitButton = replyForm.querySelector('button[type="submit"]');
-  replyForm._replyMedia = null;
-  const showReplyMedia = (file) => { if (replyForm._mediaPreviewUrl) URL.revokeObjectURL(replyForm._mediaPreviewUrl); replyForm._replyMedia = file; const node = file.type.startsWith('video/') ? document.createElement('video') : file.type.startsWith('audio/') ? document.createElement('audio') : document.createElement('img'); replyForm._mediaPreviewUrl = URL.createObjectURL(file); node.src = replyForm._mediaPreviewUrl; node.controls = file.type.startsWith('video/') || file.type.startsWith('audio/'); node.className = 'comment-preview-media'; preview.replaceChildren(node); preview.hidden = false; };
-  mediaButton.addEventListener('click', () => mediaInput.click());
-  mediaInput.addEventListener('change', () => { const [file] = mediaInput.files || []; if (file) showReplyMedia(file); });
-  recordButton.addEventListener('click', async () => {
-    if (replyForm._recording) { replyForm._recorder?.stop(); return; }
-    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) { showToast(feedText('Voice recording is not supported in this browser.', 'تسجيل الصوت غير مدعوم في هذا المتصفح.')); return; }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); const chunks = []; const recorder = new MediaRecorder(stream); replyForm._recording = true; replyForm._recorder = recorder; recordButton.textContent = '■'; recordButton.classList.add('is-recording');
-      recorder.ondataavailable = (event) => { if (event.data.size) chunks.push(event.data); };
-      recorder.onstop = () => { stream.getTracks().forEach((track) => track.stop()); replyForm._recording = false; replyForm._recorder = null; recordButton.textContent = '●'; recordButton.classList.remove('is-recording'); const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }); showReplyMedia(new File([blob], `voice-${Date.now()}.webm`, { type: blob.type })); };
-      recorder.start();
-    } catch { showToast(feedText('Microphone access was denied.', 'تم رفض الوصول إلى الميكروفون.')); }
-  });
+  const mediaControls = setupCommentMediaControls(replyForm, { mediaInput, preview, mediaButton, recordButton });
   replyButton.addEventListener('click', () => { replyForm.hidden = !replyForm.hidden; if (!replyForm.hidden) input.focus(); });
   replyForm.addEventListener('submit', async (event) => {
     event.preventDefault(); const value = input.value.trim().slice(0, 180);
-    if ((!value && !replyForm._replyMedia) || !submitReply) return;
+    if (replyForm._recording) { showToast(feedText('Stop recording before posting.', 'أوقف التسجيل قبل النشر.')); return; }
+    if ((!value && !mediaControls.file) || !submitReply) return;
     replySubmitButton.disabled = true;
     try {
-      if (await submitReply(comment.comment_id || comment.id, value, replyForm._replyMedia)) {
-        input.value = ''; mediaInput.value = ''; replyForm._replyMedia = null;
-        if (replyForm._mediaPreviewUrl) URL.revokeObjectURL(replyForm._mediaPreviewUrl);
-        replyForm._mediaPreviewUrl = ''; preview.replaceChildren(); preview.hidden = true; replyForm.hidden = true;
+      if (await submitReply(comment.comment_id || comment.id, value, mediaControls.file)) {
+        input.value = ''; mediaControls.clear(); replyForm.hidden = true;
       }
     } catch (error) { console.warn('Post reply could not be submitted.', error); showToast(feedText('Reply could not be saved.', 'تعذّر حفظ الرد.')); }
     finally { replySubmitButton.disabled = false; }
@@ -344,7 +417,17 @@ const bindPost = (post) => {
   const likeCount = post.querySelector('.like-count');
   const commentCount = post.querySelector('.comment-count');
   const commentForm = post.querySelector('.comment-form');
-  const commentInput = commentForm.querySelector('input');
+  const commentInput = commentForm.querySelector('input[type="text"]');
+  const commentSubmitButton = commentForm.querySelector('button[type="submit"]');
+  const commentMediaInput = document.createElement('input'); commentMediaInput.className = 'comment-media-input'; commentMediaInput.type = 'file'; commentMediaInput.accept = 'image/*,video/*,audio/*'; commentMediaInput.hidden = true;
+  const commentMediaButton = document.createElement('button'); commentMediaButton.className = 'comment-media-button'; commentMediaButton.type = 'button'; commentMediaButton.textContent = '＋'; commentMediaButton.setAttribute('aria-label', feedText('Attach image, video or audio', 'إرفاق صورة أو فيديو أو صوت'));
+  const commentRecordButton = document.createElement('button'); commentRecordButton.className = 'comment-record-button'; commentRecordButton.type = 'button'; commentRecordButton.textContent = '●'; commentRecordButton.setAttribute('aria-label', feedText('Record voice comment', 'تسجيل تعليق صوتي')); commentRecordButton.setAttribute('aria-pressed', 'false');
+  const commentMediaPreview = document.createElement('div'); commentMediaPreview.className = 'comment-media-preview'; commentMediaPreview.hidden = true;
+  commentForm.insertBefore(commentMediaInput, commentSubmitButton);
+  commentForm.insertBefore(commentMediaButton, commentSubmitButton);
+  commentForm.insertBefore(commentRecordButton, commentSubmitButton);
+  commentForm.append(commentMediaPreview);
+  const mediaControls = setupCommentMediaControls(commentForm, { mediaInput: commentMediaInput, preview: commentMediaPreview, mediaButton: commentMediaButton, recordButton: commentRecordButton });
   const commentList = post.querySelector('.comment-list');
   const deleteButton = post.querySelector('.post-delete-button');
   const editButton = post.querySelector('.post-edit-button');
@@ -395,18 +478,41 @@ const bindPost = (post) => {
 
   commentForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const value = escapeText(commentInput.value);
-    if (!value) return;
+    const value = commentInput.value.trim().slice(0, 180);
+    const mediaFile = mediaControls.file;
+    if (commentForm._recording) { showToast(feedText('Stop recording before posting.', 'أوقف التسجيل قبل النشر.')); return; }
+    if (!value && !mediaFile) return;
     const client = await database();
-    if (!client || !authenticatedUserId || !/^[0-9a-f-]{36}$/i.test(post.dataset.postId || '')) { showToast('Sign in to comment on shared posts.'); return; }
-    const { data, error } = await client.from('comments').insert({ post_id: post.dataset.postId, author_id: authenticatedUserId, body: value }).select('id,post_id,author_id,parent_comment_id,body,created_at,media_type,media_path,media_mime,media_size_bytes').single();
-    if (error) { showToast('Comment could not be saved.'); return; }
+    if (!client || !authenticatedUserId || !/^[0-9a-f-]{36}$/i.test(post.dataset.postId || '')) { showToast(feedText('Sign in to comment on shared posts.', 'سجّل الدخول للتعليق على المنشورات.')); return; }
+    commentSubmitButton.disabled = true;
+    let media = null;
+    let data;
+    try {
+      if (mediaFile) media = await uploadCommentMedia(client, mediaFile);
+      const payload = { post_id: post.dataset.postId, author_id: authenticatedUserId, body: value, ...(media || {}) };
+      const result = await client.from('comments').insert(payload).select('id,post_id,author_id,parent_comment_id,body,created_at,media_type,media_path,media_mime,media_size_bytes').single();
+      const error = result.error;
+      if (error) throw error;
+      data = result.data;
+    } catch (error) {
+      if (media?.media_path) { try { await client.storage.from(commentMediaBucket).remove([media.media_path]); } catch {} }
+      console.warn('Comment could not be saved.', error);
+      showToast(feedText('Comment could not be saved.', 'تعذّر حفظ التعليق.'));
+      commentSubmitButton.disabled = false;
+      return;
+    }
     const comment = { ...data, comment_id: data.id, display_name: currentPublicIdentity.displayName, handle: currentPublicIdentity.handle };
+    if (data.media_path) {
+      try { const { data: signed } = await client.storage.from(commentMediaBucket).createSignedUrl(data.media_path, 3600); comment.media_url = signed?.signedUrl || ''; }
+      catch { comment.media_url = ''; }
+    }
     renderComments(post, [...(post._commentRows || []), comment]);
     const count = Number(commentCount.textContent.replace(/[^0-9]/g, '')) + 1;
     commentCount.textContent = `${formatCount(count)} comments`;
     commentInput.value = '';
-    showToast('Comment added.');
+    mediaControls.clear();
+    showToast(feedText('Comment added.', 'تمت إضافة التعليق.'));
+    commentSubmitButton.disabled = false;
   });
 };
 
