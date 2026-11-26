@@ -9,7 +9,14 @@
   const body = document.querySelector('#site-page-content');
   const pageRows = [];
   let currentPage = null;
+  let loadSequence = 0;
   const copy = (english, arabic) => (window.IQZodiacLanguage?.language === 'ar' ? arabic : english);
+  const bestText = (row, field) => {
+    const en = row[`${field}_en`] || '';
+    const ar = row[`${field}_ar`] || '';
+    return window.IQZodiacLanguage?.language === 'ar' ? (ar || en) : (en || ar);
+  };
+
   const localizeStaticCopy = () => {
     document.querySelectorAll('[data-copy-en][data-copy-ar]').forEach((node) => {
       node.textContent = copy(node.dataset.copyEn, node.dataset.copyAr);
@@ -18,11 +25,7 @@
     if (currentPage) renderCurrentPage();
     else renderDirectory();
   };
-  const bestText = (row, field) => {
-    const en = row[`${field}_en`] || '';
-    const ar = row[`${field}_ar`] || '';
-    return window.IQZodiacLanguage?.language === 'ar' ? (ar || en) : (en || ar);
-  };
+
   const renderDirectory = () => {
     if (slug) return;
     article.hidden = true;
@@ -44,6 +47,7 @@
       list.append(card);
     }
   };
+
   const renderCurrentPage = () => {
     if (!currentPage) return;
     list.hidden = true;
@@ -56,31 +60,52 @@
     const description = document.querySelector('meta[name="description"]');
     if (description) description.content = bestText(currentPage, 'body').slice(0, 155);
   };
+
   const showNotFound = () => {
     list.hidden = true;
     article.hidden = true;
     status.textContent = copy('This page is unavailable or has not been published.', 'هذه الصفحة غير متاحة أو لم يتم نشرها.');
   };
 
-  document.addEventListener('iqzodiac:languagechange', localizeStaticCopy);
-  (async () => {
+  const refresh = async () => {
+    const sequence = ++loadSequence;
     try {
       const client = await window.IQZodiacSupabase.ready;
       if (slug) {
-        const { data, error } = await client.from('site_pages').select('slug,title_en,title_ar,body_en,body_ar,content_type').eq('content_type','page').eq('slug', slug).eq('is_published', true).maybeSingle();
+        const { data, error } = await client.from('site_pages')
+          .select('slug,title_en,title_ar,body_en,body_ar,content_type')
+          .eq('content_type', 'page').eq('slug', slug).eq('is_published', true).maybeSingle();
         if (error) throw error;
-        if (!data) { showNotFound(); return; }
+        if (sequence !== loadSequence) return;
+        if (!data) { currentPage = null; showNotFound(); return; }
         currentPage = data;
         renderCurrentPage();
         return;
       }
-      const { data, error } = await client.from('site_pages').select('slug,title_en,title_ar,body_en,body_ar,sort_order').eq('content_type','page').eq('is_published', true).order('sort_order').order('title_en').limit(200);
+      const { data, error } = await client.from('site_pages')
+        .select('slug,title_en,title_ar,body_en,body_ar,sort_order')
+        .eq('content_type', 'page').eq('is_published', true)
+        .order('sort_order').order('title_en').limit(200);
       if (error) throw error;
-      pageRows.push(...(data || []));
+      if (sequence !== loadSequence) return;
+      pageRows.splice(0, pageRows.length, ...(data || []));
       localizeStaticCopy();
     } catch (error) {
+      if (sequence !== loadSequence) return;
+      pageRows.splice(0);
+      currentPage = null;
+      if (slug) showNotFound();
+      else renderDirectory();
       console.warn('Public site pages could not be loaded.', error);
       status.textContent = copy('Pages could not be loaded right now. Please try again later.', 'تعذر تحميل الصفحات حاليًا. حاول مرة أخرى لاحقًا.');
     }
-  })();
+  };
+
+  document.addEventListener('iqzodiac:languagechange', localizeStaticCopy);
+  window.addEventListener('focus', () => void refresh());
+  window.addEventListener('pageshow', () => void refresh());
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void refresh();
+  });
+  void refresh();
 })();

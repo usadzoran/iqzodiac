@@ -65,7 +65,7 @@
     const loadPages = async () => {
       const container = root.querySelector('#content-pages-table');
       container.innerHTML = '<p class="admin-status">Loading pages…</p>';
-      const { data, error } = await client.from('site_pages').select('id,slug,title_en,title_ar,content_type,display_location,is_published,sort_order,updated_at').order('sort_order').order('title_en').limit(300);
+      const { data, error } = await client.from('site_pages').select('id,slug,title_en,title_ar,body_en,body_ar,content_type,display_location,is_published,sort_order,updated_at').order('sort_order').order('title_en').limit(300);
       if (error) { report(container, error, 'Pages could not be loaded.'); return; }
       pages = data || [];
       if (!pages.length) { container.innerHTML = '<p class="admin-empty">No website sections yet. Create the first section above.</p>'; return; }
@@ -126,9 +126,31 @@
     };
     const deletePage = async (button) => {
       const page = pages.find((row) => row.id === button.dataset.pageDelete);
-      if (!page || !window.confirm(`Permanently delete “${page.title_en}”?`)) return;
+      if (!page) return;
       button.disabled = true;
       try {
+        const menuLinks = [];
+        for (let offset = 0; offset <= 50000; offset += 1000) {
+          const { data: batch, error: linksError } = await client.from('site_menu_items')
+            .select('id,label_en,label_ar,href').range(offset, offset + 999);
+          if (linksError) throw linksError;
+          menuLinks.push(...(batch || []));
+          if (!batch || batch.length < 1000) break;
+          if (offset === 50000) throw new Error('Could not finish checking menu links. The page was not deleted.');
+        }
+        const linkedItems = menuLinks.filter((item) => {
+          try {
+            const url = new URL(item.href, window.location.href);
+            return url.origin === window.location.origin
+              && url.pathname.toLowerCase().endsWith('/site-pages.html')
+              && url.searchParams.get('slug') === page.slug;
+          } catch (_) { return false; }
+        });
+        if (linkedItems.length) {
+          const labels = linkedItems.slice(0, 3).map((item) => item.label_en || item.label_ar || item.href).join(', ');
+          throw new Error(`This page is linked from ${linkedItems.length} menu link(s) (${labels}). Remove or update those links before deleting the page.`);
+        }
+        if (!window.confirm(`Permanently delete “${page.title_en}”? This cannot be undone.`)) { button.disabled = false; return; }
         const { error } = await client.from('site_pages').delete().eq('id', page.id);
         if (error) throw error;
         toast('Page deleted.');
