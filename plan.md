@@ -96,3 +96,21 @@ Replace the existing candidate RPC contract through an additive migration: verif
 ### Design
 
 Keep the existing IQZodiac Match layout, midnight palette, and responsive card structure. Use the existing pseudonym-first privacy rules and explicit public-photo policy; add only compact interest/personality chips and Online/Offline status. Show a compatibility score only when it is computed from real comparable interests/answers and transparent optional factors; do not use a baseline or fabricated score. No duplicate Match page, repeated setup questionnaire, or sample profiles.
+
+
+## بطاقات ملفات Your Feed والصداقة وبحث Find Your Orbit
+
+إعادة استخدام موجز Your Feed وصفحة Profile الحالية، مع RPCs آمنة في Supabase بدل قراءة حقول الملفات الخاصة مباشرة. الضغط على اسم/صورة صاحب المنشور أو كاتب التعليق يفتح بطاقة تعرض الاسم المستعار والـhandle والاهتمامات المحفوظة فقط عندما يكون ملف الاكتشاف مكتملاً وقابلاً للاكتشاف؛ لا تُعرض الهوية القانونية أو العمر/الموقع أو الوسائط الخاصة. الإعجاب من البطاقة يُخزّن في سجل مستقل عن `match_likes` حتى لا يُحوّل تفاعل الملف إلى Match أو يشترط أهلية Match.
+
+يمثل جدول `friendships` زوجًا واحدًا مرتبًا ويخزن طلبًا معلّقًا أو علاقة مقبولة/مرفوضة. RPCs تتحقق من هوية الطرف المسجّل وتسمح للمستقبِل وحده بقبول/رفض الطلب. يعرض Profile طلبات واردة وأصدقاء مقبولين؛ حالة Online/Offline متاحة للأصدقاء المقبولين فقط. يبدأ heartbeat عام للمستخدم المصادق عليه عبر الصفحات، وتعتمد Offline على مهلة الـpresence الحالية بدل إنهاء كل تبويب حضور المستخدم عند إغلاقه.
+
+يوسّع بحث Match الحالي لقبول `@username` أو UUID دقيق. يطبّق الخادم هذا الشرط داخل مجموعة المرشحين قبل الترتيب والحد، مع إبقاء شروط الاكتمال/الاكتشاف، استبعاد المستخدم الحالي، مرشحات الخصوصية، الإعجاب والتخطي والتوافق الحالي دون تغيير.
+
+### بنية الملفات
+- `home.js`, `home.html`, `styles.css`, `social-profile.js`: فتح البطاقة من مؤلف المنشور/التعليق، عرض الاهتمامات، الإعجاب وطلب/قبول الصداقة.
+- `profile.html`, `social-profile.js`, `auth-guard.js`: صندوق طلبات الأصدقاء، قائمة الأصدقاء والحضور العام الآمن.
+- `match.html`, `match.js`, `privacy-core.js`, `match.css`: حقل بحث Find Your Orbit وربطه بمرشح الخادم.
+- `supabase/migrations/<new additive migrations>.sql`: جدول التفاعلات والصداقة، RLS/RPC، إشعار طلب الصداقة، وتوسيع بحث Match دون حذف البيانات أو تليين شروط الخصوصية.
+
+### تصميم الواجهة
+إعادة استخدام أسلوب IQZodiac الليلي والتركوازي، مع بطاقة حوار قصيرة قابلة للإغلاق ولوحة أصدقاء موجزة داخل Community. الأزرار تعرض الحالات الفعلية (Like، طلب مُرسل، طلب وارد، أصدقاء) من قاعدة البيانات، وتبقى جميع القوائم قابلة للاستخدام على الهاتف ولوحة المفاتيح.

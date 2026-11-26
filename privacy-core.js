@@ -364,6 +364,7 @@
           p_min_age: filters.minAge ? Number(filters.minAge) : null,
           p_max_age: filters.maxAge ? Number(filters.maxAge) : null,
           p_interest: filters.interest?.trim() || null,
+          p_username_or_id: filters.usernameOrId?.trim() || null,
         });
         if (error) throw error;
         const candidates = Array.isArray(data) ? data.map((profile) => ({

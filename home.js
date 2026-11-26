@@ -236,10 +236,13 @@ const createCommentElement = (comment, post, childrenByParent = {}, submitReply 
   const isArabicComment = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(comment.body || '');
   element.classList.add(isArabicComment ? 'comment-rtl' : 'comment-ltr');
   if (element.dataset.commentId) element.id = `comment-${element.dataset.commentId}`;
-  const avatar = document.createElement('span'); avatar.className = 'comment-avatar home-avatar-small'; avatar.textContent = String(comment.display_name || comment.handle || 'OM').replace(/^@/, '').slice(0, 2).toUpperCase();
+  const avatar = document.createElement(isUuid(comment.author_id) ? 'button' : 'span'); avatar.className = 'comment-avatar home-avatar-small'; avatar.textContent = String(comment.display_name || comment.handle || 'OM').replace(/^@/, '').slice(0, 2).toUpperCase();
+  if (isUuid(comment.author_id)) { avatar.type = 'button'; avatar.dataset.profileUserId = comment.author_id; avatar.setAttribute('aria-label', feedText('Open comment author profile', 'فتح ملف كاتب التعليق')); }
   const content = document.createElement('div'); content.className = 'comment-content';
   if (comment.is_pinned) { const badge = document.createElement('span'); badge.className = 'comment-pinned-badge'; badge.textContent = feedText('Pinned comment', 'تعليق مثبّت'); content.append(badge); }
-  const copy = document.createElement('p'); const author = document.createElement('strong'); author.textContent = comment.handle || comment.display_name || '@member'; copy.append(author);
+  const copy = document.createElement('p'); const author = document.createElement(isUuid(comment.author_id) ? 'button' : 'strong'); author.textContent = comment.display_name || comment.handle || '@member';
+  if (isUuid(comment.author_id)) { author.type = 'button'; author.className = 'comment-profile-trigger'; author.dataset.profileUserId = comment.author_id; author.setAttribute('aria-label', feedText('Open comment author profile', 'فتح ملف كاتب التعليق')); }
+  copy.append(author);
   if (comment.body) { const body = document.createElement('span'); body.append(document.createTextNode(' ')); appendCommentBody(body, comment.body); body.dir = isArabicComment ? 'rtl' : 'ltr'; copy.append(body); }
   const time = document.createElement('small'); time.className = 'comment-time'; time.textContent = formatDateTime(comment.created_at); copy.append(time);
   content.append(copy);
@@ -666,6 +669,16 @@ if ('IntersectionObserver' in window && !reduceMotion) {
         const moreActionsLabel = feedText('Post options', 'خيارات المنشور');
         const ownerActions = item.author_id === authenticatedUserId ? `<details class="post-owner-menu"><summary class="post-owner-menu-trigger" aria-label="${escapeHTML(moreActionsLabel)}" title="${escapeHTML(moreActionsLabel)}"><span aria-hidden="true">⋮</span></summary><div class="post-owner-menu-panel"><button class="post-edit-button" type="button">${escapeHTML(editPostLabel)}</button><button class="post-delete-button" type="button">${escapeHTML(deletePostLabel)}</button></div></details>` : '';
         post.innerHTML = `<header class="post-header"><div class="post-avatar home-avatar-small">${escapeHTML(String(item.display_name || 'OM').slice(0, 1))}</div><div class="post-author"><strong>${escapeHTML(item.display_name || 'Orbit Member')}</strong><span>${escapeHTML(item.handle || '@member')} · ${escapeHTML(formatDateTime(item.created_at))}</span></div>${ownerActions}</header>${bodyMarkup}${createPostMedia(item, mediaUrl)}<div class="post-meta"><span class="like-count">${formatCount(Number(item.like_count || 0))} likes</span><span class="comment-count">${formatCount(Number(item.comment_count || 0))} comments</span></div><div class="post-actions"><button class="post-action like-button ${liked ? 'is-liked' : ''}" type="button" data-like="${liked}"><span class="action-icon">${liked ? '♥' : '♡'}</span><span>${liked ? 'Liked' : 'Like'}</span></button><button class="post-action comment-focus" type="button"><span class="action-icon">◌</span><span>Comment</span></button><button class="post-action save-post-action ${savedPostIds.has(item.post_id) ? 'is-saved' : ''}" data-saved="${savedPostIds.has(item.post_id)}" aria-pressed="${savedPostIds.has(item.post_id)}" type="button"><span class="action-icon">${savedPostIds.has(item.post_id) ? '✓' : '🔖'}</span><span>${savedPostIds.has(item.post_id) ? 'Saved' : 'Save'}</span></button><button class="post-action share-action" type="button"><span class="action-icon">↗</span><span>Share</span></button></div><div class="comment-list"></div><form class="comment-form"><input type="text" maxlength="180" placeholder="Write a comment..." aria-label="Write a comment" /><button type="submit" aria-label="Post comment">↗</button></form>`;
+        if (isUuid(item.author_id)) {
+          const openLabel = feedText('Open profile for ', 'فتح ملف ');
+          [post.querySelector('.post-avatar'), post.querySelector('.post-author')].forEach((trigger) => {
+            trigger.dataset.profileUserId = item.author_id;
+            trigger.setAttribute('role', 'button');
+            trigger.setAttribute('tabindex', '0');
+            trigger.setAttribute('aria-label', `${openLabel}${item.display_name || item.handle || 'member'}`);
+            trigger.setAttribute('aria-haspopup', 'dialog');
+          });
+        }
         feedList.append(post); bindPost(post);
       }
     }

@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <link rel="stylesheet" href="./styles.css?v=profile-tabs-20261112" />
+    <link rel="stylesheet" href="./styles.css?v=feed-friends-20261126" />
     <link rel="stylesheet" href="./profile-body3d.css?v=body3d-compact-20261124" />
     <link rel="stylesheet" href="./ad-runtime.css?v=ads-all-pages-20261122" />
   <link rel="stylesheet" href="./site-menus.css?v=sections-menus-20261124" />
@@ -264,6 +264,16 @@
             <button class="button button-secondary follow-button" id="follow-button" type="button"><span id="follow-label">Follow back</span><span class="button-arrow" aria-hidden="true">↗</span></button>
             <button class="like-action" id="like-profile" type="button" aria-pressed="false"><span class="heart-icon" aria-hidden="true">♡</span><span id="like-label">Like profile</span></button>
           </div>
+          <div class="community-friends">
+            <section class="community-friends-section" aria-labelledby="friend-requests-heading">
+              <div class="community-subheading"><h3 id="friend-requests-heading">Friend requests</h3><span>Incoming</span></div>
+              <div class="friend-list" id="friend-requests-list" aria-live="polite"><p class="friend-list-empty">Loading friend requests…</p></div>
+            </section>
+            <section class="community-friends-section" aria-labelledby="friends-heading">
+              <div class="community-subheading"><h3 id="friends-heading">Friends</h3><span id="friend-count">0</span></div>
+              <div class="friend-list" id="friends-list" aria-live="polite"><p class="friend-list-empty">Loading friends…</p></div>
+            </section>
+          </div>
         </section>
 
         <section class="profile-card notifications-card" aria-labelledby="notifications-title">
@@ -315,7 +325,7 @@
     <script src="./language.js?v=menu-videos-20261124" defer></script>
     <script src="./location-data.js" defer></script>
     <script src="./privacy-core.js?v=gallery-verified-20261112" defer></script>
-    <script src="./profile.js?v=body3d-overview-20261114" defer></script><script src="./profile-body3d-data.js?v=body3d-upload-limit-20261124" defer></script><script src="./body3d-viewer.js?v=body3d-controls-20261114" defer></script><script src="./profile-body3d.js?v=body3d-compress-20261124" defer></script><script src="./reel-collections.js?v=reel-saves-download-20261110" defer></script>
+    <script src="./profile.js?v=body3d-overview-20261114" defer></script><script src="./social-profile.js?v=feed-friends-20261126" defer></script><script src="./profile-body3d-data.js?v=body3d-upload-limit-20261124" defer></script><script src="./body3d-viewer.js?v=body3d-controls-20261114" defer></script><script src="./profile-body3d.js?v=body3d-compress-20261124" defer></script><script src="./reel-collections.js?v=reel-saves-download-20261110" defer></script>
     <script src="./profile-wallet.js?v=coins-gifts-profile-20261106" defer></script>
       <script src="./nav-performance.js" defer></script>
     <script src="./ad-runtime.js?v=ads-click-redirect-20261122" defer></script>

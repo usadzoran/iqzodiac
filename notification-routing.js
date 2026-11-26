@@ -23,6 +23,11 @@
       if (uuid(row.message_id)) url.searchParams.set('message', row.message_id);
       return url;
     }
+    if (type === 'friend_request') {
+      url.pathname = new URL('./profile.html', document.baseURI).pathname;
+      url.hash = 'community';
+      return url;
+    }
     if ((type === 'profile_like' || type === 'profile_follow') && uuid(row.actor_id)) {
       url.pathname = new URL('./reel-profile.html', document.baseURI).pathname;
       url.searchParams.set('user', row.actor_id);

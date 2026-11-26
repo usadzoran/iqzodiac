@@ -67,3 +67,14 @@
 - [ ] Run local syntax/static checks and a read-only production schema/eligibility review without writing synthetic users or test records. Complete the requested end-to-end cycle only with two genuinely eligible, real accounts and avoid writes to their answers/profile or likes/skips unless explicitly approved; record any production-data blocker rather than claiming an unperformed test.
 
 > Status (2026-11-24): the additive Supabase migration is applied and read-only checks confirm Match RPC grants/RLS with no profile/answer row-count changes. Production currently has 2 discovery profiles, 13 answer rows, and 0 completed/discoverable profiles, so the two-real-account end-to-end test remains blocked. No synthetic users, likes, skips, or profile/answer changes were written; frontend changes remain local and unpushed.
+
+
+## بطاقات ملفات Your Feed والصداقة وبحث Find Your Orbit
+- [x] عند الضغط على الاسم أو الصورة العامة لصاحب منشور/تعليق في Your Feed، افتح بطاقة ملف حقيقية من Supabase تعرض الاسم المستعار الذي اختاره المستخدم واسم المستخدم واهتماماته/هواياته وما يحبّه كما حُفظت في ملف الاكتشاف؛ لا تنشئ بيانات وهمية ولا تكشف الاسم القانوني أو العمر أو الموقع أو الوسائط الخاصة.
+- [x] تحتوي البطاقة على Like وزر Add Friend؛ يُحفظ Like في سجل ملف منفصل عن إعجابات Match، ويُحفظ طلب الصداقة كطلب معلّق. لا يصبح الطرفان صديقين إلا بعد أن يقبل المستقبِل الطلب، مع إمكانية قبول الطلب أو رفضه من واجهة قابلة للوصول.
+- [x] تعرض صفحة Profile الطلبات الواردة والأصدقاء المقبولين فعليًا من قاعدة البيانات. يظهر Online أو Offline للأصدقاء المقبولين فقط، باستخدام حضور متجدد أثناء نشاط العضو في صفحات الموقع ومهلة Offline عند غياب heartbeat؛ لا تكشف الحالة للغرباء ولا تعتبر طلبًا معلّقًا صداقة.
+- [x] فرض RLS وصلاحيات RPC على الإعجاب وطلبات الصداقة وقبولها وقائمة الأصدقاء وبطاقات الملفات؛ لا يُسمح للعميل بتغيير الطرف المستقبِل/حالة القبول مباشرة، ولا تُستخدم `match_likes` أو mutual matches بديلاً عن الصداقة.
+- [x] في Find Your Orbit داخل Match، يستطيع المستخدم البحث عن ملف بواسطة `@username` أو UUID دقيق. يظل البحث خاضعًا لاكتمال ملف الاكتشاف وقابليته للاكتشاف، ويستبعد الحساب الحالي ويحافظ على إعدادات الخصوصية وسلوك التخطي/الإعجاب والتوافق الحالي؛ لا تُعرض نتائج أو نسب توافق مصطنعة.
+- [ ] اختبر محليًا JavaScript وSQL والتغييرات المتجاوبة؛ راجع الصلاحيات من قاعدة Supabase للقراءة فقط بعد تطبيق migration، ولا تُنشئ حسابات/طلبات/إعجابات تجريبية في قاعدة الإنتاج.
+
+> Status (2026-11-26): Applied feed-profile/friendship and exact Match username/UUID migrations to Supabase. Read-only checks confirm SECURITY DEFINER RPCs are granted to authenticated/service_role as intended and `friendships` has RLS enabled with no direct client policies (RPC-only access). JavaScript syntax and `git diff --check` pass. Real two-account and interactive responsive-browser tests have not been run; no test users or production likes/friendships were created.

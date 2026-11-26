@@ -7,10 +7,12 @@
   const toast = document.querySelector('.toast');
   const toastMessage = document.querySelector('.toast-message');
   const searchForm = document.querySelector('#match-search-form');
+  const identitySearchInput = document.querySelector('#search-username-id');
+  const identitySearchLabel = document.querySelector('#search-identity-label');
+  const identitySearchHelp = document.querySelector('#search-identity-help');
   const queueCount = document.querySelector('#queue-count');
   const queueLabel = document.querySelector('#queue-label');
   let toastTimer;
-  let presenceTimer;
   let candidates = [];
   let index = 0;
   let canInteract = false;
@@ -30,6 +32,7 @@
       mutual: 'Mutual match · chat ↗', privateMatch: 'Private match · chat ↗',
       searchError: 'Search could not be completed.', likeError: 'Like could not be saved. Try again.', skipError: 'Pass could not be saved. Try again.',
       passed: 'Passed. The next eligible profile is ready.', likeSaved: 'Like saved.',
+      identitySearchLabel: 'Username or profile ID', identitySearchPlaceholder: 'Exact @username or UUID', identitySearchHelp: 'Exact username or account UUID. Only eligible profiles appear.', identitySearchError: 'Use an exact username or UUID up to 80 characters.',
       missing: { profile: 'discovery profile', personality: 'personality answers', interests: 'interests', birthdate: 'zodiac from your saved birth date', element: 'personality element', completion: 'profile completion' },
     },
     ar: {
@@ -45,10 +48,17 @@
       mutual: 'تطابق متبادل · محادثة ↗', privateMatch: 'تطابق خاص · محادثة ↗',
       searchError: 'تعذر إكمال البحث.', likeError: 'تعذر حفظ الإعجاب. حاول مجددًا.', skipError: 'تعذر حفظ التخطي. حاول مجددًا.',
       passed: 'تم التخطي. الملف المؤهل التالي جاهز.', likeSaved: 'تم حفظ الإعجاب.',
+      identitySearchLabel: 'اسم المستخدم أو معرّف الملف', identitySearchPlaceholder: 'اسم دقيق مثل @username أو UUID', identitySearchHelp: 'أدخل اسم المستخدم الدقيق أو UUID للحساب؛ تظهر الملفات المؤهلة فقط.', identitySearchError: 'أدخل اسم مستخدم دقيقًا أو UUID لا يتجاوز 80 حرفًا.',
       missing: { profile: 'ملف الاكتشاف', personality: 'إجابات الشخصية', interests: 'الاهتمامات', birthdate: 'البرج من تاريخ الميلاد المحفوظ', element: 'عنصر الشخصية', completion: 'اكتمال الملف' },
     },
   };
   const text = (key) => copy[language()][key];
+  const updateIdentitySearchCopy = () => {
+    if (identitySearchLabel) identitySearchLabel.textContent = text('identitySearchLabel');
+    if (identitySearchInput) identitySearchInput.placeholder = text('identitySearchPlaceholder');
+    if (identitySearchHelp) identitySearchHelp.textContent = text('identitySearchHelp');
+  };
+  updateIdentitySearchCopy();
   const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const publicName = (profile) => profile.pseudonym || profile.publicName || profile.displayName || 'IQZodiac member';
   const publicInitials = (profile) => publicName(profile).split(/[\s-]+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'IQ';
@@ -58,21 +68,6 @@
     canInteract = enabled;
     document.querySelector('#skip-button').disabled = !enabled;
     document.querySelector('#like-button').disabled = !enabled;
-  };
-  const stopPresence = () => {
-    if (presenceTimer) window.clearInterval(presenceTimer);
-    presenceTimer = null;
-    void adapter.setMatchPresence(false).catch(() => {});
-  };
-  const startPresence = async () => {
-    await adapter.setMatchPresence(true);
-    presenceTimer = window.setInterval(() => {
-      if (document.visibilityState === 'visible') void adapter.setMatchPresence(true).catch((error) => console.warn('Match presence heartbeat failed.', error));
-    }, 30000);
-    document.addEventListener('visibilitychange', () => {
-      void adapter.setMatchPresence(document.visibilityState === 'visible').catch((error) => console.warn('Match presence update failed.', error));
-    });
-    window.addEventListener('pagehide', stopPresence, { once: true });
   };
   const setCardNotice = (title, body, link = '') => {
     card.className = 'match-card match-card-notice';
@@ -163,10 +158,12 @@
     event.preventDefault();
     const minAge = Number(document.querySelector('#search-min-age').value || 0);
     const maxAge = Number(document.querySelector('#search-max-age').value || 0);
+    const usernameOrId = String(identitySearchInput?.value || '').trim();
     if ((minAge && minAge < 18) || (maxAge && maxAge > 120) || (minAge && maxAge && minAge > maxAge)) { showToast(language() === 'ar' ? 'اختر نطاقًا عمريًا صحيحًا من 18 إلى 120.' : 'Choose a valid age range from 18 to 120.'); return; }
+    if (usernameOrId.length > 80) { showToast(text('identitySearchError')); return; }
     const button = searchForm.querySelector('button'); button.disabled = true;
     try {
-      await loadCandidates({ country: document.querySelector('#search-country').value, city: document.querySelector('#search-city').value, minAge, maxAge, interest: document.querySelector('#search-interest').value });
+      await loadCandidates({ country: document.querySelector('#search-country').value, city: document.querySelector('#search-city').value, minAge, maxAge, interest: document.querySelector('#search-interest').value, usernameOrId });
     } catch (error) { console.warn(text('searchError'), error); setError(); showToast(text('searchError')); }
     finally { button.disabled = false; }
   });
@@ -181,7 +178,6 @@
         window.location.replace(`./login.html?next=${encodeURIComponent(target)}`);
         return;
       }
-      await startPresence();
       const snapshot = await adapter.getDiscoverySnapshot();
       if (!snapshot.signedIn) throw new Error('A signed-in account is required.');
       if (!snapshot.complete) {
@@ -201,6 +197,7 @@
   })();
 
   document.addEventListener('iqzodiac:languagechange', () => {
+    updateIdentitySearchCopy();
     if (!canInteract) return;
     renderCard();
   });
