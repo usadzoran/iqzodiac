@@ -12,11 +12,58 @@
   const showError = (message, showLoginLink = false) => { loading.hidden = true; content.hidden = true; errorBox.hidden = false; errorBox.innerHTML = `${escapeHTML(message)}${showLoginLink ? ' <a class="admin-button admin-button-primary" href="./iqz-admin-login.html?next=%2Fiqzodiac%2Fiqz-control-7f3a91c2.html">Open admin login</a>' : ''}`; };
   const status = (id, message) => setHTML(id, `<p class="admin-status">${escapeHTML(message)}</p>`);
   let client;
+  let currentAccess = null;
+
+  const isPrivileged = () => Boolean(currentAccess?.is_master || currentAccess?.is_admin);
+  const canModule = (module, permission = 'view') => isPrivileged()
+    || (Array.isArray(currentAccess?.permissions?.[module]) && currentAccess.permissions[module].includes(permission));
+  const canAny = (modules, permission = 'view') => modules.some((module) => canModule(module, permission));
+  const mayManageContent = (kind, permission = 'view') => {
+    const module = ['reels', 'reel_comments'].includes(kind) ? 'reels_videos' : 'posts_feed';
+    return canModule(module, permission);
+  };
+  const applyAccessUI = () => {
+    document.querySelectorAll('.admin-tab').forEach((tab) => {
+      const section = tab.dataset.section;
+      let allowed = true;
+      if (tab.hasAttribute('data-master-only')) allowed = Boolean(currentAccess?.is_master);
+      else if (['content-moderators', 'vip', 'audit'].includes(section)) allowed = isPrivileged();
+      else if (tab.dataset.module) allowed = tab.dataset.module.split(',').some((module) => canModule(module.trim(), 'view'));
+      else if (section === 'members') allowed = canModule('members_profiles', 'view');
+      else if (section === 'moderation') allowed = canAny(['posts_feed', 'reels_videos'], 'view');
+      else if (section === 'marketplace') allowed = canAny(['marketplace', 'reports_moderation'], 'view');
+      else if (section === 'videos') allowed = canModule('reels_videos', 'view');
+      else if (section === 'site-content') allowed = canAny(['website_pages_content', 'marketplace'], 'view');
+      else if (section === 'site-menus') allowed = canModule('website_menus', 'view');
+      tab.hidden = !allowed;
+      const panel = document.querySelector(`[data-section-panel="${CSS.escape(section)}"]`);
+      if (panel) panel.hidden = !allowed;
+    });
+    if (!isPrivileged()) {
+      document.querySelectorAll('.admin-metric').forEach((node) => { node.hidden = true; });
+      const grid = document.querySelector('[data-section-panel="overview"] .admin-grid');
+      if (grid && !grid.querySelector('#employee-overview-card')) {
+        const card = document.createElement('article');
+        card.id = 'employee-overview-card';
+        card.className = 'admin-card admin-wide';
+        card.innerHTML = '<div class="admin-section-heading"><div><h2>Your access</h2><p>Only the modules and actions explicitly assigned to your account are available.</p></div></div><div id="employee-access-summary" class="admin-status"></div><div id="employee-activity" class="admin-activity-list"></div>';
+        grid.append(card);
+      }
+    }
+  };
+
+  window.IQZodiacAdminCenter = {
+    get access() { return currentAccess; },
+    client: null,
+    can: canModule,
+    audit: null,
+  };
 
   const audit = async (action, entity, id, metadata = {}) => {
     const { error } = await client.rpc('iqzodiac_admin_audit', { p_action_code: action, p_entity_type: entity, p_entity_id: id || null, p_metadata: metadata });
     if (error) throw error;
   };
+  window.IQZodiacAdminCenter.audit = audit;
   const confirmAction = (message) => window.confirm(`This action is recorded in the admin audit log.\n\n${message}`);
   const actionButton = (label, attrs = '', danger = false) => `<button type="button" class="admin-action${danger ? ' admin-button-danger' : ''}" ${attrs}>${escapeHTML(label)}</button>`;
 
@@ -42,14 +89,18 @@
     setHTML('members-table', `<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Identity</th><th>Public name</th><th>Handle</th><th>Language</th><th>Location</th><th>Joined</th><th>Action</th></tr></thead><tbody>${data.map((row) => `<tr data-member-row="${escapeHTML(row.user_id)}"><td><strong>${escapeHTML(row.display_name || 'Unnamed')}</strong><div class="muted">${escapeHTML(shortId(row.user_id))}</div></td><td><input data-member-field="display_name" value="${escapeHTML(row.display_name)}" maxlength="80" /></td><td><input data-member-field="handle" value="${escapeHTML(String(row.handle || '').replace(/^@/, ''))}" maxlength="24" /></td><td><select data-member-field="preferred_language"><option value="en" ${row.preferred_language === 'en' ? 'selected' : ''}>English</option><option value="ar" ${row.preferred_language === 'ar' ? 'selected' : ''}>العربية</option></select></td><td><span class="muted">${escapeHTML([row.city,row.country].filter(Boolean).join(', ') || '—')}</span></td><td><span class="muted">${escapeHTML(date(row.created_at))}</span></td><td><div class="admin-actions">${actionButton('Save', `data-member-save="${escapeHTML(row.user_id)}"`)}</div></td></tr>`).join('')}</tbody></table></div>`);
   };
   const saveMember = async (button) => {
+    if (!canModule('members_profiles', 'edit')) { showToast('Member-profile edit permission is required.'); return; }
     const row = button.closest('[data-member-row]');
     const values = Object.fromEntries([...row.querySelectorAll('[data-member-field]')].map((input) => [input.dataset.memberField, input.value.trim()]));
     if (!values.display_name || !values.handle) { showToast('Name and handle are required.'); return; }
     button.disabled = true;
     try {
-      const { error } = await client.from('profiles').update({ display_name: values.display_name.slice(0,80), handle: `@${values.handle.replace(/^@/, '').slice(0,24)}`, preferred_language: values.preferred_language }).eq('user_id', row.dataset.memberRow);
+      const handle = `@${values.handle.replace(/^@/, '').slice(0,24)}`;
+      const { error } = currentAccess?.is_employee && !isPrivileged()
+        ? await client.rpc('iqzodiac_admin_update_member_profile', { p_user_id: row.dataset.memberRow, p_display_name: values.display_name.slice(0,80), p_handle: handle, p_preferred_language: values.preferred_language })
+        : await client.from('profiles').update({ display_name: values.display_name.slice(0,80), handle, preferred_language: values.preferred_language }).eq('user_id', row.dataset.memberRow);
       if (error) throw error;
-      await audit('update_profile', 'profile', row.dataset.memberRow, { display_name: values.display_name, handle: values.handle });
+      if (!(currentAccess?.is_employee && !isPrivileged())) await audit('update_profile', 'profile', row.dataset.memberRow, { display_name: values.display_name, handle: values.handle });
       showToast('Member profile updated.'); await loadMembers();
     } catch (error) { showToast(error.message || 'Could not update the member.'); button.disabled = false; }
   };
@@ -62,14 +113,18 @@
   };
   const loadModeration = async () => {
     const kind = document.querySelector('#moderation-kind').value; const config = contentConfig[kind];
+    if (!mayManageContent(kind, 'view')) { status('moderation-table', 'View permission is not assigned for this queue.'); return; }
     const { data, error } = await client.from(config.table).select(config.columns).order('created_at', { ascending:false }).limit(60);
     if (error) throw error;
     if (!data?.length) { setHTML('moderation-table', '<p class="admin-empty">No records in this queue.</p>'); return; }
     setHTML('moderation-table', `<div class="admin-table-wrap"><table class="admin-table"><thead><tr>${config.headers.map((header) => `<th>${escapeHTML(header)}</th>`).join('')}<th>Action</th></tr></thead><tbody>${data.map(config.rows).join('')}</tbody></table></div>`);
+    if (!mayManageContent(kind, 'delete') && !mayManageContent(kind, 'moderate')) document.querySelectorAll('#moderation-table [data-content-delete]').forEach((button) => button.remove());
   };
   const deleteContent = async (button) => {
+    const kind = button.dataset.contentDelete;
+    if (!mayManageContent(kind, 'delete') && !mayManageContent(kind, 'moderate')) { showToast('Moderation permission is required.'); return; }
     if (!confirmAction('Remove this content permanently?')) return;
-    const kind = button.dataset.contentDelete; const config = contentConfig[kind]; button.disabled = true;
+    const config = contentConfig[kind]; button.disabled = true;
     try {
       if (kind === 'reels' && button.dataset.mediaPath) await client.storage.from('iqzodiac-media').remove([button.dataset.mediaPath]);
       const { error } = await client.from(config.table).delete().eq('id', button.dataset.id); if (error) throw error;
