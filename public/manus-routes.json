@@ -17,6 +17,10 @@
       "title": "Log In — IQZodiac"
     },
     {
+      "path": "/account-password-recovery",
+      "title": "Set a New Password — IQZodiac"
+    },
+    {
       "path": "/signup",
       "title": "Create Account — IQZodiac"
     },
